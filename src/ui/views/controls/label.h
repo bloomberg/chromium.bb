@@ -225,6 +225,10 @@ class VIEWS_EXPORT Label : public View,
   gfx::ElideBehavior GetElideBehavior() const;
   void SetElideBehavior(gfx::ElideBehavior elide_behavior);
 
+  // Get or set the flags that control display of accelerator characters.
+  void SetDrawStringsFlags(int flags);
+  int GetDrawStringsFlags() const { return draw_strings_flags_; }
+
   // Gets/Sets the tooltip text.  Default behavior for a label (single-line) is
   // to show the full text if it is wider than its bounds.  Calling this
   // overrides the default behavior and lets you set a custom tooltip.  To
@@ -471,6 +475,7 @@ class VIEWS_EXPORT Label : public View,
   int max_width_ = 0;
   // This is used in single-line mode.
   int max_width_single_line_ = 0;
+  int draw_strings_flags_ = 0;
 
   std::unique_ptr<SelectionController> selection_controller_;
 

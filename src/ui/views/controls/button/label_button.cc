@@ -506,6 +506,12 @@ void LabelButton::OnThemeChanged() {
   SchedulePaint();
 }
 
+void LabelButton::SetFontList(const gfx::FontList& font_list) {
+  cached_normal_font_list_ = font_list;
+  cached_default_button_font_list_ = font_list;
+  label_->SetFontList(cached_normal_font_list_);
+}
+
 void LabelButton::StateChanged(ButtonState old_state) {
   Button::StateChanged(old_state);
   ResetLabelEnabledColor();

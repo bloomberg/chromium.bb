@@ -21,6 +21,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/sync.h"
 #include "ui/gfx/x/xfixes.h"
@@ -94,6 +95,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
     std::string wm_class_name;
     std::string wm_class_class;
     std::string wm_role_name;
+    gfx::AcceleratedWidget parent_widget = gfx::kNullAcceleratedWidget;
   };
 
   XWindow();

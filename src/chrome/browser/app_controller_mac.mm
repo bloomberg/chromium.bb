@@ -30,6 +30,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
+#include "cef/libcef/features/features.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
@@ -1219,6 +1220,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 // Run a (background) application in a new tab.
 - (void)executeApplication:(id)sender {
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   NSInteger tag = [sender tag];
   Profile* profile = [self lastProfile];
   DCHECK(profile);
@@ -1227,6 +1229,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
          tag < static_cast<int>(applications.size()));
   const extensions::Extension* extension = applications.GetExtension(tag);
   BackgroundModeManager::LaunchBackgroundApplication(profile, extension);
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
@@ -1614,6 +1617,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   // TODO(rickcam): Mock out BackgroundApplicationListModel, then add unit
   // tests which use the mock in place of the profile-initialized model.
 
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   // Avoid breaking unit tests which have no profile.
   if (profile) {
     BackgroundApplicationListModel applications(profile);
@@ -1640,6 +1644,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
       }
     }
   }
+#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
 
   return dockMenu;
 }
@@ -1850,11 +1855,13 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 namespace {
 
 void UpdateProfileInUse(Profile* profile, Profile::CreateStatus status) {
+#if !BUILDFLAG(ENABLE_CEF)
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
     AppController* controller =
         base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
     [controller windowChangedToProfile:profile];
   }
+#endif  // !BUILDFLAG(ENABLE_CEF)
 }
 
 }  // namespace

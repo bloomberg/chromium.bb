@@ -89,10 +89,6 @@ class UIControlsDesktopX11 : public UIControlsAura {
         aura::test::QueryLatestMousePositionRequestInHost(host);
     host->ConvertPixelsToDIP(&root_current_location);
 
-    auto* screen = views::test::TestDesktopScreenX11::GetInstance();
-    DCHECK_EQ(screen, display::Screen::GetScreen());
-    screen->set_cursor_screen_point(gfx::Point(screen_x, screen_y));
-
     if (root_location != root_current_location &&
         x11_ui_controls_test_helper_.ButtonDownMask() == 0) {
       // Move the cursor because EnterNotify/LeaveNotify are generated with the

@@ -86,7 +86,7 @@ void ScopedLockedFileHandleTraits::Free(FileHandle handle) {
 
 struct Settings::Data {
   static constexpr uint32_t kSettingsMagic = 'CPds';
-  static constexpr uint32_t kSettingsVersion = 1;
+  static constexpr uint32_t kSettingsVersion = 2;
 
   enum Options : uint32_t {
     kUploadsEnabled = 1 << 0,
@@ -97,6 +97,9 @@ struct Settings::Data {
            options(0),
            padding_0(0),
            last_upload_attempt_time(0),
+           next_upload_attempt_time(0),
+           backoff_step(0),
+           padding_1(0),
            client_id() {}
 
   uint32_t magic;
@@ -104,6 +107,9 @@ struct Settings::Data {
   uint32_t options;
   uint32_t padding_0;
   int64_t last_upload_attempt_time;  // time_t
+  int64_t next_upload_attempt_time;  // time_t
+  uint32_t backoff_step;
+  uint32_t padding_1;
   UUID client_id;
 };
 
@@ -183,6 +189,56 @@ bool Settings::SetLastUploadAttemptTime(time_t time) {
     return false;
 
   settings.last_upload_attempt_time = InRangeCast<int64_t>(time, 0);
+
+  return WriteSettings(handle.get(), settings);
+}
+
+bool Settings::GetNextUploadAttemptTime(time_t* time) {
+  DCHECK(initialized_.is_valid());
+
+  Data settings;
+  if (!OpenAndReadSettings(&settings))
+    return false;
+
+  *time = InRangeCast<time_t>(settings.next_upload_attempt_time,
+                              std::numeric_limits<time_t>::max());
+  return true;
+}
+
+bool Settings::SetNextUploadAttemptTime(time_t time) {
+  DCHECK(initialized_.is_valid());
+
+  Data settings;
+  ScopedLockedFileHandle handle = OpenForWritingAndReadSettings(&settings);
+  if (!handle.is_valid())
+    return false;
+
+  settings.next_upload_attempt_time = InRangeCast<int64_t>(time, 0);
+
+  return WriteSettings(handle.get(), settings);
+}
+
+bool Settings::GetBackoffStep(int* step) {
+  DCHECK(initialized_.is_valid());
+
+  Data settings;
+  if (!OpenAndReadSettings(&settings))
+    return false;
+
+  *step = InRangeCast<int>(settings.backoff_step,
+                           std::numeric_limits<int>::max());
+  return true;
+}
+
+bool Settings::SetBackoffStep(int step) {
+  DCHECK(initialized_.is_valid());
+
+  Data settings;
+  ScopedLockedFileHandle handle = OpenForWritingAndReadSettings(&settings);
+  if (!handle.is_valid())
+    return false;
+
+  settings.backoff_step = InRangeCast<uint32_t>(step, 0);
 
   return WriteSettings(handle.get(), settings);
 }

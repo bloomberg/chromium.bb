@@ -397,7 +397,7 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
                  content::NotificationService::AllSources());
 
-  if (ProfileShortcutManager::IsFeatureEnabled() && !user_data_dir_.empty())
+  if (!user_data_dir_.empty() && ProfileShortcutManager::IsFeatureEnabled())
     profile_shortcut_manager_ = ProfileShortcutManager::Create(this);
 }
 

@@ -17,6 +17,7 @@
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
@@ -252,8 +253,11 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // Determine if this is an extension process.
+    // CEF should avoid accessing ExtensionRegistry when extensions are disabled.
     bool process_is_for_extensions = false;
-    if (render_process_host) {
+    if (render_process_host &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableExtensions)) {
       content::BrowserContext* context =
           render_process_host->GetBrowserContext();
       extensions::ExtensionRegistry* extension_registry =

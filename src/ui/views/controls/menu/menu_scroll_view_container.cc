@@ -211,6 +211,11 @@ MenuScrollViewContainer::MenuScrollViewContainer(SubmenuView* content_view)
   scroll_down_button_ =
       AddChildView(std::make_unique<MenuScrollButton>(content_view, false));
 
+  SkColor override_color;
+  MenuDelegate* delegate = content_view_->GetMenuItem()->GetDelegate();
+  if (delegate && delegate->GetBackgroundColor(-1, false, &override_color))
+    SetBackground(views::CreateSolidBackground(override_color));
+
   arrow_ = BubbleBorderTypeFromAnchor(
       content_view_->GetMenuItem()->GetMenuController()->GetAnchorPosition());
 

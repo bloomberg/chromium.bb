@@ -11,11 +11,16 @@
 #include <string>
 #include <vector>
 
+#include "cef/libcef/features/features.h"
 #include "chrome/app/chrome_crash_reporter_client_win.h"
 #include "chrome/chrome_elf/hook_util/hook_util.h"
 #include "components/crash/core/app/crashpad.h"
 #include "components/crash/core/common/crash_keys.h"
 #include "third_party/crashpad/crashpad/client/crashpad_client.h"
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/common/crash_reporter_client.h"
+#endif
 
 namespace {
 
@@ -77,7 +82,11 @@ bool InitializeCrashReporting() {
   g_crash_reports = new std::vector<crash_reporter::Report>;
   g_set_unhandled_exception_filter = new elf_hook::IATHook();
 
+#if BUILDFLAG(ENABLE_CEF)
+  CefCrashReporterClient::InitializeCrashReportingForProcess();
+#else
   ChromeCrashReporterClient::InitializeCrashReportingForProcess();
+#endif
 
   g_crash_helper_enabled = true;
   return true;

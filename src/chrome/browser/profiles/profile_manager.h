@@ -113,7 +113,7 @@ class ProfileManager : public content::NotificationObserver,
   // acceptable. Returns null if creation of the new profile fails.
   // TODO(bauerb): Migrate calls from other code to GetProfileByPath(), then
   // make this method private.
-  Profile* GetProfile(const base::FilePath& profile_dir);
+  virtual Profile* GetProfile(const base::FilePath& profile_dir);
 
   // Returns regular or off-the-record profile given its profile key.
   static Profile* GetProfileFromProfileKey(ProfileKey* profile_key);
@@ -146,7 +146,7 @@ class ProfileManager : public content::NotificationObserver,
 
   // Returns true if the profile pointer is known to point to an existing
   // profile.
-  bool IsValidProfile(const void* profile);
+  virtual bool IsValidProfile(const void* profile);
 
   // Returns the directory where the first created profile is stored,
   // relative to the user data directory currently in use.
@@ -155,7 +155,7 @@ class ProfileManager : public content::NotificationObserver,
   // Get the Profile last used (the Profile to which owns the most recently
   // focused window) with this Chrome build. If no signed profile has been
   // stored in Local State, hand back the Default profile.
-  Profile* GetLastUsedProfile(const base::FilePath& user_data_dir);
+  virtual Profile* GetLastUsedProfile(const base::FilePath& user_data_dir);
 
   // Get the path of the last used profile, or if that's undefined, the default
   // profile.

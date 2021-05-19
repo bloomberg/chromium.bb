@@ -81,7 +81,7 @@ void OnFindURLMimeType(const GURL& url,
 #if BUILDFLAG(ENABLE_PLUGINS)
   content::WebPluginInfo plugin;
   result = result || content::PluginService::GetInstance()->GetPluginInfo(
-                         process_id, routing_id, url, url::Origin(), mime_type,
+                         process_id, routing_id, url, true, url::Origin(), mime_type,
                          false, nullptr, &plugin, nullptr);
 #endif
 

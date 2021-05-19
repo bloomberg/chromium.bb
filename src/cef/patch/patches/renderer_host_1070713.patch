@@ -1,0 +1,13 @@
+diff --git content/browser/renderer_host/render_view_host_impl.cc content/browser/renderer_host/render_view_host_impl.cc
+index 517ee0e43e83..6c3bab2f5780 100644
+--- content/browser/renderer_host/render_view_host_impl.cc
++++ content/browser/renderer_host/render_view_host_impl.cc
+@@ -598,6 +598,8 @@ bool RenderViewHostImpl::IsRenderViewLive() {
+ }
+ 
+ void RenderViewHostImpl::SetBackgroundOpaque(bool opaque) {
++  if (!GetWidget()->GetAssociatedFrameWidget().is_bound())
++    return;
+   GetWidget()->GetAssociatedFrameWidget()->SetBackgroundOpaque(opaque);
+ }
+ 

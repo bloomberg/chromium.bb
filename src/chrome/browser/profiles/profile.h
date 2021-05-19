@@ -116,6 +116,10 @@ class Profile : public content::BrowserContext {
     // Creates a unique OTR profile id with the given profile id prefix.
     static OTRProfileID CreateUnique(const std::string& profile_id_prefix);
 
+    // Creates a unique OTR profile id to be used for CEF browser contexts.
+    static OTRProfileID CreateUniqueForCEF();
+    bool IsUniqueForCEF() const;
+
     // Creates a unique OTR profile id to be used for DevTools browser contexts.
     static OTRProfileID CreateUniqueForDevTools();
 
@@ -523,6 +527,8 @@ class Profile : public content::BrowserContext {
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
 
+  void NotifyOffTheRecordProfileCreated(Profile* off_the_record);
+
  protected:
   void set_is_guest_profile(bool is_guest_profile) {
     is_guest_profile_ = is_guest_profile;
@@ -541,8 +547,6 @@ class Profile : public content::BrowserContext {
   // Profile.
   static PrefStore* CreateExtensionPrefStore(Profile*,
                                              bool incognito_pref_store);
-
-  void NotifyOffTheRecordProfileCreated(Profile* off_the_record);
 
   // Returns whether the user has signed in this profile to an account.
   virtual bool IsSignedIn() = 0;

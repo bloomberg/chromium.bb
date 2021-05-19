@@ -150,12 +150,13 @@ auto& GetViewCommandMap() {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, public:
 
-ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
+ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view,
+                         base::Optional<DisplayMode> display_mode)
     : AnimationDelegateViews(this),
       browser_(browser),
       browser_view_(browser_view),
       app_menu_icon_controller_(browser->profile(), this),
-      display_mode_(GetDisplayMode(browser)) {
+      display_mode_(display_mode ? *display_mode : GetDisplayMode(browser)) {
   SetID(VIEW_ID_TOOLBAR);
 
   UpgradeDetector::GetInstance()->AddObserver(this);
@@ -181,7 +182,7 @@ ToolbarView::~ToolbarView() {
 void ToolbarView::Init() {
   auto location_bar = std::make_unique<LocationBarView>(
       browser_, browser_->profile(), browser_->command_controller(), this,
-      display_mode_ != DisplayMode::NORMAL);
+      display_mode_ != DisplayMode::NORMAL && !browser_->toolbar_overridden());
   // Make sure the toolbar shows by default.
   size_animation_.Reset(1);
 

@@ -157,7 +157,7 @@ void NativeViewHost::OnPaint(gfx::Canvas* canvas) {
   // It would be nice if this used some approximation of the page's
   // current background color.
   if (native_wrapper_->HasInstalledClip())
-    canvas->FillRect(GetLocalBounds(), SK_ColorWHITE);
+    canvas->FillRect(GetLocalBounds(), resize_background_color_);
 }
 
 void NativeViewHost::VisibilityChanged(View* starting_from, bool is_visible) {

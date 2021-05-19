@@ -127,6 +127,12 @@ class BASE_EXPORT CurrentThread {
   // posted tasks.
   void SetAddQueueTimeToTasks(bool enable);
 
+#if defined(OS_WIN)
+  void set_os_modal_loop(bool os_modal_loop) { os_modal_loop_ = os_modal_loop; }
+
+  bool os_modal_loop() const { return os_modal_loop_; }
+#endif  // OS_WIN
+
   // Enables nested task processing in scope of an upcoming native message loop.
   // Some unwanted message loops may occur when using common controls or printer
   // functions. Hence, nested task processing is disabled by default to avoid
@@ -192,6 +198,13 @@ class BASE_EXPORT CurrentThread {
   friend class web::WebTaskEnvironment;
 
   sequence_manager::internal::SequenceManagerImpl* current_;
+
+#if defined(OS_WIN)
+ private:
+  // Should be set to true before calling Windows APIs like TrackPopupMenu, etc.
+  // which enter a modal message loop.
+  bool os_modal_loop_ = false;
+#endif
 };
 
 #if !defined(OS_NACL)

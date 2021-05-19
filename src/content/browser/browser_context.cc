@@ -235,7 +235,7 @@ StoragePartition* BrowserContext::GetStoragePartition(
       GetStoragePartitionMap(browser_context);
 
   auto config_to_use = storage_partition_config;
-  if (browser_context->IsOffTheRecord())
+  if (browser_context->IsOffTheRecord() || browser_context->GetPath().empty())
     config_to_use = storage_partition_config.CopyWithInMemorySet();
 
   return partition_map->Get(config_to_use, can_create);
@@ -540,7 +540,7 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
         kUseInMemoryDBDefault);
 
     std::unique_ptr<media::VideoDecodeStatsDB> stats_db;
-    if (use_in_memory_db) {
+    if (use_in_memory_db || GetPath().empty()) {
       stats_db =
           std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(nullptr);
     } else {

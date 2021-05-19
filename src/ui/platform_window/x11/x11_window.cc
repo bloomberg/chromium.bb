@@ -93,6 +93,7 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
   config.wm_class_class = properties.wm_class_class;
   config.wm_role_name = properties.wm_role_name;
   config.activatable = properties.activatable;
+  config.parent_widget = properties.parent_widget;
   config.prefer_dark_theme = properties.prefer_dark_theme;
   config.background_color = properties.background_color;
   return config;

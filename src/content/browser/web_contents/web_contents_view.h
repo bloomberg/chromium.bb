@@ -23,7 +23,7 @@ struct DropData;
 // The WebContentsView is an interface that is implemented by the platform-
 // dependent web contents views. The WebContents uses this interface to talk to
 // them.
-class WebContentsView {
+class CONTENT_EXPORT WebContentsView {
  public:
   virtual ~WebContentsView() {}
 

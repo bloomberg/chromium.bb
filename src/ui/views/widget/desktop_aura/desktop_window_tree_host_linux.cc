@@ -187,6 +187,18 @@ Widget::MoveLoopResult DesktopWindowTreeHostLinux::RunMoveLoop(
                                                     escape_behavior);
 }
 
+gfx::Rect DesktopWindowTreeHostLinux::GetWindowBoundsInScreen() const {
+  if (!screen_bounds_.IsEmpty())
+    return screen_bounds_;
+  return DesktopWindowTreeHostPlatform::GetWindowBoundsInScreen();
+}
+
+gfx::Point DesktopWindowTreeHostLinux::GetLocationOnScreenInPixels() const {
+  if (!screen_bounds_.IsEmpty())
+    return screen_bounds_.origin();
+  return DesktopWindowTreeHostPlatform::GetLocationOnScreenInPixels();
+}
+
 void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
   // The input can be disabled and the widget marked as non-active in case of
   // opened file-dialogs.
@@ -318,6 +330,8 @@ void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
   properties->wm_class_name = params.wm_class_name;
   properties->wm_class_class = params.wm_class_class;
   properties->wm_role_name = params.wm_role_name;
+
+  properties->parent_widget = params.parent_widget;
 
   DCHECK(!properties->x11_extension_delegate);
   properties->x11_extension_delegate = this;

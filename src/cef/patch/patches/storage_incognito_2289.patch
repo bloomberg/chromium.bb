@@ -1,0 +1,49 @@
+diff --git content/browser/blob_storage/chrome_blob_storage_context.cc content/browser/blob_storage/chrome_blob_storage_context.cc
+index 676c2cc22bac..e6f9642e1cba 100644
+--- content/browser/blob_storage/chrome_blob_storage_context.cc
++++ content/browser/blob_storage/chrome_blob_storage_context.cc
+@@ -120,7 +120,8 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
+ 
+     // If we're not incognito mode, schedule all of our file tasks to enable
+     // disk on the storage context.
+-    if (!context->IsOffTheRecord() && io_thread_valid) {
++    if (!context->GetPath().empty() && !context->IsOffTheRecord() &&
++        io_thread_valid) {
+       file_task_runner = base::ThreadPool::CreateTaskRunner(
+           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+diff --git content/browser/browser_context.cc content/browser/browser_context.cc
+index 8b053971dea9..170f5c1b3863 100644
+--- content/browser/browser_context.cc
++++ content/browser/browser_context.cc
+@@ -235,7 +235,7 @@ StoragePartition* BrowserContext::GetStoragePartition(
+       GetStoragePartitionMap(browser_context);
+ 
+   auto config_to_use = storage_partition_config;
+-  if (browser_context->IsOffTheRecord())
++  if (browser_context->IsOffTheRecord() || browser_context->GetPath().empty())
+     config_to_use = storage_partition_config.CopyWithInMemorySet();
+ 
+   return partition_map->Get(config_to_use, can_create);
+@@ -540,7 +540,7 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
+         kUseInMemoryDBDefault);
+ 
+     std::unique_ptr<media::VideoDecodeStatsDB> stats_db;
+-    if (use_in_memory_db) {
++    if (use_in_memory_db || GetPath().empty()) {
+       stats_db =
+           std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(nullptr);
+     } else {
+diff --git storage/browser/database/database_tracker.cc storage/browser/database/database_tracker.cc
+index cb40db947624..807a7c24bc6d 100644
+--- storage/browser/database/database_tracker.cc
++++ storage/browser/database/database_tracker.cc
+@@ -495,7 +495,7 @@ bool DatabaseTracker::LazyInit() {
+     databases_table_.reset(new DatabasesTable(db_.get()));
+     meta_table_.reset(new sql::MetaTable());
+ 
+-    is_initialized_ = base::CreateDirectory(db_dir_) &&
++    is_initialized_ = (is_incognito_ ? true : base::CreateDirectory(db_dir_)) &&
+                       (db_->is_open() ||
+                        (is_incognito_ ? db_->OpenInMemory()
+                                       : db_->Open(kTrackerDatabaseFullPath))) &&

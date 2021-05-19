@@ -29,7 +29,7 @@ class EncodingUtils {
   // the function stores 0xFFFD in the output variable and returns 1.
   static inline int DecodeUTF8Char(const char* in, char32* out) {
     Rune r;
-    int len = chartorune(&r, in);
+    int len = _chartorune(&r, in);
     *out = r;
     return len;
   }

@@ -30,6 +30,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
 #include "chrome/browser/printing/background_printing_manager.h"
@@ -91,12 +92,16 @@ namespace printing {
 
 namespace {
 
+#if BUILDFLAG(ENABLE_CEF)
+const char kBasicPrintShortcut[] = "";
+#else
 #if defined(OS_MAC)
 // U+0028 U+21E7 U+2318 U+0050 U+0029 in UTF8
 const char kBasicPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
 #elif !BUILDFLAG(IS_CHROMEOS_ASH)
 const char kBasicPrintShortcut[] = "(Ctrl+Shift+P)";
 #endif
+#endif  // !BUILDFLAG(ENABLE_CEF)
 
 constexpr char kInvalidArgsForDidStartPreview[] =
     "Invalid arguments for DidStartPreview";

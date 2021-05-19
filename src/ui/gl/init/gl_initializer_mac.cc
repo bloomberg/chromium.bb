@@ -46,11 +46,8 @@ bool InitializeOneOffForSandbox() {
   // GPU-related stuff is very slow without this, probably because
   // the sandbox prevents loading graphics drivers or some such.
   std::vector<CGLPixelFormatAttribute> attribs;
-  if (GLContext::SwitchableGPUsSupported()) {
-    // Avoid switching to the discrete GPU just for this pixel
-    // format selection.
-    attribs.push_back(kCGLPFAAllowOfflineRenderers);
-  }
+  // Avoid switching to the discrete GPU just for this pixel format selection.
+  attribs.push_back(kCGLPFAAllowOfflineRenderers);
   if (GetGLImplementation() == kGLImplementationAppleGL) {
     attribs.push_back(kCGLPFARendererID);
     attribs.push_back(

@@ -808,7 +808,7 @@ bool ChromeClientImpl::HasOpenedPopup() const {
 PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
                                            HTMLSelectElement& select) {
   NotifyPopupOpeningObservers();
-  if (WebViewImpl::UseExternalPopupMenus())
+  if (web_view_->UseExternalPopupMenus())
     return MakeGarbageCollected<ExternalPopupMenu>(frame, select);
 
   DCHECK(RuntimeEnabledFeatures::PagePopupEnabled());

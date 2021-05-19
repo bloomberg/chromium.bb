@@ -207,6 +207,8 @@ void MimeHandlerViewGuest::CreateWebContents(
   WebContents::CreateParams params(browser_context(),
                                    guest_site_instance.get());
   params.guest_delegate = this;
+  if (delegate_)
+    delegate_->OverrideWebContentsCreateParams(&params);
   // TODO(erikchen): Fix ownership semantics for guest views.
   // https://crbug.com/832879.
   std::move(callback).Run(
@@ -217,6 +219,10 @@ void MimeHandlerViewGuest::CreateWebContents(
 }
 
 void MimeHandlerViewGuest::DidAttachToEmbedder() {
+  is_guest_attached_ = true;
+  if (delegate_)
+    delegate_->OnGuestAttached();
+
   DCHECK(stream_->handler_url().SchemeIs(extensions::kExtensionScheme));
   web_contents()->GetController().LoadURL(
       stream_->handler_url(), content::Referrer(),
@@ -245,6 +251,11 @@ bool MimeHandlerViewGuest::ZoomPropagatesFromEmbedderToGuest() const {
 
 bool MimeHandlerViewGuest::ShouldDestroyOnDetach() const {
   return true;
+}
+
+void MimeHandlerViewGuest::WillDestroy() {
+  if (is_guest_attached_ && delegate_)
+    delegate_->OnGuestDetached();
 }
 
 WebContents* MimeHandlerViewGuest::OpenURLFromTab(

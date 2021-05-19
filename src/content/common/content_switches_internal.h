@@ -15,7 +15,7 @@ class CommandLine;
 
 namespace content {
 
-bool IsPinchToZoomEnabled();
+CONTENT_EXPORT bool IsPinchToZoomEnabled();
 
 blink::mojom::V8CacheOptions GetV8CacheOptions();
 

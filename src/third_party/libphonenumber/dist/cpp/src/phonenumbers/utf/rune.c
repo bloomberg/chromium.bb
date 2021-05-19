@@ -64,7 +64,7 @@ enum
  * reasons, we return 1 instead of 0.
  */
 int
-charntorune(Rune *rune, const char *str, int length)
+_charntorune(Rune *rune, const char *str, int length)
 {
 	int c, c1, c2, c3;
 	long l;
@@ -167,7 +167,7 @@ badlen:
  * null-terminated strings.
  */
 int
-chartorune(Rune *rune, const char *str)
+_chartorune(Rune *rune, const char *str)
 {
 	int c, c1, c2, c3;
 	long l;
@@ -247,12 +247,12 @@ bad:
 int
 isvalidcharntorune(const char* str, int length, Rune* rune, int* consumed)
 {
-	*consumed = charntorune(rune, str, length);
+	*consumed = _charntorune(rune, str, length);
 	return *rune != Runeerror || *consumed == 3;
 }
 
 int
-runetochar(char *str, const Rune *rune)
+_runetochar(char *str, const Rune *rune)
 {
 	/* Runes are signed, so convert to unsigned for range check. */
 	unsigned long c;
@@ -311,15 +311,15 @@ runetochar(char *str, const Rune *rune)
 }
 
 int
-runelen(Rune rune)
+_runelen(Rune rune)
 {
 	char str[10];
 
-	return runetochar(str, &rune);
+	return _runetochar(str, &rune);
 }
 
 int
-runenlen(const Rune *r, int nrune)
+_runenlen(const Rune *r, int nrune)
 {
 	int nb, c;
 
@@ -339,7 +339,7 @@ runenlen(const Rune *r, int nrune)
 }
 
 int
-fullrune(const char *str, int n)
+_fullrune(const char *str, int n)
 {
 	if (n > 0) {
 		int c = *(uchar*)str;

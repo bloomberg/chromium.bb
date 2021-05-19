@@ -15,3 +15,8 @@ bool RenderViewContextMenuObserver::IsCommandIdChecked(int command_id) {
 bool RenderViewContextMenuObserver::IsCommandIdEnabled(int command_id) {
   return false;
 }
+
+bool RenderViewContextMenuObserver::GetAccelerator(int command_id,
+                                                   ui::Accelerator* accel) {
+  return false;
+}

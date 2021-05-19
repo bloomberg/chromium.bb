@@ -65,7 +65,9 @@ class SharesheetServiceDelegate : public SharesheetController {
   gfx::NativeWindow native_window_;
 
   base::string16 active_action_;
+#if defined(OS_CHROMEOS)
   std::unique_ptr<SharesheetBubbleView> sharesheet_bubble_view_;
+#endif
   SharesheetService* sharesheet_service_;
 };
 

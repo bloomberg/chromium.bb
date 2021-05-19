@@ -39,7 +39,7 @@ class ContentMainDelegate;
 class MojoIpcSupport;
 struct ContentMainParams;
 
-class ContentMainRunnerImpl : public ContentMainRunner {
+class CONTENT_EXPORT ContentMainRunnerImpl : public ContentMainRunner {
  public:
   static std::unique_ptr<ContentMainRunnerImpl> Create();
 
@@ -52,6 +52,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
   int Initialize(const ContentMainParams& params) override;
   int Run(bool start_minimal_browser) override;
   void Shutdown() override;
+
+  void ShutdownOnUIThread();
 
  private:
   int RunBrowser(MainFunctionParams& main_function_params,

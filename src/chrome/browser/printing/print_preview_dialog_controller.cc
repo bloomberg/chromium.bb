@@ -17,6 +17,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/printing/print_view_manager.h"
@@ -410,8 +411,11 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   content::HostZoomMap::Get(preview_dialog->GetSiteInstance())
       ->SetZoomLevelForHostAndScheme(print_url.scheme(), print_url.host(), 0);
   PrintViewManager::CreateForWebContents(preview_dialog);
+
+#if !BUILDFLAG(ENABLE_CEF)
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       preview_dialog);
+#endif
 
   // Add an entry to the map.
   preview_dialog_map_[preview_dialog] = initiator;

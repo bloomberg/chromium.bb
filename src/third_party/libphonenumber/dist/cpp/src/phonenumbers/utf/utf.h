@@ -46,7 +46,7 @@ extern "C" {
 // runetochar copies (encodes) one rune, pointed to by r, to at most
 // UTFmax bytes starting at s and returns the number of bytes generated.
 
-int runetochar(char* s, const Rune* r);
+int _runetochar(char* s, const Rune* r);
 
 
 // chartorune copies (decodes) at most UTFmax bytes starting at s to
@@ -59,7 +59,7 @@ int runetochar(char* s, const Rune* r);
 // Unicode value 0 (i.e., ASCII NULL). A byte value of 0 is illegal
 // anywhere else in a UTF sequence.
 
-int chartorune(Rune* r, const char* s);
+int _chartorune(Rune* r, const char* s);
 
 
 // charntorune is like chartorune, except that it will access at most
@@ -69,7 +69,7 @@ int chartorune(Rune* r, const char* s);
 //
 // Added 2004-09-24 by Wei-Hwa Huang
 
-int charntorune(Rune* r, const char* s, int n);
+int _charntorune(Rune* r, const char* s, int n);
 
 // isvalidcharntorune(str, n, r, consumed)
 // is a convenience function that calls "*consumed = charntorune(r, str, n)"
@@ -80,13 +80,13 @@ int isvalidcharntorune(const char* str, int n, Rune* r, int* consumed);
 
 // runelen returns the number of bytes required to convert r into UTF.
 
-int runelen(Rune r);
+int _runelen(Rune r);
 
 
 // runenlen returns the number of bytes required to convert the n
 // runes pointed to by r into UTF.
 
-int runenlen(const Rune* r, int n);
+int _runenlen(const Rune* r, int n);
 
 
 // fullrune returns 1 if the string s of length n is long enough to be
@@ -95,7 +95,7 @@ int runenlen(const Rune* r, int n);
 // by programs that obtain input one byte at a time and need to know
 // when a full rune has arrived.
 
-int fullrune(const char* s, int n);
+int _fullrune(const char* s, int n);
 
 // The following routines are analogous to the corresponding string
 // routines with "utf" substituted for "str", and "rune" substituted

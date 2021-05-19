@@ -17,6 +17,10 @@ class CommandLine;
 
 namespace crash_keys {
 
+// Returns true if the specified command-line flag should be excluded from
+// crash reporting.
+bool IsBoringChromeSwitch(const std::string& flag);
+
 // Sets the kNumSwitches key and the set of keys named using kSwitchFormat based
 // on the given |command_line|.
 void SetCrashKeysFromCommandLine(const base::CommandLine& command_line);

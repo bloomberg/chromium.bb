@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -22,6 +23,7 @@
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -29,6 +31,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_internals_util.h"
 #include "components/sync/driver/sync_service.h"
@@ -335,7 +338,11 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
   response->emplace(kOsVersionTag, os_version);
 #endif
 
-  PopulateSyncLogs(response.get());
+  if (!cef::IsAlloyRuntimeEnabled()) {
+    // Avoid loading ProfileSyncServiceFactory which depends on a lot of
+    // unnecessary Chrome-specific factories.
+    PopulateSyncLogs(response.get());
+  }
   PopulateExtensionInfoLogs(response.get());
   PopulatePowerApiLogs(response.get());
   PopulateDataReductionProxyLogs(response.get());
@@ -409,6 +416,12 @@ void ChromeInternalLogSource::PopulateExtensionInfoLogs(
   Profile* profile = ProfileManager::GetLastUsedProfile();
   if (!profile)
     return;
+
+  // CEF should avoid accessing ExtensionRegistry when extensions are disabled.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableExtensions)) {
+    return;
+  }
 
   extensions::ExtensionRegistry* extension_registry =
       extensions::ExtensionRegistry::Get(profile);
@@ -517,6 +530,8 @@ void ChromeInternalLogSource::PopulateOnboardingTime(
 #if defined(OS_WIN)
 void ChromeInternalLogSource::PopulateUsbKeyboardDetected(
     SystemLogsResponse* response) {
+  // The below call may result in some DLLs being loaded.
+  base::ScopedAllowBlockingForTesting allow_blocking;
   std::string reason;
   bool result =
       base::win::IsKeyboardPresentOnSlate(ui::GetHiddenWindow(), &reason);

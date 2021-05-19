@@ -101,3 +101,6 @@ LOAD_FLAG(RESTRICTED_PREFETCH, 1 << 15)
 // is considered privileged, and therefore this flag must only be set from a
 // trusted process.
 LOAD_FLAG(CAN_USE_RESTRICTED_PREFETCH, 1 << 16)
+
+// This load will not send any cookies. For CEF usage.
+LOAD_FLAG(DO_NOT_SEND_COOKIES, 1 << 17)

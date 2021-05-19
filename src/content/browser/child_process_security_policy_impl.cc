@@ -1704,6 +1704,16 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
             // DeclarativeApiTest.PersistRules.
             if (actual_process_lock.matches_scheme(url::kDataScheme))
               return true;
+
+            // Allow other schemes that are non-standard, non-local and WebSafe.
+            if (lock_url.is_valid() &&
+                !lock_url.IsStandard() &&
+                !base::Contains(url::GetLocalSchemes(),
+                                lock_url.scheme_piece()) &&
+                base::Contains(schemes_okay_to_request_in_any_process_,
+                               lock_url.scheme())) {
+              return true;
+            }
           }
 
           // TODO(wjmaclean): We should update the ProcessLock comparison API

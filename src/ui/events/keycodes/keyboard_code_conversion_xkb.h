@@ -9,6 +9,7 @@
 
 #include "base/strings/string16.h"
 #include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/keycodes_x_export.h"
 #include "ui/events/keycodes/xkb_keysym.h"
 
 namespace ui {
@@ -24,7 +25,7 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym);
 // base::char16 DeadXKeySymToCombiningCharacter(xkb_keysym_t keysym);
 
 // Return the DomKey determined by the XKB layout result (keysym, character).
-DomKey XKeySymToDomKey(xkb_keysym_t keysym, base::char16 character);
+KEYCODES_X_EXPORT DomKey XKeySymToDomKey(xkb_keysym_t keysym, base::char16 character);
 
 }  // namespace ui
 

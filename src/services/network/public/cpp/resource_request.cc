@@ -206,7 +206,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
 }
 
 bool ResourceRequest::SendsCookies() const {
-  return credentials_mode == network::mojom::CredentialsMode::kInclude;
+  return credentials_mode == network::mojom::CredentialsMode::kInclude &&
+         !(load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
 }
 
 bool ResourceRequest::SavesCookies() const {

@@ -362,7 +362,7 @@ void UnicodeText::push_back(char32 c) {
   if (UniLib::IsValidCodepoint(c)) {
     char buf[UTFmax];
     Rune rune = c;
-    int len = runetochar(buf, &rune);
+    int len = _runetochar(buf, &rune);
     if (UniLib::IsInterchangeValid(buf, len)) {
       repr_.append(buf, len);
     } else {

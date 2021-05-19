@@ -18,6 +18,7 @@
 #include "base/task_runner_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -52,6 +53,11 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/browser/plugins/plugin_service_filter.h"
+#include "cef/libcef/common/extensions/extensions_util.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "components/guest_view/browser/guest_view_base.h"
@@ -99,6 +105,9 @@ bool IsPluginLoadingAccessibleResourceInWebView(
     extensions::ExtensionRegistry* extension_registry,
     int process_id,
     const GURL& resource) {
+  if (!extension_registry)
+    return false;
+
   extensions::WebViewRendererState* renderer_state =
       extensions::WebViewRendererState::GetInstance();
   std::string partition_id;
@@ -127,9 +136,6 @@ bool IsPluginLoadingAccessibleResourceInWebView(
 
 PluginInfoHostImpl::Context::Context(int render_process_id, Profile* profile)
     : render_process_id_(render_process_id),
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-      extension_registry_(extensions::ExtensionRegistry::Get(profile)),
-#endif
       host_content_settings_map_(
           HostContentSettingsMapFactory::GetForProfile(profile)),
       plugin_prefs_(PluginPrefs::GetForProfile(profile)) {
@@ -137,6 +143,13 @@ PluginInfoHostImpl::Context::Context(int render_process_id, Profile* profile)
                                profile->GetPrefs());
   run_all_flash_in_allow_mode_.Init(prefs::kRunAllFlashInAllowMode,
                                     profile->GetPrefs());
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CEF)
+  if (!cef::IsAlloyRuntimeEnabled() || extensions::ExtensionsEnabled())
+#endif
+    extension_registry_ = extensions::ExtensionRegistry::Get(profile);
+#endif
 }
 
 PluginInfoHostImpl::Context::~Context() {}
@@ -218,6 +231,15 @@ void PluginInfoHostImpl::Context::DecidePluginStatus(
     PluginMetadata::SecurityStatus security_status,
     const std::string& plugin_identifier,
     chrome::mojom::PluginStatus* status) const {
+#if BUILDFLAG(ENABLE_CEF)
+  // Don't override the user decision.
+  if (cef::IsAlloyRuntimeEnabled() &&
+      (*status == chrome::mojom::PluginStatus::kBlocked ||
+       *status == chrome::mojom::PluginStatus::kDisabled)) {
+    return;
+  }
+#endif
+
   if (security_status == PluginMetadata::SECURITY_STATUS_FULLY_TRUSTED) {
     *status = chrome::mojom::PluginStatus::kAllowed;
     return;
@@ -334,16 +356,40 @@ bool PluginInfoHostImpl::Context::FindEnabledPlugin(
     return false;
   }
 
+  const bool is_main_frame =
+      main_frame_origin.IsSameOriginWith(url::Origin::Create(url));
+  size_t i = 0;
+
+#if BUILDFLAG(ENABLE_CEF)
+  if (cef::IsAlloyRuntimeEnabled()) {
+    CefPluginServiceFilter* filter = static_cast<CefPluginServiceFilter*>(
+        PluginService::GetInstance()->GetFilter());
+    DCHECK(filter);
+
+    for (; i < matching_plugins.size(); ++i) {
+      if (filter->IsPluginAvailable(render_process_id_, render_frame_id,
+                                    url, is_main_frame, main_frame_origin,
+                                    &matching_plugins[i], status)) {
+        break;
+      }
+    }
+  } else {
+#endif  // BUILDFLAG(ENABLE_CEF)
+
   content::PluginServiceFilter* filter =
       PluginService::GetInstance()->GetFilter();
-  size_t i = 0;
   for (; i < matching_plugins.size(); ++i) {
     if (!filter ||
         filter->IsPluginAvailable(render_process_id_, render_frame_id, url,
-                                  main_frame_origin, &matching_plugins[i])) {
+                                  is_main_frame, main_frame_origin,
+                                  &matching_plugins[i])) {
       break;
     }
   }
+
+#if BUILDFLAG(ENABLE_CEF)
+  }
+#endif
 
   // If we broke out of the loop, we have found an enabled plugin.
   bool enabled = i < matching_plugins.size();

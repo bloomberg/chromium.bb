@@ -771,6 +771,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // unset pass an empty WebURL and WebString.
   virtual void SetActiveURL(const WebURL& url, const WebString& top_url) {}
 
+  // DevTools ------------------------------------------------------------
+
+  virtual void DevToolsAgentAttached() {}
+  virtual void DevToolsAgentDetached() {}
+
  private:
   static void InitializeMainThreadCommon(Platform* platform,
                                          std::unique_ptr<Thread> main_thread);

@@ -385,6 +385,10 @@ class VIEWS_EXPORT WidgetDelegate {
   // Returns true if the title text should be centered.
   bool ShouldCenterWindowTitleText() const;
 
+  // CEF supports override of min/max size values.
+  virtual bool MaybeGetMinimumSize(gfx::Size* size) const { return false; }
+  virtual bool MaybeGetMaximumSize(gfx::Size* size) const { return false; }
+
   bool focus_traverses_out() const { return params_.focus_traverses_out; }
   bool enable_arrow_key_traversal() const {
     return params_.enable_arrow_key_traversal;

@@ -60,10 +60,12 @@ class EyeDropperListener;
 class FileSelectListener;
 class JavaScriptDialogManager;
 class RenderFrameHost;
+class RenderViewHostDelegateView;
 class RenderWidgetHost;
 class SessionStorageNamespace;
 class SiteInstance;
 class WebContentsImpl;
+class WebContentsView;
 struct ContextMenuParams;
 struct DropData;
 struct MediaPlayerWatchTime;
@@ -336,6 +338,14 @@ class CONTENT_EXPORT WebContentsDelegate {
       const GURL& target_url,
       const std::string& partition_id,
       SessionStorageNamespace* session_storage_namespace);
+
+  virtual void GetCustomWebContentsView(
+      WebContents* web_contents,
+      const GURL& target_url,
+      int opener_render_process_id,
+      int opener_render_frame_id,
+      content::WebContentsView** view,
+      content::RenderViewHostDelegateView** delegate_view) {}
 
   // Notifies the delegate about the creation of a new WebContents. This
   // typically happens when popups are created.

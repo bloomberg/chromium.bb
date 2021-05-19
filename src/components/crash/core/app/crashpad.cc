@@ -152,7 +152,8 @@ void InitializeCrashpadImpl(bool initial_client,
   // fallback. Forwarding is turned off for debug-mode builds even for the
   // browser process, because the system's crash reporter can take a very long
   // time to chew on symbols.
-  if (!browser_process || is_debug_build) {
+  if (!browser_process || is_debug_build ||
+      !GetCrashReporterClient()->EnableBrowserCrashForwarding()) {
     crashpad::CrashpadInfo::GetCrashpadInfo()
         ->set_system_crash_reporter_forwarding(crashpad::TriState::kDisabled);
   }

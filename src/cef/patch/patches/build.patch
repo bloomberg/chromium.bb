@@ -1,0 +1,13 @@
+diff --git build/config/compiler/BUILD.gn build/config/compiler/BUILD.gn
+index 2166af00a6cc..5d1ef6ba24be 100644
+--- build/config/compiler/BUILD.gn
++++ build/config/compiler/BUILD.gn
+@@ -1831,8 +1831,6 @@ config("thin_archive") {
+   # archives.
+   if ((is_posix && !is_nacl && (!is_apple || use_lld)) || is_fuchsia) {
+     arflags = [ "-T" ]
+-  } else if (is_win && use_lld) {
+-    arflags = [ "/llvmlibthin" ]
+   }
+ }
+ 

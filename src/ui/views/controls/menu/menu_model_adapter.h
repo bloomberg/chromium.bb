@@ -84,6 +84,20 @@ class VIEWS_EXPORT MenuModelAdapter : public MenuDelegate,
   bool IsCommandEnabled(int id) const override;
   bool IsCommandVisible(int id) const override;
   bool IsItemChecked(int id) const override;
+  MenuItemView* GetSiblingMenu(MenuItemView* menu,
+                               const gfx::Point& screen_point,
+                               MenuAnchorPosition* anchor,
+                               bool* has_mnemonics,
+                               MenuButton** button) override;
+  void OnUnhandledOpenSubmenu(MenuItemView* menu, bool is_rtl) override;
+  void OnUnhandledCloseSubmenu(MenuItemView* menu, bool is_rtl) override;
+  bool GetTextColor(int command_id,
+                    bool is_minor,
+                    bool is_hovered,
+                    SkColor* override_color) const override;
+  bool GetBackgroundColor(int command_id,
+                          bool is_hovered,
+                          SkColor* override_color) const override;
   void WillShowMenu(MenuItemView* menu) override;
   void WillHideMenu(MenuItemView* menu) override;
   void OnMenuClosed(MenuItemView* menu) override;

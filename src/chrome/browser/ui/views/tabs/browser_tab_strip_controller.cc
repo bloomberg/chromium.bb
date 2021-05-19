@@ -571,37 +571,53 @@ gfx::Range BrowserTabStripController::ListTabsInGroup(
 }
 
 bool BrowserTabStripController::IsFrameCondensed() const {
+  if (!GetFrameView())
+    return false;
   return GetFrameView()->IsFrameCondensed();
 }
 
 bool BrowserTabStripController::HasVisibleBackgroundTabShapes() const {
+  if (!GetFrameView())
+    return false;
   return GetFrameView()->HasVisibleBackgroundTabShapes(
       BrowserFrameActiveState::kUseCurrent);
 }
 
 bool BrowserTabStripController::EverHasVisibleBackgroundTabShapes() const {
+  if (!GetFrameView())
+    return false;
   return GetFrameView()->EverHasVisibleBackgroundTabShapes();
 }
 
 bool BrowserTabStripController::ShouldPaintAsActiveFrame() const {
+  if (!GetFrameView())
+    return false;
   return GetFrameView()->ShouldPaintAsActive();
 }
 
 bool BrowserTabStripController::CanDrawStrokes() const {
+  if (!GetFrameView())
+    return false;
   return GetFrameView()->CanDrawStrokes();
 }
 
 SkColor BrowserTabStripController::GetFrameColor(
     BrowserFrameActiveState active_state) const {
+  if (!GetFrameView())
+    return SK_ColorWHITE;
   return GetFrameView()->GetFrameColor(active_state);
 }
 
 SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
+  if (!GetFrameView())
+    return SK_ColorWHITE;
   return GetFrameView()->GetToolbarTopSeparatorColor();
 }
 
 base::Optional<int> BrowserTabStripController::GetCustomBackgroundId(
     BrowserFrameActiveState active_state) const {
+  if (!GetFrameView())
+    return base::nullopt;
   return GetFrameView()->GetCustomBackgroundId(active_state);
 }
 

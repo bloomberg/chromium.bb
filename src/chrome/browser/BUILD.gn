@@ -12,6 +12,7 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
+import("//cef/libcef/features/features.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/downgrade/buildflags.gni")
 import("//chrome/common/features.gni")
@@ -1962,6 +1963,7 @@ static_library("browser") {
     "//build:chromeos_buildflags",
     "//build/config/compiler:compiler_buildflags",
     "//cc",
+    "//cef/libcef/features",
     "//chrome:extra_resources",
     "//chrome:resources",
     "//chrome:strings",
@@ -2500,6 +2502,10 @@ static_library("browser") {
       "performance_monitor/metric_evaluator_helper_posix.cc",
       "performance_monitor/metric_evaluator_helper_posix.h",
     ]
+  }
+
+  if (enable_cef) {
+    configs += [ "//cef/libcef/features:config" ]
   }
 
   if (is_android) {
@@ -5173,7 +5179,7 @@ static_library("browser") {
       ]
     }
 
-    if (use_ozone) {
+    if (use_ozone && !use_x11) {
       sources += [
         "fullscreen_ozone.cc",
         "media/webrtc/window_icon_util_ozone.cc",

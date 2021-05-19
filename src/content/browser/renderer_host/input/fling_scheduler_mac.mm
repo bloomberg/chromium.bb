@@ -26,6 +26,10 @@ ui::Compositor* FlingSchedulerMac::GetCompositor() {
       return nullptr;
   }
 
+  // For CEF this will always be false when running in OSR mode.
+  if (!view->GetNativeView())
+    return nullptr;
+
   RenderWidgetHostViewMac* mac_view =
       static_cast<RenderWidgetHostViewMac*>(view);
   if (mac_view->BrowserCompositor())

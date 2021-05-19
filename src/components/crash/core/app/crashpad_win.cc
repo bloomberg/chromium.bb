@@ -36,8 +36,8 @@ void GetPlatformCrashpadAnnotations(
   std::wstring product_name, version, special_build, channel_name;
   crash_reporter_client->GetProductNameAndVersion(
       exe_file, &product_name, &version, &special_build, &channel_name);
-  (*annotations)["prod"] = base::WideToUTF8(product_name);
-  (*annotations)["ver"] = base::WideToUTF8(version);
+  (*annotations)["product"] = base::WideToUTF8(product_name);
+  (*annotations)["version"] = base::WideToUTF8(version);
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Empty means stable.
   const bool allow_empty_channel = true;
@@ -49,9 +49,11 @@ void GetPlatformCrashpadAnnotations(
   if (!special_build.empty())
     (*annotations)["special"] = base::WideToUTF8(special_build);
 #if defined(ARCH_CPU_X86)
-  (*annotations)["plat"] = std::string("Win32");
+  (*annotations)["platform"] = std::string("win32");
 #elif defined(ARCH_CPU_X86_64)
-  (*annotations)["plat"] = std::string("Win64");
+  (*annotations)["platform"] = std::string("win64");
+#elif defined(ARCH_CPU_ARM64)
+  (*annotations)["platform"] = std::string("winarm64");
 #endif
 }
 
@@ -66,7 +68,9 @@ base::FilePath PlatformCrashpadInitialization(
   base::FilePath metrics_path;  // Only valid in the browser process.
 
   const char kPipeNameVar[] = "CHROME_CRASHPAD_PIPE_NAME";
+#if defined(GOOGLE_CHROME_BUILD)
   const char kServerUrlVar[] = "CHROME_CRASHPAD_SERVER_URL";
+#endif
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
@@ -87,9 +91,11 @@ base::FilePath PlatformCrashpadInitialization(
 
     std::string url = crash_reporter_client->GetUploadUrl();
 
+#if defined(GOOGLE_CHROME_BUILD)
     // Allow the crash server to be overridden for testing. If the variable
     // isn't present in the environment then the default URL will remain.
     env->GetVar(kServerUrlVar, &url);
+#endif
 
     base::FilePath exe_file(exe_path);
     if (exe_file.empty()) {
@@ -100,13 +106,14 @@ base::FilePath PlatformCrashpadInitialization(
       exe_file = base::FilePath(exe_file_path);
     }
 
-    // If the handler is embedded in the binary (e.g. chrome, setup), we
-    // reinvoke it with --type=crashpad-handler. Otherwise, we use the
-    // standalone crashpad_handler.exe (for tests, etc.).
     std::vector<std::string> start_arguments(initial_arguments);
+
+    // Always add --type=crashpad-handler because the value is expected by
+    // CefExecuteProcess.
+    start_arguments.push_back(
+        std::string("--type=") + switches::kCrashpadHandler);
+
     if (embedded_handler) {
-      start_arguments.push_back(std::string("--type=") +
-                                switches::kCrashpadHandler);
       if (!user_data_dir.empty()) {
         start_arguments.push_back(std::string("--user-data-dir=") +
                                   user_data_dir);
@@ -117,8 +124,11 @@ base::FilePath PlatformCrashpadInitialization(
       start_arguments.push_back("/prefetch:7");
     } else {
       base::FilePath exe_dir = exe_file.DirName();
-      exe_file = exe_dir.Append(FILE_PATH_LITERAL("crashpad_handler.exe"));
+      exe_file = base::FilePath(
+          crash_reporter_client->GetCrashExternalHandler(exe_dir.value()));
     }
+
+    crash_reporter_client->GetCrashOptionalArguments(&start_arguments);
 
     std::vector<std::string> arguments(start_arguments);
 

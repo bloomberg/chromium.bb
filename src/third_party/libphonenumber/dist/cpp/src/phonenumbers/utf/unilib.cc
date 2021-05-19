@@ -50,7 +50,7 @@ int SpanInterchangeValid(const char* begin, int byte_length) {
   const char* p = begin;
   const char* end = begin + byte_length;
   while (p < end) {
-    int bytes_consumed = charntorune(&rune, p, end - p);
+    int bytes_consumed = _charntorune(&rune, p, end - p);
     // We want to accept Runeerror == U+FFFD as a valid char, but it is used
     // by chartorune to indicate error. Luckily, the real codepoint is size 3
     // while errors return bytes_consumed <= 1.

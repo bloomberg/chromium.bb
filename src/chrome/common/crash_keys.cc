@@ -4,6 +4,8 @@
 
 #include "chrome/common/crash_keys.h"
 
+#include <iterator>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
@@ -28,7 +30,7 @@
 namespace crash_keys {
 
 // Return true if we DON'T want to upload this flag to the crash server.
-static bool IsBoringSwitch(const std::string& flag) {
+bool IsBoringChromeSwitch(const std::string& flag) {
   static const char* const kIgnoreSwitches[] = {
     switches::kEnableLogging,
     switches::kFlagSwitchesBegin,
@@ -81,7 +83,7 @@ static bool IsBoringSwitch(const std::string& flag) {
 }
 
 void SetCrashKeysFromCommandLine(const base::CommandLine& command_line) {
-  return SetSwitchesFromCommandLine(command_line, &IsBoringSwitch);
+  return SetSwitchesFromCommandLine(command_line, &IsBoringChromeSwitch);
 }
 
 void SetActiveExtensions(const std::set<std::string>& extensions) {

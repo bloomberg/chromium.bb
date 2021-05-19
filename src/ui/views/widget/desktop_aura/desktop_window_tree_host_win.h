@@ -292,6 +292,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // True if the window should have the frame removed.
   bool remove_standard_frame_;
 
+  // True if the widget has a external parent view/window outside of the
+  // Chromium-controlled view/window hierarchy.
+  bool has_external_parent_ = false;
+
   // Owned by TooltipController, but we need to forward events to it so we keep
   // a reference.
   corewm::TooltipWin* tooltip_;

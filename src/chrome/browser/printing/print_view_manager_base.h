@@ -122,9 +122,6 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Manages the low-level talk to the printer.
   scoped_refptr<PrintJob> print_job_;
 
- private:
-  friend class TestPrintViewManager;
-
   // content::NotificationObserver implementation.
   void Observe(int type,
                const content::NotificationSource& source,

@@ -26,6 +26,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
@@ -54,6 +55,10 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "ui/base/layout.h"
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/common/extensions/extensions_util.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "base/scoped_observer.h"
@@ -275,11 +280,19 @@ void ThemeService::Init() {
   // OnExtensionServiceReady. Otherwise, the ThemeObserver won't be
   // constructed in time to observe the corresponding events.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CEF)
+  const bool extensions_disabled = cef::IsAlloyRuntimeEnabled() &&
+                                   !extensions::ExtensionsEnabled();
+#else
+  const bool extensions_disabled = false;
+#endif
+  if (!extensions_disabled) {
   theme_observer_ = std::make_unique<ThemeObserver>(this);
 
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::BindOnce(&ThemeService::OnExtensionServiceReady,
                                 weak_ptr_factory_.GetWeakPtr()));
+  }
 #endif
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
 

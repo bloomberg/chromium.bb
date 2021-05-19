@@ -1,0 +1,111 @@
+diff --git content/browser/devtools/devtools_instrumentation.h content/browser/devtools/devtools_instrumentation.h
+index 572f521ae88c..995d17a90f0d 100644
+--- content/browser/devtools/devtools_instrumentation.h
++++ content/browser/devtools/devtools_instrumentation.h
+@@ -12,6 +12,7 @@
+ #include <vector>
+ 
+ #include "base/optional.h"
++#include "content/common/content_export.h"
+ #include "content/common/navigation_params.mojom.h"
+ #include "content/public/browser/certificate_request_result_type.h"
+ #include "mojo/public/cpp/bindings/pending_receiver.h"
+@@ -76,7 +77,7 @@ bool ApplyUserAgentMetadataOverrides(
+     FrameTreeNode* frame_tree_node,
+     base::Optional<blink::UserAgentMetadata>* override_out);
+ 
+-bool WillCreateURLLoaderFactory(
++CONTENT_EXPORT bool WillCreateURLLoaderFactory(
+     RenderFrameHostImpl* rfh,
+     bool is_navigation,
+     bool is_download,
+diff --git content/browser/renderer_host/input/synthetic_gesture_target_base.h content/browser/renderer_host/input/synthetic_gesture_target_base.h
+index eef661b3e095..6c0dacfa4bc3 100644
+--- content/browser/renderer_host/input/synthetic_gesture_target_base.h
++++ content/browser/renderer_host/input/synthetic_gesture_target_base.h
+@@ -9,6 +9,7 @@
+ #include "base/macros.h"
+ #include "base/time/time.h"
+ #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
++#include "content/common/content_export.h"
+ #include "ui/gfx/geometry/point_f.h"
+ 
+ namespace ui {
+@@ -26,7 +27,8 @@ namespace content {
+ 
+ class RenderWidgetHostImpl;
+ 
+-class SyntheticGestureTargetBase : public SyntheticGestureTarget {
++class CONTENT_EXPORT SyntheticGestureTargetBase :
++    public SyntheticGestureTarget {
+  public:
+   explicit SyntheticGestureTargetBase(RenderWidgetHostImpl* host);
+   ~SyntheticGestureTargetBase() override;
+diff --git content/common/content_switches_internal.h content/common/content_switches_internal.h
+index 57072bf1263a..0a93446e4d21 100644
+--- content/common/content_switches_internal.h
++++ content/common/content_switches_internal.h
+@@ -15,7 +15,7 @@ class CommandLine;
+ 
+ namespace content {
+ 
+-bool IsPinchToZoomEnabled();
++CONTENT_EXPORT bool IsPinchToZoomEnabled();
+ 
+ blink::mojom::V8CacheOptions GetV8CacheOptions();
+ 
+diff --git third_party/blink/renderer/controller/BUILD.gn third_party/blink/renderer/controller/BUILD.gn
+index 8ca399274164..d241798f4f28 100644
+--- third_party/blink/renderer/controller/BUILD.gn
++++ third_party/blink/renderer/controller/BUILD.gn
+@@ -29,6 +29,7 @@ component("controller") {
+   configs += [
+     "//build/config/compiler:noshadowing",
+     "//build/config/compiler:wexit_time_destructors",
++    "//cef/libcef/features:config",
+     "//third_party/blink/renderer:config",
+     "//third_party/blink/renderer:inside_blink",
+     "//third_party/blink/renderer:non_test_config",
+@@ -53,6 +54,8 @@ component("controller") {
+     "performance_manager/v8_detailed_memory_reporter_impl.h",
+     "performance_manager/v8_worker_memory_reporter.cc",
+     "performance_manager/v8_worker_memory_reporter.h",
++    "//cef/libcef/renderer/blink_glue.cc",
++    "//cef/libcef/renderer/blink_glue.h",
+   ]
+ 
+   if (is_linux || is_chromeos) {
+diff --git ui/events/keycodes/BUILD.gn ui/events/keycodes/BUILD.gn
+index 86bbf620ff0d..6c06b461c6da 100644
+--- ui/events/keycodes/BUILD.gn
++++ ui/events/keycodes/BUILD.gn
+@@ -19,6 +19,8 @@ source_set("xkb") {
+     "//ui/gfx/x/keysyms",
+   ]
+ 
++  defines = [ "KEYCODES_X_IMPLEMENTATION" ]
++
+   deps = [
+     "//base",
+     "//build:chromeos_buildflags",
+diff --git ui/events/keycodes/keyboard_code_conversion_xkb.h ui/events/keycodes/keyboard_code_conversion_xkb.h
+index a1f9b78704fb..c7d3558251d9 100644
+--- ui/events/keycodes/keyboard_code_conversion_xkb.h
++++ ui/events/keycodes/keyboard_code_conversion_xkb.h
+@@ -9,6 +9,7 @@
+ 
+ #include "base/strings/string16.h"
+ #include "ui/events/keycodes/dom/dom_key.h"
++#include "ui/events/keycodes/keycodes_x_export.h"
+ #include "ui/events/keycodes/xkb_keysym.h"
+ 
+ namespace ui {
+@@ -24,7 +25,7 @@ DomKey NonPrintableXKeySymToDomKey(xkb_keysym_t keysym);
+ // base::char16 DeadXKeySymToCombiningCharacter(xkb_keysym_t keysym);
+ 
+ // Return the DomKey determined by the XKB layout result (keysym, character).
+-DomKey XKeySymToDomKey(xkb_keysym_t keysym, base::char16 character);
++KEYCODES_X_EXPORT DomKey XKeySymToDomKey(xkb_keysym_t keysym, base::char16 character);
+ 
+ }  // namespace ui
+ 

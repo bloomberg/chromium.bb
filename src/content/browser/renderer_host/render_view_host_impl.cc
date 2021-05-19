@@ -598,6 +598,8 @@ bool RenderViewHostImpl::IsRenderViewLive() {
 }
 
 void RenderViewHostImpl::SetBackgroundOpaque(bool opaque) {
+  if (!GetWidget()->GetAssociatedFrameWidget().is_bound())
+    return;
   GetWidget()->GetAssociatedFrameWidget()->SetBackgroundOpaque(opaque);
 }
 

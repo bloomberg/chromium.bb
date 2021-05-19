@@ -414,8 +414,13 @@ void VizProcessTransportFactory::OnEstablishedGpuChannel(
   compositor_data.display_private.reset();
   root_params->display_private =
       compositor_data.display_private.BindNewEndpointAndPassReceiver();
-  compositor_data.display_client =
-      std::make_unique<HostDisplayClient>(compositor);
+  if (compositor->delegate()) {
+    compositor_data.display_client =
+        compositor->delegate()->CreateHostDisplayClient();
+  } else {
+    compositor_data.display_client =
+        std::make_unique<HostDisplayClient>(compositor);
+  }
   root_params->display_client =
       compositor_data.display_client->GetBoundRemote(resize_task_runner_);
 

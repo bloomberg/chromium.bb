@@ -49,10 +49,25 @@ enum LabelPropertyKey {
   kLabelLineHeight,
   kLabelObscured,
   kLabelAllowCharacterBreak,
+  kLabelDrawStringsFlags,
 };
 
 bool IsOpaque(SkColor color) {
   return SkColorGetA(color) == SK_AlphaOPAQUE;
+}
+
+// Strips accelerator character prefixes in |text| if needed, based on |flags|.
+// Returns a range in |text| to underline or Range::InvalidRange() if
+// underlining is not needed.
+gfx::Range StripAcceleratorChars(int flags, base::string16* text) {
+  if (flags & (gfx::Canvas::SHOW_PREFIX | gfx::Canvas::HIDE_PREFIX)) {
+    int char_pos = -1;
+    int char_span = 0;
+    *text = gfx::LocateAndRemoveAcceleratorChar(*text, &char_pos, &char_span);
+    if ((flags & gfx::Canvas::SHOW_PREFIX) && char_pos != -1)
+      return gfx::Range(char_pos, char_pos + char_span);
+  }
+  return gfx::Range::InvalidRange();
 }
 
 }  // namespace
@@ -413,6 +428,15 @@ base::string16 Label::GetTooltipText() const {
   return tooltip_text_;
 }
 
+void Label::SetDrawStringsFlags(int flags) {
+  if (draw_strings_flags_ == flags)
+    return;
+  draw_strings_flags_ = flags;
+  full_text_->SetDrawStringsFlags(draw_strings_flags_);
+  OnPropertyChanged(&full_text_ + kLabelDrawStringsFlags,
+                    kPropertyEffectsPreferredSizeChanged);
+}
+
 void Label::SetTooltipText(const base::string16& tooltip_text) {
   DCHECK(handles_tooltips_);
   if (tooltip_text_ == tooltip_text)
@@ -704,6 +728,16 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
     render_text->set_focused(HasFocus());
     if (stored_selection_range_.IsValid())
       render_text->SelectRange(stored_selection_range_);
+  }
+
+  if (draw_strings_flags_ != 0) {
+    base::string16 text_str = GetText();
+    gfx::Range range = StripAcceleratorChars(draw_strings_flags_, &text_str);
+    render_text->SetText(text_str);
+    if (range.IsValid()) {
+      render_text->SetDisplayRect(bounds());
+      render_text->ApplyStyle(gfx::TEXT_STYLE_UNDERLINE, true, range);
+    }
   }
 
   return render_text;

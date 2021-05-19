@@ -1026,6 +1026,15 @@ void RendererBlinkPlatformImpl::SetActiveURL(const blink::WebURL& url,
 
 //------------------------------------------------------------------------------
 
+void RendererBlinkPlatformImpl::DevToolsAgentAttached() {
+  GetContentClient()->renderer()->DevToolsAgentAttached();
+}
+void RendererBlinkPlatformImpl::DevToolsAgentDetached() {
+  GetContentClient()->renderer()->DevToolsAgentDetached();
+}
+
+//------------------------------------------------------------------------------
+
 blink::mojom::CodeCacheHost& RendererBlinkPlatformImpl::GetCodeCacheHost() {
   if (!code_cache_host_) {
     code_cache_host_ = mojo::SharedRemote<blink::mojom::CodeCacheHost>(

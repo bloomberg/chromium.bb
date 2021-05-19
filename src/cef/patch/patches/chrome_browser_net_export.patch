@@ -1,0 +1,160 @@
+diff --git chrome/browser/ui/BUILD.gn chrome/browser/ui/BUILD.gn
+index 4dbdfc0c32c6..2ee57c2baf8d 100644
+--- chrome/browser/ui/BUILD.gn
++++ chrome/browser/ui/BUILD.gn
+@@ -12,6 +12,7 @@ import("//build/config/features.gni")
+ import("//build/config/linux/gtk/gtk.gni")
+ import("//build/config/ozone.gni")
+ import("//build/config/ui.gni")
++import("//cef/libcef/features/features.gni")
+ import("//chrome/browser/buildflags.gni")
+ import("//chrome/common/features.gni")
+ import("//chromeos/assistant/assistant.gni")
+@@ -334,6 +335,10 @@ static_library("ui") {
+     "//build/config/compiler:wexit_time_destructors",
+   ]
+ 
++  if (enable_cef) {
++    configs += [ "//cef/libcef/features:config" ]
++  }
++
+   # Since browser and browser_ui actually depend on each other,
+   # we must omit the dependency from browser_ui to browser.
+   # However, this means browser_ui and browser should more or less
+@@ -357,6 +362,7 @@ static_library("ui") {
+     "//build:branding_buildflags",
+     "//build:chromeos_buildflags",
+     "//cc/paint",
++    "//cef/libcef/features",
+     "//chrome:extra_resources",
+     "//chrome:resources",
+     "//chrome:strings",
+@@ -1589,6 +1595,7 @@ static_library("ui") {
+       "//components/page_load_metrics/browser",
+       "//components/performance_manager:site_data_proto",
+       "//components/printing/browser",
++      "//components/printing/common:mojo_interfaces",
+       "//components/profile_metrics",
+       "//components/reading_list/features:flags",
+       "//components/safe_browsing/core/common:safe_browsing_policy_handler",
+@@ -3400,7 +3407,9 @@ static_library("ui") {
+           "views/frame/browser_desktop_window_tree_host_platform.h",
+         ]
+       }
+-      sources += [ "views/frame/native_browser_frame_factory_ozone.cc" ]
++      if (!use_x11) {
++        sources += [ "views/frame/native_browser_frame_factory_ozone.cc" ]
++      }
+     }
+     if (is_linux || is_chromeos_lacros) {
+       sources += [
+diff --git chrome/browser/ui/webui/net_export_ui.cc chrome/browser/ui/webui/net_export_ui.cc
+index a23323638a17..7bbfb9964415 100644
+--- chrome/browser/ui/webui/net_export_ui.cc
++++ chrome/browser/ui/webui/net_export_ui.cc
+@@ -21,6 +21,7 @@
+ #include "base/strings/string_util.h"
+ #include "base/strings/utf_string_conversions.h"
+ #include "base/values.h"
++#include "cef/libcef/features/runtime.h"
+ #include "chrome/browser/browser_process.h"
+ #include "chrome/browser/download/download_prefs.h"
+ #include "chrome/browser/net/net_export_helper.h"
+@@ -44,6 +45,10 @@
+ #include "net/log/net_log_capture_mode.h"
+ #include "ui/shell_dialogs/select_file_dialog.h"
+ 
++#if BUILDFLAG(ENABLE_CEF)
++#include "cef/libcef/browser/alloy/alloy_browser_host_impl.h"
++#endif
++
+ #if defined(OS_ANDROID)
+ #include "chrome/browser/android/intent_helper.h"
+ #endif
+@@ -136,6 +141,13 @@ class NetExportMessageHandler
+   // NetLog file.
+   void ShowSelectFileDialog(const base::FilePath& default_path);
+ 
++#if BUILDFLAG(ENABLE_CEF)
++  void ShowCefSaveAsDialog(content::WebContents* web_contents);
++  void SaveAsDialogDismissed(
++      int selected_accept_filter,
++      const std::vector<base::FilePath>& file_paths);
++#endif
++
+   // Cached pointer to SystemNetworkContextManager's NetExportFileWriter.
+   net_log::NetExportFileWriter* file_writer_;
+ 
+@@ -230,6 +242,13 @@ void NetExportMessageHandler::OnStartNetLog(const base::ListValue* list) {
+   if (UsingMobileUI()) {
+     StartNetLog(base::FilePath());
+   } else {
++#if BUILDFLAG(ENABLE_CEF)
++    if (cef::IsAlloyRuntimeEnabled()) {
++      ShowCefSaveAsDialog(web_ui()->GetWebContents());
++      return;
++    }
++#endif
++
+     base::FilePath initial_dir = last_save_dir.Pointer()->empty() ?
+         DownloadPrefs::FromBrowserContext(
+             web_ui()->GetWebContents()->GetBrowserContext())->DownloadPath() :
+@@ -246,6 +265,7 @@ void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
+   std::unique_ptr<base::DictionaryValue> ui_thread_polled_data(
+       new base::DictionaryValue());
+ 
++  if (!cef::IsAlloyRuntimeEnabled()) {
+   Profile* profile = Profile::FromWebUI(web_ui());
+   SetIfNotNull(ui_thread_polled_data.get(), "prerenderInfo",
+                chrome_browser_net::GetPrerenderInfo(profile));
+@@ -255,6 +275,7 @@ void NetExportMessageHandler::OnStopNetLog(const base::ListValue* list) {
+   SetIfNotNull(ui_thread_polled_data.get(), "serviceProviders",
+                chrome_browser_net::GetWindowsServiceProviders());
+ #endif
++  }
+ 
+   file_writer_->StopNetLog(std::move(ui_thread_polled_data));
+ }
+@@ -372,6 +393,42 @@ void NetExportMessageHandler::ShowSelectFileDialog(
+       &file_type_info, 0, base::FilePath::StringType(), owning_window, nullptr);
+ }
+ 
++#if BUILDFLAG(ENABLE_CEF)
++
++void NetExportMessageHandler::ShowCefSaveAsDialog(
++    content::WebContents* web_contents) {
++  CefRefPtr<AlloyBrowserHostImpl> cef_browser =
++      AlloyBrowserHostImpl::GetBrowserForContents(web_contents);
++  if (!cef_browser)
++    return;
++
++  base::FilePath initial_dir;
++  if (!last_save_dir.Pointer()->empty())
++    initial_dir = *last_save_dir.Pointer();
++  base::FilePath initial_path =
++      initial_dir.Append(FILE_PATH_LITERAL("chrome-net-export-log.json"));
++
++  CefFileDialogRunner::FileChooserParams params;
++  params.mode = blink::mojom::FileChooserParams::Mode::kSave;
++  params.default_file_name = initial_path;
++  params.accept_types.push_back(CefString(initial_path.Extension()));
++
++  cef_browser->RunFileChooser(
++      params, base::Bind(&NetExportMessageHandler::SaveAsDialogDismissed,
++                         weak_ptr_factory_.GetWeakPtr()));
++}
++
++void NetExportMessageHandler::SaveAsDialogDismissed(
++    int selected_accept_filter,
++    const std::vector<base::FilePath>& file_paths) {
++  if (file_paths.size() == 1) {
++    *last_save_dir.Pointer() = file_paths[0].DirName();
++    StartNetLog(file_paths[0]);
++  }
++}
++
++#endif  // BUILDFLAG(ENABLE_CEF)
++
+ }  // namespace
+ 
+ NetExportUI::NetExportUI(content::WebUI* web_ui) : WebUIController(web_ui) {

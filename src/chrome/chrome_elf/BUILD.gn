@@ -7,6 +7,7 @@
 
 import("//build/config/compiler/compiler.gni")
 import("//build/config/win/manifest.gni")
+import("//cef/libcef/features/features.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
 
@@ -104,9 +105,6 @@ source_set("constants") {
 
 static_library("crash") {
   sources = [
-    "../app/chrome_crash_reporter_client_win.cc",
-    "../app/chrome_crash_reporter_client_win.h",
-    "../common/chrome_result_codes.h",
     "crash/crash_helper.cc",
     "crash/crash_helper.h",
   ]
@@ -114,6 +112,7 @@ static_library("crash") {
     ":hook_util",
     "//base",  # This needs to go.  DEP of app, crash_keys, client.
     "//base:base_static",  # pe_image
+    "//cef/libcef/features",
     "//chrome/install_static:install_static_util",
     "//components/crash/core/app",
     "//components/crash/core/common",  # crash_keys
@@ -121,6 +120,17 @@ static_library("crash") {
     "//content/public/common:result_codes",
     "//third_party/crashpad/crashpad/client",  # DumpWithoutCrash
   ]
+
+  if (enable_cef) {
+    deps += [ "//cef:chrome_elf_set" ]
+    include_dirs = [ "//cef" ]
+  } else {
+    sources += [
+      "//chrome/app/chrome_crash_reporter_client_win.cc",
+      "//chrome/app/chrome_crash_reporter_client_win.h",
+      "//chrome/common/chrome_result_codes.h",
+    ]
+  }
 }
 
 source_set("dll_hash") {

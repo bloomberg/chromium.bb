@@ -127,7 +127,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   static HashSet<WebViewImpl*>& AllInstances();
   // Returns true if popup menus should be rendered by the browser, false if
   // they should be rendered by WebKit (which is the default).
-  static bool UseExternalPopupMenus();
+  void SetUseExternalPopupMenusThisInstance(bool) override;
+  bool UseExternalPopupMenus() const;
 
   // Returns whether frames under this WebView are backed by a compositor.
   bool does_composite() const { return does_composite_; }
@@ -725,6 +726,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   IntPoint fake_page_scale_animation_target_position_;
   float fake_page_scale_animation_page_scale_factor_ = 0.f;
   bool fake_page_scale_animation_use_anchor_ = false;
+
+  bool should_use_external_popup_menus_;
 
   float compositor_device_scale_factor_override_ = 0.f;
   TransformationMatrix device_emulation_transform_;

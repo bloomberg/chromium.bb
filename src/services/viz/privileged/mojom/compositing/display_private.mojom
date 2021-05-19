@@ -85,12 +85,14 @@ interface DisplayPrivate {
 };
 
 interface DisplayClient {
+  [Sync]
+  UseProxyOutputDevice() => (bool success);
+
   [EnableIf=is_mac]
   OnDisplayReceivedCALayerParams(gfx.mojom.CALayerParams ca_layer_params);
 
   // Creates a LayeredWindowUpdater implementation to draw into a layered
   // window.
-  [EnableIf=is_win]
   CreateLayeredWindowUpdater(pending_receiver<LayeredWindowUpdater> receiver);
 
   // Notifies that a swap has occurred and provides information about the pixel

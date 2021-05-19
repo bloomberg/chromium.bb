@@ -3119,10 +3119,13 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   } else if (event.type() == ui::ET_MOUSEWHEEL) {
     ui::MouseWheelEvent mouse_wheel_event(msg);
     // Reroute the mouse wheel to the window under the pointer if applicable.
-    return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
-            delegate_->HandleMouseEvent(&mouse_wheel_event))
-               ? 0
-               : 1;
+    if (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
+        delegate_->HandleMouseEvent(&mouse_wheel_event)) {
+      SetMsgHandled(TRUE);
+      return 0;
+    } else {
+      return 1;
+    }
   }
 
   // Suppress |ET_MOUSE_MOVED| and |ET_MOUSE_DRAGGED| events from WM_MOUSE*

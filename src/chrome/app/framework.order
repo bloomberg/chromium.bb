@@ -28,3 +28,8 @@ _ChromeMain
 _lprofDirMode
 ___llvm_profile_filename
 ___llvm_profile_raw_version
+
+# Symbols exported for CEF.
+_OBJC_CLASS_$_UnderlayOpenGLHostingWindow
+_OBJC_METACLASS_$_UnderlayOpenGLHostingWindow
+

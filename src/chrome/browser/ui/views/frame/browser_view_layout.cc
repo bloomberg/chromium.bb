@@ -402,6 +402,12 @@ int BrowserViewLayout::LayoutWebUITabStrip(int top) {
 
 int BrowserViewLayout::LayoutToolbar(int top) {
   TRACE_EVENT0("ui", "BrowserViewLayout::LayoutToolbar");
+  if (toolbar_->parent() && toolbar_->parent()->GetLayoutManager() != this &&
+      toolbar_->parent()->GetLayoutManager() != nullptr) {
+    // CEF may take ownership of the toolbar. Early exit to avoid the DCHECK
+    // in LayoutManager::SetViewVisibility().
+    return top;
+  }
   int browser_view_width = vertical_layout_rect_.width();
   bool toolbar_visible = delegate_->IsToolbarVisible();
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;

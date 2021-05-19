@@ -28,6 +28,7 @@ bool FakePluginService::GetPluginInfoArray(
 bool FakePluginService::GetPluginInfo(int render_process_id,
                                       int render_frame_id,
                                       const GURL& url,
+                                      bool is_main_frame,
                                       const url::Origin& main_frame_origin,
                                       const std::string& mime_type,
                                       bool allow_wildcard,

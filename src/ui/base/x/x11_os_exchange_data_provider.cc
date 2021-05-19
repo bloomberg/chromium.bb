@@ -122,7 +122,8 @@ void XOSExchangeDataProvider::SetURL(const GURL& url,
     format_map_.Insert(x11::GetAtom(kMimeTypeMozillaURL), mem);
 
     // Set a string fallback as well.
-    SetString(spec);
+    if (!HasString())
+      SetString(spec);
 
     // Return early if this drag already contains file contents (this implies
     // that file contents must be populated before URLs). Nautilus (and possibly
