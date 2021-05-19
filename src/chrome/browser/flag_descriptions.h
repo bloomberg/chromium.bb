@@ -763,6 +763,9 @@ extern const char kGlobalMediaControlsModernUIDescription[];
 extern const char kGlobalMediaControlsOverlayControlsName[];
 extern const char kGlobalMediaControlsOverlayControlsDescription[];
 
+extern const char kGoogleLensSdkIntentName[];
+extern const char kGoogleLensSdkIntentDescription[];
+
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 
@@ -1374,6 +1377,9 @@ extern const char kTabEngagementReportingDescription[];
 
 extern const char kTabGridLayoutAndroidName[];
 extern const char kTabGridLayoutAndroidDescription[];
+
+extern const char kCommerceMerchantViewerAndroidName[];
+extern const char kCommerceMerchantViewerAndroidDescription[];
 
 extern const char kTabGroupsAndroidName[];
 extern const char kTabGroupsAndroidDescription[];

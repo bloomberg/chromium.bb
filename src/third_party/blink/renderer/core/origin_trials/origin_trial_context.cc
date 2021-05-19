@@ -6,6 +6,7 @@
 
 #include <ostream>
 
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/features.h"
@@ -381,12 +382,22 @@ void OriginTrialContext::AddForceEnabledTrials(
 }
 
 bool OriginTrialContext::CanEnableTrialFromName(const StringView& trial_name) {
+  if (trial_name == "HandwritingRecognition") {
+    return base::FeatureList::IsEnabled(
+               features::kHandwritingRecognitionWebPlatformApi) &&
+           base::FeatureList::IsEnabled(
+               features::kHandwritingRecognitionWebPlatformApiFinch);
+  }
   if (trial_name == "Portals" &&
       !base::FeatureList::IsEnabled(features::kPortals)) {
     return false;
   }
   if (trial_name == "AppCache" &&
       !base::FeatureList::IsEnabled(features::kAppCache)) {
+    return false;
+  }
+  if (trial_name == "FledgeInterestGroupAPI" &&
+      !base::FeatureList::IsEnabled(features::kFledgeInterestGroups)) {
     return false;
   }
   if (trial_name == "TrustTokens" &&

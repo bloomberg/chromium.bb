@@ -8,7 +8,7 @@ import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_t
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
-import {CloudPrintInterface, CloudPrintInterfaceEventType, CloudPrintInterfacePrinterFailedDetail, CloudPrintInterfaceProcessInviteDetail, CloudPrintInterfaceSearchDoneDetail} from '../cloud_print_interface.js';
+import {CloudPrintInterface, CloudPrintInterfaceEventType, CloudPrintInterfacePrinterFailedDetail, CloudPrintInterfaceSearchDoneDetail} from '../cloud_print_interface.js';
 import {Metrics, MetricsContext} from '../metrics.js';
 import {CapabilitiesResponse, NativeLayer, NativeLayerImpl} from '../native_layer.js';
 // <if expr="chromeos">
@@ -217,12 +217,6 @@ export class DestinationStore extends EventTarget {
     /** @private {boolean} */
     this.initialDestinationSelected_ = false;
 
-    /** @private {boolean} */
-    this.initialized_ = false;
-
-    /** @private {boolean} */
-    this.readyToReloadCookieDestinations_ = false;
-
     /**
      * Maps user account to the list of origins for which destinations are
      * already loaded.
@@ -401,26 +395,20 @@ export class DestinationStore extends EventTarget {
     // destinationsInserted_ may never be called.
     if (this.typesToSearch_.size === 0) {
       this.tryToSelectInitialDestination_();
-      this.initialized_ = true;
-      if (this.readyToReloadCookieDestinations_) {
-        this.reloadUserCookieBasedDestinations(this.activeUser_);
-      }
       return;
     }
 
     // Load all possible printers.
     for (const printerType of this.typesToSearch_) {
       if (printerType === PrinterType.CLOUD_PRINTER) {
-        this.startLoadCloudDestinations();
+        // Accounts are not known on startup. Send an initial search query to
+        // get tokens and user accounts.
+        this.cloudPrintInterface_.search();
       } else if (
           printerType !== PrinterType.PRIVET_PRINTER ||
           loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
         this.startLoadDestinations_(printerType);
       }
-    }
-    this.initialized_ = true;
-    if (this.readyToReloadCookieDestinations_) {
-      this.reloadUserCookieBasedDestinations(this.activeUser_);
     }
   }
 
@@ -669,10 +657,6 @@ export class DestinationStore extends EventTarget {
         this.cloudPrintInterface_.getEventTarget(),
         CloudPrintInterfaceEventType.PRINTER_FAILED,
         this.onCloudPrintPrinterFailed_.bind(this));
-    this.tracker_.add(
-        this.cloudPrintInterface_.getEventTarget(),
-        CloudPrintInterfaceEventType.PROCESS_INVITE_DONE,
-        this.onCloudPrintProcessInviteDone_.bind(this));
   }
 
   /** @param {string} key Key identifying the destination to select */
@@ -834,11 +818,6 @@ export class DestinationStore extends EventTarget {
    * @param {string} account
    */
   reloadUserCookieBasedDestinations(account) {
-    if (!this.initialized_) {
-      this.readyToReloadCookieDestinations_ = true;
-      return;
-    }
-
     const origins = this.loadedCloudOrigins_.get(account) || [];
     if (origins.includes(DestinationOrigin.COOKIES)) {
       this.dispatchEvent(
@@ -1164,13 +1143,15 @@ export class DestinationStore extends EventTarget {
     const payload = event.detail;
     const searchingCloudPrintersDone =
         this.typesToSearch_.has(PrinterType.CLOUD_PRINTER) &&
-        !this.cloudPrintInterface_.isCloudDestinationSearchInProgress();
+        !this.cloudPrintInterface_.isCloudDestinationSearchInProgress() &&
+        !!payload.user;
     if (searchingCloudPrintersDone) {
       this.typesToSearch_.delete(PrinterType.CLOUD_PRINTER);
     }
     if (payload.printers && payload.printers.length > 0) {
       this.insertDestinations_(payload.printers);
-    } else if (searchingCloudPrintersDone) {
+    }
+    if (searchingCloudPrintersDone) {
       this.tryToSelectInitialDestination_();
     }
     if (payload.searchDone) {
@@ -1213,19 +1194,6 @@ export class DestinationStore extends EventTarget {
       this.dispatchEvent(new CustomEvent(
           DestinationStore.EventType.ERROR,
           {detail: DestinationErrorType.INVALID}));
-    }
-  }
-
-  /**
-   * Called when printer sharing invitation was processed successfully.
-   * @param {!CustomEvent<!CloudPrintInterfaceProcessInviteDetail>}
-   *     event Contains detailed information about the invite and newly
-   *     accepted destination (if known).
-   * @private
-   */
-  onCloudPrintProcessInviteDone_(event) {
-    if (event.detail.accept && event.detail.printer) {
-      this.insertDestination_(event.detail.printer);
     }
   }
 

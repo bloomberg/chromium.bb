@@ -4956,6 +4956,11 @@ const FeatureEntry kFeatureEntries[] = {
                                     kTabGridLayoutAndroidVariations,
                                     "TabGridLayoutAndroid")},
 
+    {"enable-commerce-merchant-viewer",
+     flag_descriptions::kCommerceMerchantViewerAndroidName,
+     flag_descriptions::kCommerceMerchantViewerAndroidDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kCommerceMerchantViewer)},
+
     {"enable-tab-groups", flag_descriptions::kTabGroupsAndroidName,
      flag_descriptions::kTabGroupsAndroidDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kTabGroupsAndroid)},
@@ -6084,6 +6089,10 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kContextMenuTranslateWithGoogleLens,
          kLensContextMenuTranslateVariations,
          "LensContextMenuTranslate")},
+
+    {"google-lens-sdk-intent", flag_descriptions::kGoogleLensSdkIntentName,
+     flag_descriptions::kGoogleLensSdkIntentDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kGoogleLensSdkIntent)},
 
     {"lens-camera-assisted-search",
      flag_descriptions::kLensCameraAssistedSearchName,

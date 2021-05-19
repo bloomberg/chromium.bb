@@ -14,7 +14,6 @@
 
 #include "core/internal/service_controller_router.h"
 
-#include <cinttypes>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -47,12 +46,6 @@ const std::size_t kEndpointIdLength = 4u;
 // advertiser.
 const std::size_t kMaxEndpointInfoLength = 131u;
 }  // namespace
-
-ServiceControllerRouter::ServiceControllerRouter(
-    std::function<ServiceController*()> factory)
-    : service_controller_factory_(std::move(factory)) {
-  NEARBY_LOG(INFO, "ServiceControllerRouter going up.");
-}
 
 ServiceControllerRouter::~ServiceControllerRouter() {
   NEARBY_LOG(INFO, "ServiceControllerRouter going down.");
@@ -225,11 +218,10 @@ void ServiceControllerRouter::AcceptConnection(ClientProxy* client,
     }
 
     if (client->HasLocalEndpointResponded(endpoint_id)) {
-      NEARBY_LOG(WARNING,
-                 "Client %" PRIx64
-                 " invoked acceptConnectionRequest() after having already "
-                 "accepted/rejected the connection to endpoint(id=%s)",
-                 client->GetClientId(), endpoint_id.c_str());
+      NEARBY_LOG(INFO,
+                 "[ServiceControllerRouter:Accept]: Client has local "
+                 "endpoint responded; id=%s",
+                 endpoint_id.c_str());
       callback.result_cb({Status::kOutOfOrderApiCall});
       return;
     }
@@ -258,11 +250,10 @@ void ServiceControllerRouter::RejectConnection(ClientProxy* client,
         }
 
         if (client->HasLocalEndpointResponded(endpoint_id)) {
-          NEARBY_LOG(WARNING,
-                     "Client %" PRIx64
-                     " invoked rejectConnectionRequest() after having already "
-                     "accepted/rejected the connection to endpoint(id=%s)",
-                     client->GetClientId(), endpoint_id.c_str());
+          NEARBY_LOG(INFO,
+                     "[ServiceControllerRouter:Reject]: Client has local "
+                     "endpoint responded; id=%s",
+                     endpoint_id.c_str());
           callback.result_cb({Status::kOutOfOrderApiCall});
           return;
         }
@@ -373,12 +364,10 @@ void ServiceControllerRouter::StopAllEndpoints(ClientProxy* client,
 
   RouteToServiceController("scr-stop-all-endpoints", [this, client,
                                                       callback]() {
-    NEARBY_LOG(INFO,
-               "Client %" PRIx64
-               " has requested us to stop all endpoints. We will now reset the "
-               "client.",
-               client->GetClientId());
-        if (ClientHasAcquiredServiceController(client)) {
+    NEARBY_LOGS(INFO) << "Client " << client->GetClientId()
+                      << " has requested us to stop all endpoints. We will now "
+                         "reset the client.";
+    if (ClientHasAcquiredServiceController(client)) {
       DoneWithStrategySessionForClient(client);
     }
     callback.result_cb({Status::kSuccess});
@@ -396,8 +385,8 @@ void ServiceControllerRouter::ClientDisconnecting(
     if (ClientHasAcquiredServiceController(client)) {
       DoneWithStrategySessionForClient(client);
       NEARBY_LOG(INFO,
-                 "Client %" PRIx64 " has completed the client's connection.",
-                 client->GetClientId());
+                 "[ServiceControllerRouter:Disconnect]: Client has completed "
+                 "the client's connection");
     }
     callback.result_cb({Status::kSuccess});
   });
@@ -430,14 +419,18 @@ Status ServiceControllerRouter::AcquireServiceControllerForClient(
     bool is_the_only_client_of_service_controller =
         clients_.size() == 1 && ClientHasAcquiredServiceController(client);
     if (!is_the_only_client_of_service_controller) {
-      NEARBY_LOG(INFO, "Client has already active strategy.");
+      NEARBY_LOG(INFO,
+                 "[ServiceControllerRouter:AcquireServiceControllerForClient]: "
+                 "Client has already active strategy.");
       return {Status::kAlreadyHaveActiveStrategy};
     }
 
     // If the client still has connected endpoints, they must disconnect before
     // they can switch.
     if (!client->GetConnectedEndpoints().empty()) {
-      NEARBY_LOG(INFO, "Client has connected endpoints.");
+      NEARBY_LOG(INFO,
+                 "[ServiceControllerRouter:AcquireServiceControllerForClient]: "
+                 "Client has connected endpoints.");
       return {Status::kOutOfOrderApiCall};
     }
 

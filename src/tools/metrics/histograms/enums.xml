@@ -7283,6 +7283,8 @@ Called by update_bad_message_reasons.py.-->
       label="CPMD_BAD_ORIGIN_SHOW_MANUAL_PASSWORD_GENERATION_POPUP"/>
   <int value="12" label="CPMD_BAD_ORIGIN_SHOW_PASSWORD_EDITING_POPUP"/>
   <int value="13" label="CPMD_BAD_ORIGIN_GENERATION_AVAILABLE_FOR_FORM"/>
+  <int value="14" label="CPMD_BAD_ORIGIN_PASSWORD_FORM_CLEARED"/>
+  <int value="15" label="CPMD_BAD_ORIGIN_CHECK_SAFE_BROWSING_REPUTATION"/>
 </enum>
 
 <enum name="BadSyncDataReason">
@@ -17636,6 +17638,15 @@ Called by update_debug_scenarios.py.-->
   <int value="28" label="Google Docs (Chrome app)"/>
   <int value="29" label="Google Sheets (Chrome app)"/>
   <int value="30" label="Google Slides (Chrome app)"/>
+  <int value="31" label="YouTube (PWA)"/>
+  <int value="32" label="Google Docs (PWA)"/>
+  <int value="33" label="Google Meet (PWA)"/>
+  <int value="34" label="Google Sheets (PWA)"/>
+  <int value="35" label="Spotify (PWA)"/>
+  <int value="36" label="BeFunky (PWA)"/>
+  <int value="37" label="Clipchamp (PWA)"/>
+  <int value="38" label="GeForce NOW (PWA)"/>
+  <int value="39" label="Zoom (PWA)"/>
 </enum>
 
 <enum name="DemoModeAppLaunchSource">
@@ -32136,6 +32147,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3877" label="HTMLMediaElementSetSinkId"/>
   <int value="3882" label="PostMessageFromSecureToSecure"/>
   <int value="3883" label="PostMessageFromInsecureToInsecure"/>
+  <int value="3884" label="WebAppManifestProtocolHandlers"/>
+  <int value="3885" label="RTCPeerConnectionOfferAllowExtmapMixedFalse"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -45132,6 +45145,7 @@ from previous Chrome versions.
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
   <int value="-1144754105" label="ScalableStatusArea:enabled"/>
   <int value="-1144501989" label="UserActivityPredictionMlService:disabled"/>
+  <int value="-1144128534" label="GoogleLensSdkIntent:enabled"/>
   <int value="-1143496217" label="enable-oop-rasterization"/>
   <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
   <int value="-1142933895" label="ReduceDisplayNotifications:disabled"/>
@@ -47135,6 +47149,7 @@ from previous Chrome versions.
   <int value="681622885" label="FullscreenExitUI:enabled"/>
   <int value="682549212" label="ash-enable-cursor-motion-blur"/>
   <int value="683013217" label="AllowPopupsDuringPageUnload:disabled"/>
+  <int value="683433500" label="CommerceMerchantViewer:disabled"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685406951" label="UseNotificationCompatBuilder:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
@@ -47681,6 +47696,7 @@ from previous Chrome versions.
   <int value="1179013979"
       label="OmniboxUIExperimentMaxAutocompleteMatches:enabled"/>
   <int value="1179407596" label="PreemptiveLinkToTextGeneration:enabled"/>
+  <int value="1179587141" label="CommerceMerchantViewer:enabled"/>
   <int value="1179936481" label="enable-android-pay-integration-v1"/>
   <int value="1180722846" label="OculusVR:disabled"/>
   <int value="1181056275" label="enable-cloud-backup"/>
@@ -47903,6 +47919,7 @@ from previous Chrome versions.
   <int value="1367487214" label="VaapiJpegImageDecodeAcceleration:enabled"/>
   <int value="1367529437" label="NTPAssetDownloadSuggestions:enabled"/>
   <int value="1367671275" label="enable-proximity-auth-proximity-detection"/>
+  <int value="1368907760" label="GoogleLensSdkIntent:disabled"/>
   <int value="1369449914" label="SysInternals:disabled"/>
   <int value="1369649674" label="ChromeShareScreenshot:enabled"/>
   <int value="1370797930" label="ShowBluetoothDeviceBattery:enabled"/>
@@ -63552,9 +63569,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="REGISTER_PROMO_SELECTED"/>
   <int value="9" label="ACCOUNT_CHANGED"/>
   <int value="10" label="ADD_ACCOUNT_SELECTED"/>
-  <int value="11" label="INVITATION_AVAILABLE"/>
-  <int value="12" label="INVITATION_ACCEPTED"/>
-  <int value="13" label="INVITATION_REJECTED"/>
+  <int value="11" label="INVITATION_AVAILABLE_DEPRECATED"/>
+  <int value="12" label="INVITATION_ACCEPTED_DEPRECATED"/>
+  <int value="13" label="INVITATION_REJECTED_DEPRECATED"/>
   <int value="14" label="MANAGE_BUTTON_CLICKED"/>
 </enum>
 

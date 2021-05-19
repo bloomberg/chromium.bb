@@ -29,6 +29,24 @@ const base::Feature kCSSContainerQueries{"CSSContainerQueries",
 const base::Feature kGMSCoreEmoji{"GMSCoreEmoji",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether the HandwritingRecognition API can be enabled. Disabling this feature
+// disables both the origin trial and the mojo interface. Enabling this feature
+// allows the API to be controlled by origin trial (see web runtime feature
+// `HandwritingRecognition`) and finch (see
+// `kHandwritingRecognitionWebPlatformApiFinch`).
+// TODO (crbug.com/1166910): Remove once the HandwritingRecognition API is more
+// widely available (likely M92).
+const base::Feature kHandwritingRecognitionWebPlatformApi{
+    "HandwritingRecognitionWebPlatformApi", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Whether the HandwritingRecognition API can be enabled. Disabling this feature
+// disables both the origin trial and the mojo interface. Defaults to enabled
+// so the feature can be controlled by finch, even when
+// `kHandwritingRecognitionWebPlatformApi` is set from command-line.
+const base::Feature kHandwritingRecognitionWebPlatformApiFinch{
+    "HandwritingRecognitionWebPlatformApiFinch",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enable defer commits to avoid flash of unstyled content, for same origin
 // navigation only.
 const base::Feature kPaintHolding{"PaintHolding",
@@ -918,5 +936,24 @@ const base::Feature kBlockCrossOriginTopNavigationToDiffentScheme{
 // Enables a Web API for websites to access admin-provided configuration.
 const base::Feature kManagedConfiguration{"ManagedConfiguration",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Causes all cross-origin iframes, both same-process and out-of-process, to
+// have their rendering throttled on display:none or zero-area.
+const base::Feature kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes{
+    "ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Kill switch for the Fledge Interest Group API, i.e. if disabled, the
+// API exposure will be disabled regardless of the OT config.
+// (See https://github.com/WICG/turtledove/blob/main/FLEDGE.md.)
+// Enables FLEDGE implementation. See https://crbug.com/1186444.
+const base::Feature kFledgeInterestGroups{"FledgeInterestGroups",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable the availability of the Fledge interest group API as part of the
+// origin trial.
+const base::Feature kFledgeInterestGroupAPI{"FledgeInterestGroupAPI",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

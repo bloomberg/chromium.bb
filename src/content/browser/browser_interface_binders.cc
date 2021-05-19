@@ -718,8 +718,13 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePaymentManager, base::Unretained(host)));
 
-  map->Add<handwriting::mojom::HandwritingRecognitionService>(
-      base::BindRepeating(&CreateHandwritingRecognitionService));
+  if (base::FeatureList::IsEnabled(
+          blink::features::kHandwritingRecognitionWebPlatformApi) &&
+      base::FeatureList::IsEnabled(
+          blink::features::kHandwritingRecognitionWebPlatformApiFinch)) {
+    map->Add<handwriting::mojom::HandwritingRecognitionService>(
+        base::BindRepeating(&CreateHandwritingRecognitionService));
+  }
 
   map->Add<blink::mojom::WebBluetoothService>(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebBluetoothService, base::Unretained(host)));
@@ -906,7 +911,7 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&KeyboardLockServiceImpl::CreateMojoService));
   map->Add<blink::mojom::FlocService>(
       base::BindRepeating(&FlocServiceImpl::CreateMojoService));
-  if (base::FeatureList::IsEnabled(features::kFledgeInterestGroups)) {
+  if (base::FeatureList::IsEnabled(blink::features::kFledgeInterestGroups)) {
     map->Add<blink::mojom::AdAuctionService>(
         base::BindRepeating(&AdAuctionServiceImpl::CreateMojoService));
     map->Add<blink::mojom::RestrictedInterestGroupStore>(

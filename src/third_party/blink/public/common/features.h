@@ -21,6 +21,10 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kCOLRV1Fonts;
 BLINK_COMMON_EXPORT extern const base::Feature kCSSContainerQueries;
 BLINK_COMMON_EXPORT extern const base::Feature kGMSCoreEmoji;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kHandwritingRecognitionWebPlatformApi;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kHandwritingRecognitionWebPlatformApiFinch;
 BLINK_COMMON_EXPORT extern const base::Feature kPaintHolding;
 BLINK_COMMON_EXPORT extern const base::Feature kPaintHoldingCrossOrigin;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -379,6 +383,15 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kBlockCrossOriginTopNavigationToDiffentScheme;
 
 BLINK_COMMON_EXPORT extern const base::Feature kJXL;
+
+// Forces same-process display:none cross-origin iframes to be throttled in the
+// same manner that OOPIFs are.
+BLINK_COMMON_EXPORT extern const base::Feature
+    kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes;
+
+// Master control for Fledge Interest Group feature
+BLINK_COMMON_EXPORT extern const base::Feature kFledgeInterestGroups;
+BLINK_COMMON_EXPORT extern const base::Feature kFledgeInterestGroupAPI;
 
 }  // namespace features
 }  // namespace blink

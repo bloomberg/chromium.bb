@@ -1440,6 +1440,7 @@ ci.chromium_builder(
         short_name = "off",
     ),
     cores = 32,
+    os = os.LINUX_BIONIC_REMOVE,
     tree_closing = False,
 
     # See https://crbug.com/1153349#c22, as we update symbol_level=2, build
@@ -1459,6 +1460,7 @@ ci.chromium_builder(
     # TODO: Change this back down to something reasonable once these builders
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,
+    os = os.LINUX_BIONIC_REMOVE,
     tree_closing = False,
 )
 
@@ -1500,6 +1502,7 @@ ci.chromium_builder(
     # have populated their cached by getting through the compile step
     execution_timeout = 10 * time.hour,
     main_console_view = main_console_if_on_branch(),
+    os = os.LINUX_BIONIC_REMOVE,
     tree_closing = False,
 )
 
@@ -5309,7 +5312,9 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "Mac11 Tests",
-    branch_selector = branches.STANDARD_MILESTONE,
+    # TODO(crbug.com/1206401): Reenable on the branches when we have
+    # sufficient capacity.
+    # branch_selector = branches.STANDARD_MILESTONE,
     builder_group = "chromium.mac",
     console_view_entry = consoles.console_view_entry(
         category = "mac",
@@ -5433,6 +5438,7 @@ ci.memory_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
+    os = os.LINUX_BIONIC,
     ssd = True,
 )
 
@@ -5446,6 +5452,7 @@ ci.memory_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     triggered_by = ["ci/Linux ASan LSan Builder"],
+    os = os.LINUX_BIONIC,
 )
 
 ci.memory_builder(

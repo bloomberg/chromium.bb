@@ -650,6 +650,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/offline_page_navigation_throttle.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_url_loader_request_interceptor.h"
 #endif
@@ -3881,7 +3882,7 @@ std::wstring ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case sandbox::policy::SandboxType::kSpeechRecognition:
     case sandbox::policy::SandboxType::kProxyResolver:
     case sandbox::policy::SandboxType::kPdfConversion:
-    case sandbox::policy::SandboxType::kSharingService:
+    case sandbox::policy::SandboxType::kService:
     case sandbox::policy::SandboxType::kVideoCapture:
     case sandbox::policy::SandboxType::kIconReader:
     case sandbox::policy::SandboxType::kMediaFoundationCdm:
@@ -3928,7 +3929,7 @@ bool ChromeContentBrowserClient::PreSpawnChild(
     case sandbox::policy::SandboxType::kSpeechRecognition:
     case sandbox::policy::SandboxType::kProxyResolver:
     case sandbox::policy::SandboxType::kPdfConversion:
-    case sandbox::policy::SandboxType::kSharingService:
+    case sandbox::policy::SandboxType::kService:
     case sandbox::policy::SandboxType::kVideoCapture:
     case sandbox::policy::SandboxType::kIconReader:
     case sandbox::policy::SandboxType::kMediaFoundationCdm:
@@ -4280,6 +4281,13 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       payments::PaymentHandlerNavigationThrottle::MaybeCreateThrottleFor(
           handle),
       &throttles);
+
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  MaybeAddThrottle(
+      offline_pages::OfflinePageNavigationThrottle::MaybeCreateThrottleFor(
+          handle),
+      &throttles);
+#endif
 
   return throttles;
 }

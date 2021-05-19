@@ -262,10 +262,6 @@ const base::Feature kExtraSafelistedRequestHeadersForOutOfBlinkCors{
 const base::Feature kFeaturePolicyForClientHints{
     "FeaturePolicyForClientHints", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables FLEDGE implementation. See https://crbug.com/1186444.
-const base::Feature kFledgeInterestGroups{"FledgeInterestGroups",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables fixes for matching src: local() for web fonts correctly against full
 // font name or postscript name. Rolling out behind a flag, as enabling this
 // enables a font indexer on Android which we need to test in the field first.
@@ -659,7 +655,7 @@ const base::Feature kSharedArrayBuffer{"SharedArrayBuffer",
 // platforms. This flag is used only as a "kill switch" as we migrate towards
 // requiring 'crossOriginIsolated'.
 const base::Feature kSharedArrayBufferOnDesktop{
-    "SharedArrayBufferOnDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SharedArrayBufferOnDesktop", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Signed HTTP Exchange prefetch cache for navigations
 // https://crbug.com/968427

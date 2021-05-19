@@ -329,3 +329,9 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-21587
   - upstream PR:
     https://github.com/unicode-org/icu/pull/1698
+
+21. Patch locid.cpp to fix invalid free by long locale name.
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21537
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/1656

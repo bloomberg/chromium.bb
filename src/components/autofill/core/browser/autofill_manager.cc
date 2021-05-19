@@ -674,6 +674,8 @@ bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms) {
 void AutofillManager::OnFormSubmittedImpl(const FormData& form,
                                           bool known_success,
                                           SubmissionSource source) {
+  base::UmaHistogramEnumeration("Autofill.FormSubmission.PerProfileType",
+                                client()->GetProfileType());
   if (log_manager()) {
     log_manager()->Log() << LoggingScope::kSubmission
                          << LogMessage::kFormSubmissionDetected << Br{}
@@ -707,9 +709,6 @@ void AutofillManager::OnFormSubmittedImpl(const FormData& form,
   }
   autocomplete_history_manager_->OnWillSubmitForm(
       form_for_autocomplete, client()->IsAutocompleteEnabled());
-
-  base::UmaHistogramEnumeration("Autofill.FormSubmission.PerProfileType",
-                                client()->GetProfileType());
 
   if (IsAutofillProfileEnabled()) {
     address_form_event_logger_->OnWillSubmitForm(sync_state_, *submitted_form);
@@ -1645,7 +1644,11 @@ void AutofillManager::FillOrPreviewDataModelForm(
   form_structure->RationalizePhoneNumbersInSection(autofill_field->section);
 
   FormData result = form;
-  DCHECK_EQ(form_structure->field_count(), form.fields.size());
+
+  // TODO(crbug/1203667#c9): Skip if the form has changed in the meantime, which
+  // may happen with refills.
+  if (form_structure->field_count() != form.fields.size())
+    return;
 
   if (action == AutofillDriver::FORM_DATA_ACTION_FILL && !is_refill) {
     SetFillingContext(
@@ -1686,8 +1689,10 @@ void AutofillManager::FillOrPreviewDataModelForm(
       continue;
     }
 
-    // The field order should be the same in |form_structure| and |result|.
-    DCHECK(form_structure->field(i)->SameFieldAs(result.fields[i]));
+    // TODO(crbug/1203667#c9): Skip if the form has changed in the meantime,
+    // which may happen with refills.
+    if (!form_structure->field(i)->SameFieldAs(result.fields[i]))
+      continue;
 
     AutofillField* cached_field = form_structure->field(i);
     FieldTypeGroup field_group_type = cached_field->Type().group();

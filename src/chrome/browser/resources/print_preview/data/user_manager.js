@@ -12,7 +12,6 @@ import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
 
 import {Destination, DestinationOrigin} from './destination.js';
 import {DestinationStore} from './destination_store.js';
-import {InvitationStore} from './invitation_store.js';
 
 /**
  * @typedef {{ activeUser: string,
@@ -41,9 +40,6 @@ Polymer({
     /** @type {?DestinationStore} */
     destinationStore: Object,
 
-    /** @type {?InvitationStore} */
-    invitationStore: Object,
-
     /** @type {!Array<string>} */
     users: {
       type: Array,
@@ -69,37 +65,18 @@ Polymer({
     this.initialized_ = false;
   },
 
-  /**
-   * @param {?Array<string>} userAccounts
-   * @param {boolean} syncAvailable
-   */
-  initUserAccounts(userAccounts, syncAvailable) {
+  initUserAccounts() {
     assert(!this.initialized_);
     this.initialized_ = true;
 
-    if (!userAccounts) {
-      assert(this.cloudPrintDisabled);
-      this.activeUser = '';
+    if (this.cloudPrintDisabled) {
       return;
     }
 
-    // If cloud print is enabled, listen for account changes.
-    assert(!this.cloudPrintDisabled);
-    if (syncAvailable) {
-      this.addWebUIListener(
-          'user-accounts-updated', this.updateUsers_.bind(this));
-      this.updateUsers_(userAccounts);
-    } else {
-      // Request the cookies destinations from the Google Cloud Print server
-      // directly. We have to do this in incognito mode in order to get the
-      // user's login state.
+    this.addWebUIListener('check-for-account-update', () => {
       this.destinationStore.startLoadCloudDestinations(
           DestinationOrigin.COOKIES);
-      this.addWebUIListener('check-for-account-update', () => {
-        this.destinationStore.startLoadCloudDestinations(
-            DestinationOrigin.COOKIES);
-      });
-    }
+    });
   },
 
   /** @private */
@@ -187,6 +164,5 @@ Polymer({
     }
 
     this.destinationStore.reloadUserCookieBasedDestinations(user);
-    this.invitationStore.startLoadingInvitations(user);
   },
 });

@@ -1307,6 +1307,11 @@ const char kGlobalMediaControlsOverlayControlsDescription[] =
     "Allowing controls to be dragged out from Global Media Controls dialog. "
     "Requires #global-media-controls to also be enabled.";
 
+const char kGoogleLensSdkIntentName[] =
+    "Enable the use of the Lens SDK when starting intent into Lens.";
+const char kGoogleLensSdkIntentDescription[] =
+    "Starts Lens using the Lens SDK if supported.";
+
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] = "Use GPU to rasterize web content.";
 
@@ -2374,6 +2379,10 @@ const char kTabGridLayoutAndroidName[] = "Tab Grid Layout";
 const char kTabGridLayoutAndroidDescription[] =
     "Allows users to see their tabs in a grid layout in the tab switcher on "
     "phones.";
+
+const char kCommerceMerchantViewerAndroidName[] = "Merchant Viewer";
+const char kCommerceMerchantViewerAndroidDescription[] =
+    "Allows users to view merchant trust signals on eligible pages.";
 
 const char kTabGroupsAndroidName[] = "Tab Groups";
 const char kTabGroupsAndroidDescription[] =
