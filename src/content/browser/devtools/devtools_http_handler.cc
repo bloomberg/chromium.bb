@@ -416,6 +416,22 @@ static std::string GetMimeType(const std::string& filename) {
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "image/svg+xml";
   }
+
+  // blpwtk2: adapted from chrome/browser/ui/webui/devtools_ui_data_source.cc
+  else if (base::EndsWith(filename, ".mjs",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "application/javascript";
+  } else if (base::EndsWith(filename, ".map",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "application/json";
+  } else if (base::EndsWith(filename, ".ts",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "application/x-typescript";
+  } else if (base::EndsWith(filename, ".manifest",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "text/cache-manifest";
+  }
+
   LOG(ERROR) << "GetMimeType doesn't know mime type for: "
              << filename
              << " text/plain will be returned";
