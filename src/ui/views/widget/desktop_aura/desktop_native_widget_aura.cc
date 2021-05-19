@@ -207,10 +207,14 @@ class DesktopNativeWidgetAuraWindowParentingClient
       ui::ZOrderLevel root_z_order = ui::ZOrderLevel::kNormal;
       internal::NativeWidgetPrivate* native_widget =
           DesktopNativeWidgetAura::ForWindow(root_window_);
-      if (native_widget)
-        root_z_order = native_widget->GetZOrderLevel();
-
-      root_z_order = ui::ZOrderLevel::kFloatingWindow;
+      if (native_widget) {
+        if (is_menu) {
+          root_z_order = ui::ZOrderLevel::kFloatingWindow;
+        }
+        else {
+          root_z_order = native_widget->GetZOrderLevel();
+        }
+      }
 
       return DesktopNativeWidgetTopLevelHandler::CreateParentWindow(
           window, bounds, is_fullscreen, is_menu, root_z_order);
