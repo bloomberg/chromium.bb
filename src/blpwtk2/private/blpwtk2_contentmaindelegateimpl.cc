@@ -33,6 +33,7 @@
 #include <base/files/file_util.h>
 #include <base/logging.h>
 #include <base/path_service.h>
+#include "base/win/win_util.h"
 #include <content/public/common/content_switches.h>
 #include <content/public/common/user_agent.h>
 #include <ui/base/resource/resource_bundle.h>
@@ -94,6 +95,16 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code)
             commandLine->AppendSwitchASCII(switchString.substr(0, eqPos),
                                            switchString.substr(eqPos+1));
         }
+    }
+
+    const std::string processType =
+    commandLine->GetSwitchValueASCII(switches::kProcessType);
+
+    // Only enable DPI support for browser, gpu & rendererer processes
+    if (commandLine->HasSwitch(switches::kDpiAware) &&
+        ((processType.empty() || processType == switches::kGpuProcess ||
+          processType == switches::kRendererProcess))) {
+        base::win::EnableHighDPISupport();
     }
 
     // point to our renderer
