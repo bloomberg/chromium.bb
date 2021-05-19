@@ -32,7 +32,6 @@
 #include "core/listeners.h"
 #include "core/options.h"
 #include "core/status.h"
-#include "proto/connections/offline_wire_formats.pb.h"
 #include "platform/base/byte_array.h"
 #include "platform/base/prng.h"
 #include "platform/public/atomic_boolean.h"
@@ -43,7 +42,6 @@
 #include "platform/public/scheduled_executor.h"
 #include "platform/public/single_thread_executor.h"
 #include "platform/public/system_clock.h"
-#include "proto/connections_enums.pb.h"
 #include "securegcm/d2d_connection_context_v1.h"
 #include "securegcm/ukey2_handshake.h"
 #include "absl/container/btree_map.h"
@@ -223,7 +221,7 @@ class BasePcpHandler : public PcpHandler,
     std::unique_ptr<EndpointChannel> endpoint_channel;
   };
 
-  void RunOnPcpHandlerThread(Runnable runnable);
+  void RunOnPcpHandlerThread(const std::string& name, Runnable runnable);
 
   BluetoothDevice GetRemoteBluetoothDevice(
       const std::string& remote_bluetooth_mac_address);
@@ -376,7 +374,9 @@ class BasePcpHandler : public PcpHandler,
   static Exception WriteConnectionRequestFrame(
       EndpointChannel* endpoint_channel, const std::string& local_endpoint_id,
       const ByteArray& local_endpoint_info, std::int32_t nonce,
-      const std::vector<proto::connections::Medium>& supported_mediums);
+      const std::vector<proto::connections::Medium>& supported_mediums,
+      std::int32_t keep_alive_interval_millis,
+      std::int32_t keep_alive_timeout_millis);
 
   static constexpr absl::Duration kConnectionRequestReadTimeout =
       absl::Seconds(2);

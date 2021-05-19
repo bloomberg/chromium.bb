@@ -62,8 +62,7 @@ class EuiccTest : public ESimTestBase {
       const std::string& activation_code,
       const std::string& confirmation_code,
       bool wait_for_connect,
-      bool fail_connect,
-      const uint64_t& connect_latency_in_ms = 0) {
+      bool fail_connect) {
     mojom::ProfileInstallResult out_install_result;
     mojo::PendingRemote<mojom::ESimProfile> out_esim_profile;
 
@@ -80,8 +79,6 @@ class EuiccTest : public ESimTestBase {
 
     if (wait_for_connect) {
       base::RunLoop().RunUntilIdle();
-      task_environment()->AdvanceClock(
-          base::TimeDelta::FromMilliseconds(connect_latency_in_ms));
       EXPECT_LE(1u, network_connection_handler()->connect_calls().size());
       if (fail_connect) {
         network_connection_handler()
@@ -120,10 +117,12 @@ TEST_F(EuiccTest, GetProfileList) {
       HermesEuiccClient::Get()->GetTestInterface();
   dbus::ObjectPath active_profile_path = euicc_test->AddFakeCarrierProfile(
       dbus::ObjectPath(kTestEuiccPath), hermes::profile::State::kActive, "",
-      /*service_only=*/false);
+      HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
+          kAddProfileWithService);
   dbus::ObjectPath pending_profile_path = euicc_test->AddFakeCarrierProfile(
       dbus::ObjectPath(kTestEuiccPath), hermes::profile::State::kPending, "",
-      /*service_only=*/false);
+      HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
+          kAddProfileWithService);
   base::RunLoop().RunUntilIdle();
 
   esim_profile_list = GetProfileList(euicc);
@@ -152,23 +151,18 @@ TEST_F(EuiccTest, InstallProfileFromActivationCode) {
       euicc, euicc_test->GenerateFakeActivationCode(),
       /*confirmation_code=*/std::string(), /*wait_for_connect=*/true,
       /*fail_connect=*/true);
-  EXPECT_EQ(mojom::ProfileInstallResult::kFailure, result_pair.first);
-  ASSERT_FALSE(result_pair.second.is_valid());
+  EXPECT_EQ(mojom::ProfileInstallResult::kSuccess, result_pair.first);
+  ASSERT_TRUE(result_pair.second.is_valid());
 
   base::HistogramTester histogram_tester;
 
   // Verify that install succeeds when valid activation code is passed.
-  const uint64_t connect_latency_in_ms = 3000;
   result_pair = InstallProfileFromActivationCode(
       euicc, euicc_test->GenerateFakeActivationCode(),
       /*confirmation_code=*/std::string(), /*wait_for_connect=*/true,
-      /*fail_connect=*/false, connect_latency_in_ms);
+      /*fail_connect=*/false);
   EXPECT_EQ(mojom::ProfileInstallResult::kSuccess, result_pair.first);
   ASSERT_TRUE(result_pair.second.is_valid());
-
-  histogram_tester.ExpectTimeBucketCount(
-      "Network.Cellular.ESim.ProfileDownload.ActivationCode.Latency",
-      base::TimeDelta::FromMilliseconds(connect_latency_in_ms), 1);
 
   histogram_tester.ExpectTotalCount(
       "Network.Cellular.ESim.ProfileDownload.ActivationCode.Latency", 1);
@@ -197,11 +191,12 @@ TEST_F(EuiccTest, InstallPendingProfileFromActivationCode) {
 
   HermesEuiccClient::TestInterface* euicc_test =
       HermesEuiccClient::Get()->GetTestInterface();
-  // Verify that installing a pending profile with it's activation code returns
+  // Verify that installing a pending profile with its activation code returns
   // proper status code and profile object.
   dbus::ObjectPath profile_path = euicc_test->AddFakeCarrierProfile(
       dbus::ObjectPath(kTestEuiccPath), hermes::profile::State::kPending, "",
-      /*service_only=*/false);
+      HermesEuiccClient::TestInterface::AddCarrierProfileBehavior::
+          kAddProfileWithService);
   base::RunLoop().RunUntilIdle();
   HermesProfileClient::Properties* dbus_properties =
       HermesProfileClient::Get()->GetProperties(profile_path);

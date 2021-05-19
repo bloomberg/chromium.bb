@@ -23,8 +23,7 @@ InterestGroupServiceImpl::InterestGroupServiceImpl(
     mojo::PendingReceiver<blink::mojom::RestrictedInterestGroupStore> receiver)
     : FrameServiceBase(render_frame_host, std::move(receiver)),
       interest_group_manager_(*static_cast<StoragePartitionImpl*>(
-                                   BrowserContext::GetDefaultStoragePartition(
-                                       render_frame_host->GetBrowserContext()))
+                                   render_frame_host->GetStoragePartition())
                                    ->GetInterestGroupStorage()) {}
 
 // static
@@ -41,6 +40,17 @@ void InterestGroupServiceImpl::CreateMojoService(
 
 void InterestGroupServiceImpl::JoinInterestGroup(
     blink::mojom::InterestGroupPtr group) {
+  // If the interest group API is not allowed for this origin do nothing.
+  if (!GetContentClient()->browser()->IsInterestGroupAPIAllowed(
+          render_frame_host()->GetBrowserContext(), origin(),
+          group->owner.GetURL())) {
+    return;
+  }
+
+  // TODO(crbug.com/1200981): Either also check these renderer-side, or report
+  // to devtools to get a better error debugging experience.
+  if (origin().scheme() != url::kHttpsScheme)
+    return;
   if (group->owner != origin())
     return;
   if (group->bidding_url &&
@@ -55,6 +65,13 @@ void InterestGroupServiceImpl::JoinInterestGroup(
       url::Origin::Create(*group->trusted_bidding_signals_url) != origin()) {
     return;
   }
+  if (group->ads) {
+    for (const auto& ad : group->ads.value()) {
+      if (!ad->render_url.SchemeIs(url::kHttpsScheme)) {
+        return;
+      }
+    }
+  }
   base::Time max_expiry = base::Time::Now() + kMaxExpiry;
   if (group->expiry > max_expiry)
     group->expiry = max_expiry;
@@ -63,8 +80,18 @@ void InterestGroupServiceImpl::JoinInterestGroup(
 
 void InterestGroupServiceImpl::LeaveInterestGroup(const url::Origin& owner,
                                                   const std::string& name) {
-  if (owner != origin())
+  // If the interest group API is not allowed for this origin do nothing.
+  if (!GetContentClient()->browser()->IsInterestGroupAPIAllowed(
+          render_frame_host()->GetBrowserContext(), origin(), owner.GetURL())) {
     return;
+  }
+
+  if (origin().scheme() != url::kHttpsScheme) {
+    return;
+  }
+  if (owner != origin()) {
+    return;
+  }
   interest_group_manager_.LeaveInterestGroup(owner, name);
 }
 

@@ -180,7 +180,6 @@
 <translation id="2169830938017475061">ឥឡូវ​នេះ</translation>
 <translation id="2172688499998841696">ការពណ៌នាអំពីរូបភាព​ត្រូវបានបិទ</translation>
 <translation id="2175927920773552910">កូដ QR</translation>
-<translation id="2181298861158186289">លាក់ខ្លឹមសារឃ្លីបបត</translation>
 <translation id="218608176142494674">ការចែករំលែក</translation>
 <translation id="2195339740518523951">ទទួលបានសុវត្ថិភាពខ្លាំងបំផុតរបស់ Chrome</translation>
 <translation id="2200113223741723867">គ្រប់គ្រង​ការចែករំលែក​ទិន្នន័យប្រើប្រាស់</translation>
@@ -235,6 +234,7 @@
 <translation id="2517472476991765520">ស្កេន</translation>
 <translation id="2518590038762162553">Chrome ផ្ទុកទំព័រ​រហ័សជាងមុន និងប្រើទិន្នន័យ​តិចជាងមុន​រហូតដល់ 60 ភាគរយ នៅក្នុង​មុខងារស្រាល។ ដើម្បី​បង្កើន​ប្រសិទ្ធភាព​ទំព័រ​ដែល​អ្នក​ចូលមើល Chrome ផ្ញើ​ចរាចរណ៍​បណ្ដាញ​របស់អ្នក​ទៅ Google ។ <ph name="BEGIN_LINK" />ស្វែងយល់​បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="2523184218357549926">ផ្ញើ​ URL នៃ​ទំព័រ​ដែលអ្នក​ចូល​មើលទៅ Google</translation>
+<translation id="2527779675047087889">លាក់ខ្លឹមសារឃ្លីបបត</translation>
 <translation id="2532336938189706096">មើលគេហទំព័រ</translation>
 <translation id="2534155362429831547">បានលុបធាតុ <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2536728043171574184">កំពុងមើលច្បាប់ចម្លងនៃទំព័រនេះនៅក្រៅបណ្តាញ</translation>
@@ -248,6 +248,7 @@
 <translation id="2612676031748830579">លេខកាត</translation>
 <translation id="2625189173221582860">បានចម្លង​ពាក្យសម្ងាត់</translation>
 <translation id="2631006050119455616">បានរក្សាទុក</translation>
+<translation id="2645657967708199252">ការតភ្ជាប់ <ph name="CONNECTION_TYPE" /> របស់អ្នក​អាចនឹងធ្វើឱ្យ​ការទាញយក​របស់អ្នកយឺត</translation>
 <translation id="2647434099613338025">បន្ថែមភាសា</translation>
 <translation id="2650751991977523696">ទាញយក​ឯកសារ​ម្ដងទៀត​មែនទេ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ឯកសារសំឡេង #}other{ឯកសារ​សំឡេង #}}</translation>
@@ -260,6 +261,7 @@
 <translation id="2718846868787000099">ដើម្បីបង្ហាញខ្លឹមសារជាភាសាដែលអ្នកចង់បកប្រែ គេហទំព័រដែលអ្នកចូលមើលអាចមើលចំណូលចិត្តរបស់អ្នក</translation>
 <translation id="2723001399770238859">សម្លេង</translation>
 <translation id="2728754400939377704">តម្រៀប​តាមគេហទំព័រ</translation>
+<translation id="2739256783402597439">2G</translation>
 <translation id="2744248271121720757">ចុចពាក្យណាមួយ​ដើម្បី​ស្វែងរក​ភ្លាមៗ ឬមើល​សកម្មភាព​ដែល​ទាក់ទង</translation>
 <translation id="2760989362628427051">បើក​រចនាប័ទ្មងងឹត ពេលបើក​កម្មវិធីសន្សំថ្ម ឬរចនាប័ទ្មងងឹត​នៅលើ​ឧបករណ៍របស់អ្នក</translation>
 <translation id="2762000892062317888">អំបាញ់មិញនេះ</translation>
@@ -272,6 +274,7 @@
 <translation id="281504910091592009">មើល និងគ្រប់គ្រង​ពាក្យសម្ងាត់​ដែលបាន​រក្សាទុក​នៅក្នុង<ph name="BEGIN_LINK" />គណនី Google<ph name="END_LINK" /> របស់អ្នក</translation>
 <translation id="2818669890320396765">ដើម្បី​ទទួលបាន​ចំណាំរបស់អ្នក​នៅលើ​ឧបករណ៍​ទាំងអស់​របស់អ្នក សូមចូលគណនី និងបើក​សមកាលកម្ម</translation>
 <translation id="2827278682606527653">ម៉ឺនុយ​កាត​ព័ត៌មាន​ត្រូវបានបើក​ពាក់កណ្ដាល​អេក្រង់</translation>
+<translation id="2830783625999891985">ខ្លឹមសារឃ្លីបបតត្រូវបានលាក់</translation>
 <translation id="2839327205551510876">បាន​ឈប់តាមដាន <ph name="SITE_NAME" /></translation>
 <translation id="2841216154655874070">{NUM_DAYS,plural, =1{បានពិនិត្យមើល​កាលពី 1 ថ្ងៃមុន}other{បានពិនិត្យមើល​កាលពី # ថ្ងៃមុន}}</translation>
 <translation id="2842985007712546952">ថតឯកសារមេ</translation>
@@ -304,7 +307,6 @@
 <translation id="3016635187733453316">ត្រូវប្រាកដថា ឧបករណ៍នេះ​មានការតភ្ជាប់អ៊ីនធឺណិត</translation>
 <translation id="3029704984691124060">ឃ្លាសម្ងាត់មិនត្រូវគ្នា</translation>
 <translation id="3031225630520268969">ui នៃ​ការយល់ព្រម​ឱ្យប្រើជំនួយការ​សម្រាប់​ការស្វែងរក​តាមសំឡេង</translation>
-<translation id="3034163383943672781">ការទាញយក​នឹងចាប់ផ្ដើម​នៅថ្ងៃទី <ph name="DATE" />។</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ទទួលជំនួយ<ph name="END_LINK" /></translation>
 <translation id="3046945242843292318">ចូលទៅកាន់គេហទំព័រនេះ​បានរហ័សជាងមុននៅពេលក្រោយ</translation>
 <translation id="305593374596241526">ទីតាំង​ត្រូវ​បាន​បិទ សូម​បើក​វា​នៅ​ក្នុង <ph name="BEGIN_LINK" />ការ​កំណត់ Android<ph name="END_LINK" /> ។</translation>
@@ -313,6 +315,7 @@
 <translation id="3062802207422175757">អត្ថបទអំពីចំណាប់អារម្មណ៍​របស់អ្នកនៅលើ Chrome</translation>
 <translation id="3070005020161560471">បកប្រែដោយស្វ័យប្រវត្តិ</translation>
 <translation id="3089395242580810162">បើកនៅក្នុងផ្ទាំងអនាមិក</translation>
+<translation id="3091010850649238832">បង្ហាញខ្លឹមសារឃ្លីបបត</translation>
 <translation id="3098745985164956033">រូបភាពមួយចំនួន​ត្រូវបានផ្ញើទៅ Google ដើម្បីកែលម្អ​ការពណ៌នា​សម្រាប់អ្នក</translation>
 <translation id="3114507951000454849">អាន​ព័ត៌មាននៅថ្ងៃនេះ <ph name="NEWS_ICON" /></translation>
 <translation id="3123734510202723619">សេចក្តីប្រកាស</translation>
@@ -387,6 +390,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="3542235761944717775">ទំនេរ <ph name="KILOBYTES" /> KB</translation>
 <translation id="3549657413697417275">ស្វែងរក​ប្រវត្តិ​របស់អ្នក</translation>
 <translation id="3557336313807607643">បញ្ចូល​ទៅ​ក្នុង​ទំនាក់ទំនង</translation>
+<translation id="3563767357928833671">ខ្លឹមសារឃ្លីបបតត្រូវបានបង្ហាញ</translation>
 <translation id="3566923219790363270">Chrome កំពុងរៀបចំសម្រាប់ VR នៅឡើយ។ ចាប់ផ្តើម Chrome ឡើងវិញនៅពេលក្រោយ។</translation>
 <translation id="3568688522516854065">ដើម្បីទទួលបានផ្ទាំងរបស់អ្នកពីឧបករណ៍ផ្សេងទៀតរបស់អ្នក សូមចូល​គណនី និងបើកសមកាលកម្ម</translation>
 <translation id="3587482841069643663">ទាំងអស់</translation>
@@ -437,6 +441,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="3943557322767080599">បង្ហាញសារចូល Chrome នៅពេល​អ្នកចូលគណនី Google របស់អ្នក</translation>
 <translation id="395206256282351086">បានបិទ​ការណែនាំ​ការស្វែងរក និងទំព័រ</translation>
 <translation id="396192773038029076">{NUM_IN_PROGRESS,plural, =1{Chrome នឹងផ្ទុកទំព័រ​របស់អ្នក នៅពេលរួចរាល់}other{Chrome នឹងផ្ទុកទំព័រ​របស់អ្នក នៅពេលរួចរាល់}}</translation>
+<translation id="3962957115499249330">អ្នកនឹង​មើលឃើញ​ការជូនដំណឹង នៅពេលដែល​ការទាញយកនេះ​ចាប់ផ្ដើម​តាមរយៈ Wi-Fi។</translation>
 <translation id="3963007978381181125">ការ​អ៊ីនគ្រីបឃ្លា​សម្ងាត់​មិន​រួមបញ្ចូល​អាសយដ្ឋាន និងវិធី​បង់ប្រាក់​ពី Google Pay ទេ។ មានតែអ្នកដែលមានឃ្លាសម្ងាត់របស់អ្នកប៉ុណ្ណោះ ទើបអាចអានទិន្នន័យដែលបានអ៊ីនគ្រីបរបស់អ្នក។ ឃ្លាសម្ងាត់នេះមិនត្រូវបានផ្ញើ ឬផ្ទុកដោយ Google ទេ។ ប្រសិនបើអ្នកភ្លេចឃ្លាសម្ងាត់របស់អ្នក ឬចង់ផ្លាស់ប្ដូរ​ការកំណត់​នេះ​ អ្នក​នឹង​ត្រូវកំណត់​សមកាលកម្ម​ឡើងវិញ។ <ph name="BEGIN_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LINK" /></translation>
 <translation id="3969142555815019568">Chrome មិន​អាចពិនិត្យ​ពាក្យសម្ងាត់របស់អ្នកបានទេ</translation>
 <translation id="3974987681202239636"><ph name="APP_NAME" /> នឹងបើកនៅក្នុង Chrome។ ប្រសិនបើបន្ត មានន័យថាអ្នកយល់ព្រមតាម<ph name="BEGIN_LINK1" />លក្ខខណ្ឌប្រើប្រាស់ Google<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />លក្ខខណ្ឌប្រើប្រាស់បន្ថែមរបស់ Google Chrome និង Chrome OS<ph name="END_LINK2" />។ <ph name="BEGIN_LINK3" />ការជូន​ដំណឹង​អំពី​ឯកជនភាព​សម្រាប់​គណនី Google ដែល​គ្រប់គ្រង​ដោយ​ប្រើ Family Link<ph name="END_LINK3" /> ក៏អនុវត្តផងដែរ។</translation>
@@ -480,6 +485,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="4256782883801055595">អាជ្ញាប័ណ្ណប្រភពបើកចំហ</translation>
 <translation id="4263656433980196874">បានបើក​ពេញអេក្រង់នូវ ui នៃ​ការយល់ព្រម​ឱ្យប្រើជំនួយការ​សម្រាប់​ការស្វែងរក​តាមសំឡេង</translation>
 <translation id="4269820728363426813">ចម្លងអាសយដ្ឋានតំណ</translation>
+<translation id="4290281343757112331">ទាញយក​នៅពេលក្រោយ​ជំនួសវិញឬ?</translation>
 <translation id="4298388696830689168">គេហទំព័រ​ដែលបានតភ្ជាប់</translation>
 <translation id="4303044213806199882">chrome_screenshot_<ph name="CURRENT_TIMESTAMP_MS" /></translation>
 <translation id="4307992518367153382">មូលដ្ឋាន</translation>
@@ -622,6 +628,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="5191251636205085390">ស្វែងយល់អំពី និងគ្រប់គ្រងបច្ចេកវិទ្យាថ្មីៗ ដែលមានគោលបំណងជំនួសខូគីរបស់ភាគីទីបី</translation>
 <translation id="5193988420012215838">បាន​ចម្លងទៅក្នុងឃ្លីបបត​របស់អ្នក</translation>
 <translation id="5199929503336119739">ប្រវត្តិរូបការងារ</translation>
+<translation id="5201464744567315552">អ្នកនឹង​មើលឃើញ​ការជូនដំណឹង នៅពេលដែល​ការទាញយកនេះ​ចាប់ផ្ដើម​នៅម៉ោង <ph name="TIME" />។</translation>
 <translation id="5204967432542742771">បញ្ចូលពាក្យសម្ងាត់</translation>
 <translation id="5210286577605176222">លោតទៅផ្ទាំងពីមុន</translation>
 <translation id="5210365745912300556">បិទផ្ទាំង</translation>
@@ -632,6 +639,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="5230560987958996918"><ph name="SITE" /> ចង់ស្កេនរក​ឧបករណ៍ប៊្លូធូស​នៅជិត។ បានរកឃើញ​ឧបករណ៍​ខាងក្រោម៖</translation>
 <translation id="5233638681132016545">ផ្ទាំងថ្មី</translation>
 <translation id="5250483651202458397">រូបថត​អេក្រង់។ ចុចដើម្បីបិទ។</translation>
+<translation id="5262378156578470238">អ្នកនឹង​មើលឃើញ​ការជូនដំណឹង នៅពេលដែល​ការទាញយកនេះ​ចាប់ផ្ដើមនៅថ្ងៃទី <ph name="DATE" />។</translation>
 <translation id="526421993248218238">មិនអាចផ្ទុកទំព័រនេះបានទេ</translation>
 <translation id="5271967389191913893">ឧបករណ៍មិនអាចបើកមាតិកានេះដើម្បីទាញយកបានទេ។</translation>
 <translation id="5292796745632149097">ផ្ញើ​ទៅ</translation>
@@ -701,7 +709,6 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="572328651809341494">ផ្ទាំងថ្មីៗ</translation>
 <translation id="5723735397759933332">ឥឡូវនេះ មុខងារស្រាល​សន្សំសំចៃ​ទិន្នន័យ​ឱ្យអ្នក​បានច្រើនជាងមុន ដោយបង្កើនគុណភាព​រូបភាព​នៅលើ​ទំព័រ HTTPS​។</translation>
 <translation id="5726692708398506830">ធ្វើឲ្យអ្វីគ្រប់យ៉ាងនៅលើទំព័រនេះធំជាងមុន</translation>
-<translation id="5732819098735351888">ការទាញយក​នឹងចាប់ផ្ដើមពេលមាន Wi-Fi។</translation>
 <translation id="5733983706093266635">មិនអាចបង្កើត​កូដ QR បានទេ។ URL មានតួអក្សរ​ច្រើនជាង <ph name="CHARACTER_LIMIT" /> តួ។</translation>
 <translation id="5748802427693696783">បានប្តូរទៅផ្ទាំងស្តង់ដារ</translation>
 <translation id="5749068826913805084">Chrome ត្រូវការលទ្ធភាពចូលប្រើទំហំផ្ទុកដើម្បីដោនឡូតឯកសារ</translation>
@@ -780,7 +787,6 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="6159335304067198720">សន្សំសំចៃទិន្នន័យបាន <ph name="PERCENT" /></translation>
 <translation id="6186394685773237175">រកមិនឃើញពាក្យសម្ងាត់ដែល​រងការលុកលុយទេ</translation>
 <translation id="6192907950379606605">យកការពណ៌នា​អំពីរូបភាព</translation>
-<translation id="6206830853671714236">ជ្រើសរើសពេលដែលត្រូវទាញយក</translation>
 <translation id="6210748933810148297">មិនមែន <ph name="EMAIL" /> ទេ?</translation>
 <translation id="6211386937064921208">កំពុងមើល​ទំព័រនេះ​សាកល្បង</translation>
 <translation id="6218096829563201111">ស្វែងរកផលិតផលស្រដៀងគ្នា <ph name="BEGIN_NEW" />ថ្មី<ph name="END_NEW" /></translation>
@@ -844,7 +850,6 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="6539092367496845964">មានអ្វីមួយខុសប្រក្រតី។ សូមព្យាយាមម្តង​ទៀតនៅ​ពេលក្រោយ។</translation>
 <translation id="6541983376925655882">{NUM_HOURS,plural, =1{បានពិនិត្យមើល​កាលពី 1 ម៉ោងមុន}other{បានពិនិត្យមើល​កាលពី # ម៉ោងមុន}}</translation>
 <translation id="6545017243486555795">ជម្រះទិន្នន័យទាំងអស់</translation>
-<translation id="6549142516027084053">បង្ហាញខ្លឹមសារឃ្លីបបត</translation>
 <translation id="6560414384669816528">ស្វែងរកដោយប្រើ Sogou</translation>
 <translation id="656065428026159829">មើលច្រើនទៀត</translation>
 <translation id="6565959834589222080">ប្រើ Wi-Fi នៅពេលដែលអាចប្រើបាន</translation>
@@ -914,6 +919,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="6981982820502123353">លទ្ធភាពប្រើប្រាស់</translation>
 <translation id="6989267951144302301">មិន​អាច​ទាញ​យកបាន​ទេ</translation>
 <translation id="6995899638241819463">ទទួលបាន​ការព្រមាន ប្រសិនបើ​ពាក្យសម្ងាត់​​បែកធ្លាយ​នៅក្នុង​ការបំពាន​ទិន្នន័យ</translation>
+<translation id="7001056293070445572">ឯកសារនេះ​មានទំហំធំ (<ph name="FILE_SIZE" />)</translation>
 <translation id="7015203776128479407">ការរៀបចំសមកាលកម្ម​ដំបូង​មិនបាន​បញ្ចប់​ទេ។ សមកាលកម្មបានបិទ។</translation>
 <translation id="7022756207310403729">បើកនៅក្នុងកម្មវិធីរុករក</translation>
 <translation id="702463548815491781">បានណែនាំ នៅពេល​បើកកម្មវិធីតបវិញ ឬមុខងារ​ប្រើប៊ូតុងចុច​</translation>
@@ -1028,6 +1034,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="7791543448312431591">បន្ថែម</translation>
 <translation id="7798392620021911922">បានស្ដារផ្ទាំង <ph name="TAB_COUNT" /></translation>
 <translation id="780301667611848630">ទេ អរគុណ</translation>
+<translation id="7808889146555843082">ការលុបពាក្យសម្ងាត់នេះ​នឹងមិន​លុបគណនីរបស់អ្នក​នៅលើ <ph name="SITE" />​ ទេ។ ផ្លាស់ប្ដូរពាក្យសម្ងាត់របស់អ្នក ឬលុបគណនីរបស់អ្នក​នៅលើ <ph name="SITE" /> ដើម្បីរក្សាឱ្យវាមានសុវត្ថិភាពពីអ្នកដទៃ។</translation>
 <translation id="7810647596859435254">បើក​ដោយ​ប្រើ…</translation>
 <translation id="7815484226266492798">រូបថត​អេក្រង់វែង</translation>
 <translation id="7821588508402923572">ការសន្សំសំចៃ​ទិន្នន័យ​របស់អ្នក​នឹង​បង្ហាញ​នៅ​ទីនេះ</translation>
@@ -1175,12 +1182,14 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="8699120352855309748">មិនផ្ដល់ការបកប្រែភាសាទាំងនេះទេ</translation>
 <translation id="8712637175834984815">យល់ហើយ</translation>
 <translation id="8725066075913043281">ព្យាយាមម្តងទៀត</translation>
+<translation id="8730621377337864115">រួចរាល់</translation>
 <translation id="8748850008226585750">បានលាក់មាតិកា</translation>
 <translation id="8773160212632396039">កំពុងដំណើរការ​សំណើ</translation>
 <translation id="8788265440806329501">បាន​បិទប្រវត្តិរុករក</translation>
 <translation id="8788968922598763114">បើកផ្ទាំងដែលបានបិទចុងក្រោយឡើងវិញ</translation>
 <translation id="8798449543960971550">អាន</translation>
 <translation id="8812260976093120287">នៅលើ​គេហទំព័រ​មួយចំនួន អ្នកអាច​បង់ប្រាក់​ដោយប្រើ​កម្មវិធី​បង់ប្រាក់​ដែល​ស្គាល់​ខាងលើ នៅលើ​ឧបករណ៍​របស់​អ្នក។</translation>
+<translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="881688628773363275">មិនអាចមើលខ្លឹមសាររបស់ផ្ទាំងមើលសាកល្បងបានទេ។</translation>
 <translation id="8820817407110198400">ចំណាំ</translation>
 <translation id="883806473910249246">មាន​បញ្ហាកើត​ឡើង ខណៈពេល​កំពុង​ទាញយក​ខ្លឹមសារ។</translation>
@@ -1218,10 +1227,10 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="9063523880881406963">បិទសំណើគេហទំព័រសម្រាប់កុំព្យូទ័រ</translation>
 <translation id="9065203028668620118">កែប្រែ</translation>
 <translation id="9065383040763568503">ទិន្នន័យ​ដែលបានរក្សាទុក​ដែល Chrome គិតថា​មិនសំខាន់ (ឧ. គេហទំព័រ​ដែលមិនមាន​ការកំណត់​ដែលបានរក្សាទុក ឬ​គេហទំព័រ​ដែលអ្នក​មិនសូវ​ចូលមើល​ញឹកញាប់)</translation>
-<translation id="9069543557624799859">ការទាញយកនឹងចាប់ផ្ដើមនៅម៉ោង <ph name="TIME" />។</translation>
 <translation id="9069999660519089861">គ្មានទំព័រ​ដែលមិនទាន់អានទេ</translation>
 <translation id="9070377983101773829">ចាប់ផ្តើមស្វែងរកដោយសម្លេង</translation>
 <translation id="9074336505530349563">ដើម្បីទទួលបានខ្លឹមសារស្របតាមបុគ្គលដែលណែនាំដោយ Google សូមបើកសមកាលកម្ម</translation>
+<translation id="9074739597929991885">ប៊្លូធូស</translation>
 <translation id="9086302186042011942">កំពុងធ្វើសមកម្ម</translation>
 <translation id="9086455579313502267">មិនអាចចូលប្រើបណ្តាញ</translation>
 <translation id="9100505651305367705">ផ្តល់​ការបង្ហាញ​អត្ថបទ​ក្នុង​ទិដ្ឋភាព​សាមញ្ញ នៅពេលដែល​អាច​ប្រើបាន</translation>

@@ -761,6 +761,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   // "1812:e, 00001800-0000-1000-8000-00805f9b34fb:w, ignored:1, alsoignored."
   virtual std::string GetWebBluetoothBlocklist();
 
+  // Returns whether the interest group API is allowed anywhere in
+  // |browser_context|. Returns false if the interest group API is not allowed
+  // by default on any origin.
+  virtual bool IsInterestGroupAPIAllowed(
+      content::BrowserContext* browser_context,
+      const url::Origin& top_frame_origin,
+      const GURL& api_url);
+
   // Returns whether conversion measurement is allowed anywhere in
   // |browser_context|. Returns false if Conversion Measurement is not allowed
   // by default on any origin.
@@ -1221,6 +1229,14 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool PreSpawnChild(sandbox::TargetPolicy* policy,
                              sandbox::policy::SandboxType sandbox_type,
                              ChildSpawnFlags flags);
+
+  // This may be called on the PROCESS_LAUNCHER thread before the child process
+  // is launched. It gives the embedder a chance to indicate that a process will
+  // not be compatible with Hardware-enforced Stack Protection (CET).
+  // |utility_sub_type| should match that provided on the command line to the
+  // child process. Only use this for embedder-specific processes, and prefer to
+  // key off SandboxType in the relevant SandboxedProcessLauncherDelegate.
+  virtual bool IsUtilityCetCompatible(const std::string& utility_sub_type);
 
   // Returns the AppContainer SID for the specified sandboxed process type, or
   // empty string if this sandboxed process type does not support living inside

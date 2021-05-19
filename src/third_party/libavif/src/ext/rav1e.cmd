@@ -8,13 +8,13 @@
 : # If you're running this on Windows targeting Rust's windows-msvc, be sure you've already run this (from your VC2019 install dir):
 : #     "C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvars64.bat"
 : #
-: # On a successful local build, rav1e/build.libavif/ should contain the necessary headers and static library.
+: # Also, the error that "The target windows-msvc is not supported yet" can safely be ignored provided that rav1e/target/release
+: # contains rav1e.h and rav1e.lib.
 
 git clone -b 0.4 --depth 1 https://github.com/xiph/rav1e.git
 
 cd rav1e
 cargo install cargo-c
 
-mkdir build.libavif
-cargo cinstall --release --library-type=staticlib --prefix=/usr --destdir build.libavif
+cargo cbuild --release --library-type=staticlib
 cd ..

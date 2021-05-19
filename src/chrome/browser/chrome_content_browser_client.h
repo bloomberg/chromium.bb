@@ -273,6 +273,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const url::Origin& requesting_origin,
       const url::Origin& embedding_origin) override;
   std::string GetWebBluetoothBlocklist() override;
+  bool IsInterestGroupAPIAllowed(content::BrowserContext* browser_context,
+                                 const url::Origin& top_frame_origin,
+                                 const GURL& api_url) override;
   bool IsConversionMeasurementAllowed(
       content::BrowserContext* browser_context) override;
   bool IsConversionMeasurementOperationAllowed(
@@ -404,6 +407,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                      ChildSpawnFlags flags) override;
   std::wstring GetAppContainerSidForSandboxType(
       sandbox::policy::SandboxType sandbox_type) override;
+  bool IsUtilityCetCompatible(const std::string& utility_sub_type) override;
   bool IsRendererCodeIntegrityEnabled() override;
   void SessionEnding() override;
   bool ShouldEnableAudioProcessHighPriority() override;

@@ -26,9 +26,9 @@ namespace auction_worklet {
 namespace {
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("hintsfetcher_gethintsrequest", R"(
+    net::DefineNetworkTrafficAnnotation("auction_downloader", R"(
         semantics {
-          sender: "BidderWorklet"
+          sender: "AuctionDownloader"
           description:
             "Requests FLEDGE script or JSON file for running an ad auction."
           trigger:
@@ -119,7 +119,11 @@ void AuctionDownloader::OnBodyReceived(std::unique_ptr<std::string> body) {
   DCHECK(auction_downloader_callback_);
 
   auto simple_url_loader = std::move(simple_url_loader_);
-  if (!body ||
+  std::string allow_fledge;
+  if (!body || !simple_url_loader->ResponseInfo()->headers ||
+      !simple_url_loader->ResponseInfo()->headers->GetNormalizedHeader(
+          "X-Allow-FLEDGE", &allow_fledge) ||
+      !base::EqualsCaseInsensitiveASCII(allow_fledge, "true") ||
       // Note that ResponseInfo's `mime_type` is always lowercase.
       !MimeTypeIsConsistent(mime_type_,
                             simple_url_loader->ResponseInfo()->mime_type) ||

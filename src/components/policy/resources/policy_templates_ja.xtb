@@ -752,6 +752,7 @@
           必要です。ただし、各プロセスに異なるポリシー値が適用され、実行されても
           問題はありません。
           </translation>
+<translation id="2029985289397958781">企業ユーザーに対して <ph name="GOOGLE_LENS_PRODUCT_NAME" /> のカメラを使用した検索を無効にする</translation>
 <translation id="2030905906517501646">デフォルトの検索プロバイダのキーワード</translation>
 <translation id="203096360153626918">このポリシーは Android アプリには適用されません。このポリシーを <ph name="FALSE" /> に設定した場合でも、Android アプリの全画面表示は可能です。</translation>
 <translation id="2032848225007871645">このポリシーでは、ロック画面を解除できるロックのクイック解除モードを管理できます。
@@ -1474,6 +1475,7 @@
 
       このポリシーを false に設定した場合、<ph name="BOREALIS_NAME" /> を使用できません。それ以外の場合（ポリシーが未設定のままか、true に設定した場合）、他のポリシーや設定で無効となっていなければ、<ph name="BOREALIS_NAME" /> を使用できます。</translation>
 <translation id="2964373560810620158">ユーザーに <ph name="LACROS_NAME" /> ブラウザの使用を許可しない</translation>
+<translation id="2968177167006045252">サイトに SharedArrayBuffers の使用を許可する</translation>
 <translation id="2969797921412053304">このポリシーでは、ログイン画面の SAML フロー中にデバイス識別情報のリモート証明書の使用を許可する URL を設定します。
 
       具体的に、URL がこのポリシーの指定パターンの 1 つに一致する場合、その URL ではリモート証明書の要求に対する応答を含む HTTP ヘッダーを受信し、デバイスの識別情報と状態を認証することができます。
@@ -1600,6 +1602,7 @@
 <translation id="3072847235228302527">デバイスのローカル アカウントの利用規約を設定する</translation>
 <translation id="3083259245974004342">パスワード保護</translation>
 <translation id="3086995894968271156"><ph name="PRODUCT_NAME" /> で Cast Receiver を設定します。</translation>
+<translation id="3087346703976541109">クロスオリジン分離コンテキスト以外で SharedArrayBuffers を使用できるかどうかを指定する</translation>
 <translation id="3088557424854005813">認証</translation>
 <translation id="3091832372132789233">主に外部電源に接続しているデバイスのバッテリーを充電する。</translation>
 <translation id="3092059499596000593">システムのデフォルト プリンタを印刷プレビューのデフォルトの選択肢とする</translation>
@@ -1829,6 +1832,7 @@
 <translation id="3415954062311826850">このポリシーは ARC でサポートされていません。</translation>
 <translation id="34160070798637152">デバイス共通のネットワーク設定を制御します。</translation>
 <translation id="3417130629744653218">利用可能なお支払い方法の問い合わせをウェブサイトに許可します。</translation>
+<translation id="3417391585519621050">企業ユーザーに対して <ph name="GOOGLE_LENS_PRODUCT_NAME" /> のカメラを使用した検索を有効にする</translation>
 <translation id="3417418267404583991">このポリシーを true に設定した場合または未設定の場合、<ph name="PRODUCT_OS_NAME" /> ではゲスト ログインが有効になります。ゲスト ログインは匿名ユーザーのセッションで、パスワードが不要です。
 
       このポリシーを false に設定した場合、<ph name="PRODUCT_OS_NAME" /> ではゲスト セッションを開始できません。</translation>
@@ -2964,6 +2968,7 @@
       true に設定した場合は、各 CPU のモデル名、アーキテクチャ、
       最大クロック速度が報告されます。</translation>
 <translation id="5124368997194894978">AC（交流電流）電源接続時の起動を有効にします</translation>
+<translation id="5130213897914754028">サイトに SharedArrayBuffers の使用を許可しない</translation>
 <translation id="5141670636904227950">ログイン画面で有効にする画面拡大鏡のデフォルトのタイプを設定する</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" /> で次の URL パターンを常に表示する</translation>
 <translation id="514870861066611127">このポリシーでは、ユーザーを識別できる情報（OS のログイン、<ph name="PRODUCT_NAME" /> プロフィールのログイン、<ph name="PRODUCT_NAME" /> プロフィール名、<ph name="PRODUCT_NAME" /> プロフィールのパス、<ph name="PRODUCT_NAME" /> 実行ファイルのパスなど）について、レポートを作成するかどうかを管理します。
@@ -3273,6 +3278,7 @@
       このポリシーの値を 0 以外に設定した場合、現在デモ モードでログインしているユーザーが操作しないまま、ここに指定した時間が経過すると、ユーザーは自動的にログアウトされます。
 
       ポリシーの値は、ミリ秒単位で指定する必要があります。</translation>
+<translation id="55057839818162162"><ph name="GOOGLE_LENS_PRODUCT_NAME" /> のカメラを使用した検索を許可する</translation>
 <translation id="5508307164752647432">Kerberos 機能を有効にする</translation>
 <translation id="5511702823008968136">ブックマーク バーを有効にする</translation>
 <translation id="5512418063782665071">ホームページの URL</translation>
@@ -3704,6 +3710,9 @@
 <translation id="6111936128861357925">恐竜のイースター エッグゲームを許可する</translation>
 <translation id="6123052603197028610">タイムスタンプを取得するために Google サーバーへクエリを送信することを許可しない</translation>
 <translation id="6132506775968708399">サードパーティ Cookie をブロックする</translation>
+<translation id="6132739217670763962">
+      クロスオリジン分離コンテキスト以外で SharedArrayBuffers を使用できるかどうかを指定します。ウェブの互換性に関する理由から、Chrome 91 以降（2021-05-25）では、SharedArrayBuffers を使用する際にクロスオリジンの分離が必要となります。詳しくはこちらをご覧ください。
+      https://developer.chrome.com/blog/enabling-shared-array-buffer/</translation>
 <translation id="6133088669883929098">すべてのサイトにキー生成の使用を許可する</translation>
 <translation id="6135398260575578389">セーフ ブラウジングを強化モードで有効にする。このモードではセキュリティが強化されますが、より多くの閲覧情報を Google に提供する必要があります。</translation>
 <translation id="6135895880862759946">ユーザーに <ph name="LACROS_NAME" /> ブラウザでの予備のプロフィールの作成とゲストモードの使用を許可する</translation>
@@ -5901,6 +5910,7 @@
       このポリシーを無効に設定すると、登録済みのデバイスはアクティブな期間を記録または報告しません。</translation>
 <translation id="9077227880520270584">デバイスのローカル アカウントの自動ログイン タイマー</translation>
 <translation id="9084985621503260744">動画操作を電源管理に関連付けるかどうかを指定する</translation>
+<translation id="9088191250434406767">このポリシーを未設定のままにするか有効に設定した場合、ユーザーはカメラと <ph name="GOOGLE_LENS_PRODUCT_NAME" /> を使用して検索できます。このポリシーを無効に設定した場合、<ph name="GOOGLE_LENS_PRODUCT_NAME" /> のカメラを使用した検索が可能な場合でも、検索ボックスに <ph name="GOOGLE_LENS_PRODUCT_NAME" /> ボタンは表示されません。</translation>
 <translation id="9088433379343318874">監視対象ユーザーのコンテンツ プロバイダを有効にする</translation>
 <translation id="9088444059179765143">タイムゾーン自動検出の方法を設定する</translation>
 <translation id="9095999573959728902">この設定が有効な場合、ユーザーはスマートフォン ハブを有効にできます。スマートフォン ハブは、Chrome OS デバイスからスマートフォンを操作できる機能です。
@@ -5990,6 +6000,7 @@
 <translation id="927444535723396977">このポリシーを 1 に設定した場合、ウェブサイトによる JavaScript の実行が許可されます。このポリシーを 2 に設定した場合、JavaScript は拒否されます。
 
       このポリシーを未設定のままにした場合、JavaScript は許可されますが、ユーザーはこの設定を変更できます。</translation>
+<translation id="928189505080808353">ポート 554（有効期限: 2021 年 10 月 15 日）</translation>
 <translation id="929549405492388749">このポリシーを true に設定した場合、Chrome の AppCache がデフォルトで無効になっていても、強制的に有効化します。
 
       このポリシーを未設定のままにするか、false に設定した場合、AppCache の設定は Chrome のデフォルト設定に準拠します。</translation>

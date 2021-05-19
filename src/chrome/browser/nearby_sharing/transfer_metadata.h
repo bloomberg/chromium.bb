@@ -12,7 +12,8 @@
 #include "url/gurl.h"
 
 // Metadata about an ongoing transfer. Wraps transient data like status and
-// progress.
+// progress. This is used to refresh the UI with error messages and show
+// notifications so additions should be explicitly handled on the frontend.
 class TransferMetadata {
  public:
   enum class Status {
@@ -47,7 +48,16 @@ class TransferMetadata {
     kMaxValue = kUnexpectedDisconnection
   };
 
+  enum class Result {
+    kIndeterminate,
+    kSuccess,
+    kFailure,
+    kMaxValue = kFailure
+  };
+
   static bool IsFinalStatus(Status status);
+
+  static Result ToResult(Status status);
 
   static std::string StatusToString(TransferMetadata::Status status);
 

@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/note_taking_controller_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -61,6 +62,7 @@ NoteTakingHelper* g_helper = nullptr;
 
 // Allowed note-taking app IDs.
 const char* const kDefaultAllowedAppIds[] = {
+    web_app::kA4AppId,
     // TODO(jdufault): Remove dev version? See crbug.com/640828.
     NoteTakingHelper::kDevKeepExtensionId,
     NoteTakingHelper::kProdKeepExtensionId,
@@ -199,7 +201,8 @@ NoteTakingHelper::LaunchResult LaunchWebAppInternal(
   // `kNoteTakingWebAppIdTest` and `kNoteTakingWebAppIdDev`) once new-note URL
   // is parsed from the manifest.
   if (app_id == NoteTakingHelper::kNoteTakingWebAppIdTest ||
-      app_id == NoteTakingHelper::kNoteTakingWebAppIdDev) {
+      app_id == NoteTakingHelper::kNoteTakingWebAppIdDev ||
+      app_id == web_app::kA4AppId) {
     launch_params.override_url = web_app->start_url().Resolve("/new");
   } else if (web_app->note_taking_new_note_url().is_valid()) {
     launch_params.override_url = web_app->note_taking_new_note_url();

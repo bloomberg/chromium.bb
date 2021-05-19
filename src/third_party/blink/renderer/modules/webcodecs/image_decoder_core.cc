@@ -106,11 +106,19 @@ ImageDecoderCore::ImageMetadata ImageDecoderCore::DecodeMetadata() {
   DCHECK(decoder_);
 
   ImageDecoderCore::ImageMetadata metadata;
+  metadata.data_complete = data_complete_;
+
+  if (!decoder_->IsSizeAvailable()) {
+    // Decoding has failed if we have no size and no more data.
+    metadata.failed = decoder_->Failed() || data_complete_;
+    return metadata;
+  }
+
+  metadata.has_size = true;
   metadata.frame_count = SafeCast<uint32_t>(decoder_->FrameCount());
   metadata.repetition_count = decoder_->RepetitionCount();
   metadata.image_has_both_still_and_animated_sub_images =
       decoder_->ImageHasBothStillAndAnimatedSubImages();
-  metadata.data_complete = data_complete_;
 
   // It's important that |failed| is set last since some of the methods above
   // may trigger operations which can lead to failure.
@@ -181,7 +189,8 @@ std::unique_ptr<ImageDecoderCore::ImageDecodeResult> ImageDecoderCore::Decode(
 
   have_completed_rgb_decode_ = true;
 
-  // Only satisfy fully complete decode requests.
+  // Only satisfy fully complete decode requests. Treat partial decodes as
+  // complete if we've received all the data we ever will.
   const bool is_complete = image->GetStatus() == ImageFrame::kFrameComplete;
   if (!is_complete && complete_frames_only) {
     result->status = Status::kNoImage;

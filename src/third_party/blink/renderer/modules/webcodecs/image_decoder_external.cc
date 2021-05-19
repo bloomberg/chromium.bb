@@ -190,6 +190,11 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
 
 ImageDecoderExternal::~ImageDecoderExternal() {
   DVLOG(1) << __func__;
+
+  // See OnContextDestroyed(); WeakPtrs must be invalidated ahead of GC.
+  DCHECK_EQ(pending_metadata_requests_, 0);
+  DCHECK(!weak_factory_.HasWeakPtrs());
+  DCHECK(!decode_weak_factory_.HasWeakPtrs());
 }
 
 ScriptPromise ImageDecoderExternal::decode(const ImageDecodeOptions* options) {
@@ -309,6 +314,7 @@ void ImageDecoderExternal::close() {
   if (consumer_)
     consumer_->Cancel();
   weak_factory_.InvalidateWeakPtrs();
+  pending_metadata_requests_ = 0;
   consumer_ = nullptr;
   decoder_.reset();
   tracks_->Disconnect();
@@ -365,16 +371,39 @@ void ImageDecoderExternal::Trace(Visitor* visitor) const {
   ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
-void ImageDecoderExternal::ContextDestroyed() {}
+void ImageDecoderExternal::ContextDestroyed() {
+  // WeakPtrs need special consideration when used with a garbage collected
+  // type; they must be invalidated ahead of finalization.
+  //
+  // We also need to ensure that no further WeakPtrs are created, so close() the
+  // decoder at this point to prevent further operation.
+  close();
+
+  DCHECK(!weak_factory_.HasWeakPtrs());
+  DCHECK(!decode_weak_factory_.HasWeakPtrs());
+}
 
 bool ImageDecoderExternal::HasPendingActivity() const {
-  return !pending_metadata_decodes_.IsEmpty() || !pending_decodes_.IsEmpty();
+  // WARNING: All pending WeakPtr bindings must be tracked here. I.e., all
+  // WTF::SequenceBound.Then() usage must be accounted for. Failure to do so
+  // will cause issues where WeakPtrs are valid between GC finalization and
+  // destruction.
+  const bool has_pending_activity = !pending_metadata_decodes_.IsEmpty() ||
+                                    !pending_decodes_.IsEmpty() ||
+                                    pending_metadata_requests_ > 0;
+
+  if (!has_pending_activity) {
+    DCHECK(!weak_factory_.HasWeakPtrs());
+    DCHECK(!decode_weak_factory_.HasWeakPtrs());
+  }
+
+  return has_pending_activity;
 }
 
 void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
   DCHECK(!closed_);
   DCHECK(decoder_);
-  DCHECK(tracks_->IsEmpty() || tracks_->selectedTrack());
+  DCHECK(failed_ || tracks_->IsEmpty() || tracks_->selectedTrack());
 
   for (auto& request : pending_decodes_) {
     if (failed_) {
@@ -463,6 +492,16 @@ void ImageDecoderExternal::OnDecodeReady(
   // If there was nothing to decode yet or no new image, try again; this will do
   // nothing if no new data has been received since the last submitted request.
   if (result->status == ImageDecoderCore::Status::kNoImage) {
+    // Once we're data complete, if no further image can be decoded, we should
+    // reject the decode() since it can't be satisfied.
+    if (data_complete_) {
+      request->exception = MakeGarbageCollected<DOMException>(
+          DOMExceptionCode::kIndexSizeError,
+          String::Format("Unexpected end of image. Request for frame index %d "
+                         "can't be satisfied.",
+                         request->frame_index));
+    }
+
     MaybeSatisfyPendingDecodes();
     return;
   }
@@ -495,6 +534,9 @@ void ImageDecoderExternal::DecodeMetadata() {
   DCHECK(decoder_);
   DCHECK(tracks_->IsEmpty() || tracks_->selectedTrack());
 
+  ++pending_metadata_requests_;
+  DCHECK_GE(pending_metadata_requests_, 1);
+
   decoder_->AsyncCall(&ImageDecoderCore::DecodeMetadata)
       .Then(CrossThreadBindOnce(&ImageDecoderExternal::OnMetadata,
                                 weak_factory_.GetWeakPtr()));
@@ -505,9 +547,20 @@ void ImageDecoderExternal::OnMetadata(
   DCHECK(decoder_);
   DCHECK(!closed_);
 
+  --pending_metadata_requests_;
+  DCHECK_GE(pending_metadata_requests_, 0);
+
   data_complete_ = metadata.data_complete;
   if (metadata.failed || failed_) {
     SetFailed();
+    return;
+  }
+
+  // If we don't have size metadata yet, don't attempt to setup the tracks since
+  // we also won't have a reliable frame count. A later call to DecodeMetadata()
+  // will be made as bytes come in.
+  if (!metadata.has_size) {
+    DCHECK(!data_complete_);
     return;
   }
 

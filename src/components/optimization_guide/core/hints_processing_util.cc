@@ -57,6 +57,10 @@ std::string GetStringNameForOptimizationType(
       return "ShoppingPagePredictor";
     case proto::OptimizationType::LOGIN_DETECTION:
       return "LoginDetection";
+    case proto::OptimizationType::MERCHANT_TRUST_SIGNALS:
+      return "MerchantTrustSignals";
+    case proto::OptimizationType::PRICE_TRACKING:
+      return "PriceTracking";
   }
   NOTREACHED();
   return std::string();

@@ -58,6 +58,32 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="Android.AppLaunch.BlockDrawForInitialTabAccuracy"
+    enum="AppLaunchBlockDrawForInitialTabAccuracy" expires_after="2021-12-15">
+  <owner>sinansahin@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>skym@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records the accuracy of the logic used to decide whether to block the view
+    draw of the first tab, expressed as an enum. Recorded when the active tab is
+    restored or an initial tab is created in ChromeTabbedActivity.
+  </summary>
+</histogram>
+
+<histogram name="Android.AppLaunch.DurationDrawWasBlocked" units="ms"
+    expires_after="2021-12-15">
+  <owner>sinansahin@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>skym@chromium.org</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records how long the initial tab's draw was blocked, if it was. Recorded
+    when the active tab is restored or an initial tab is created in
+    ChromeTabbedActivity.
+  </summary>
+</histogram>
+
 <histogram name="Android.AppNotificationStatus" enum="NotificationAppStatus"
     expires_after="2020-11-15">
   <owner>peter@chromium.org</owner>
@@ -2540,6 +2566,28 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>Records ClearProxyOverride calls.</summary>
 </histogram>
 
+<histogram name="Android.WebView.ComponentUpdater.CPSDirectorySize" units="KB"
+    expires_after="2021-10-08">
+  <owner>laisminchillo@chromium.org</owner>
+  <owner>nator@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Size on disk taken by the ComponentsProviderService serving directory. This
+    is logged once per run of the update job in AwComponentUpdateService.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ComponentUpdater.CUSDirectorySize" units="KB"
+    expires_after="2021-10-08">
+  <owner>laisminchillo@chromium.org</owner>
+  <owner>nator@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Size on disk taken by the AwComponentUpdateService directory. This is logged
+    once per update job in AwComponentUpdateService.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.ComponentUpdater.GetFilesDuration" units="ms"
     expires_after="2021-10-08">
   <owner>laisminchillo@chromium.org</owner>
@@ -2561,6 +2609,40 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
     Logs the result of ComponentsProviderService getFilesForComponent request.
     This method retrieves FileDescriptors for an installed component. This is
     logged once for every request the service receives.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ComponentUpdater.UnexpectedExit"
+    enum="Boolean" expires_after="2021-10-08">
+  <owner>laisminchillo@chromium.org</owner>
+  <owner>nator@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Whether AwComponentUpdateService quit unexpectedly on the previous run. This
+    might indicate a crash occurred during the previous job. This is logged once
+    per run of AwComponentUpdateService.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ComponentUpdater.UpdateJobDuration" units="ms"
+    expires_after="2021-10-08">
+  <owner>laisminchillo@chromium.org</owner>
+  <owner>nator@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Duration of AwComponentUpdateService update job. This job is responsible for
+    updating and installing components. This is logged once per run of the job.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ComponentUpdater.UpdateJobFilesChanged"
+    units="count" expires_after="2021-10-08">
+  <owner>laisminchillo@chromium.org</owner>
+  <owner>nator@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    How many components were updated by AwComponentUpdateService update job.
+    This is logged once per run of the job, and is capped at 1000.
   </summary>
 </histogram>
 

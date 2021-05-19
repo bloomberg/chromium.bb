@@ -5,21 +5,26 @@
 package org.chromium.chrome.browser.firstrun;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewTreeObserver.OnPreDrawListener;
 
 import androidx.annotation.CallSuper;
+import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import org.chromium.base.ActivityState;
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoUtils;
@@ -48,25 +53,42 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     /**
      * Alerted about various events when FirstRunActivity performs them.
      * TODO(crbug.com/1114319): Rework and use a better testing setup.
-     * */
+     */
     public interface FirstRunActivityObserver {
-        /** See {@link #onFlowIsKnown}. */
-        void onFlowIsKnown(Bundle freProperties);
+        /** See {@link #onCreatePostNativeAndPoliciesPageSequence}. */
+        void onCreatePostNativeAndPoliciesPageSequence(
+                FirstRunActivity caller, Bundle freProperties);
 
         /** See {@link #acceptTermsOfService}. */
-        void onAcceptTermsOfService();
+        void onAcceptTermsOfService(FirstRunActivity caller);
 
         /** See {@link #jumpToPage}. */
-        void onJumpToPage(int position);
+        void onJumpToPage(FirstRunActivity caller, int position);
 
         /** Called when First Run is completed. */
-        void onUpdateCachedEngineName();
+        void onUpdateCachedEngineName(FirstRunActivity caller);
 
         /** See {@link #abortFirstRunExperience}. */
-        void onAbortFirstRunExperience();
+        void onAbortFirstRunExperience(FirstRunActivity caller);
 
         /** See {@link #exitFirstRun()}. */
-        void onExitFirstRun();
+        void onExitFirstRun(FirstRunActivity caller);
+    }
+
+    // TODO(https://crbug.com/1196404): Replace with call into shared code once
+    // https://crrev.com/c/2815659 lands.
+    private static class ViewDrawBlocker {
+        public static void blockViewDrawUntilReady(View view, Supplier<Boolean> viewReadySupplier) {
+            view.getViewTreeObserver().addOnPreDrawListener(new OnPreDrawListener() {
+                @Override
+                public boolean onPreDraw() {
+                    if (!viewReadySupplier.get()) return false;
+
+                    view.getViewTreeObserver().removeOnPreDrawListener(this);
+                    return true;
+                }
+            });
+        }
     }
 
     // UMA constants.
@@ -86,6 +108,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     private static final int FRE_PROGRESS_DEFAULT_SEARCH_ENGINE_SHOWN = 6;
     private static final int FRE_PROGRESS_MAX = 7;
 
+    @Nullable
     private static FirstRunActivityObserver sObserver;
 
     private String mResultSignInAccountName;
@@ -187,6 +210,11 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             mPagerAdapter.notifyDataSetChanged();
         }
         mPostNativeAndPolicyPagesCreated = true;
+
+        if (sObserver != null) {
+            sObserver.onCreatePostNativeAndPoliciesPageSequence(
+                    FirstRunActivity.this, mFreProperties);
+        }
     }
 
     @Override
@@ -225,6 +253,8 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         setFinishOnTouchOutside(true);
 
         setContentView(createContentView());
+        ViewDrawBlocker.blockViewDrawUntilReady(
+                findViewById(android.R.id.content), () -> mPages.size() > 0);
 
         mFirstRunFlowSequencer = new FirstRunFlowSequencer(this) {
             @Override
@@ -253,7 +283,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                     skipPagesIfNecessary();
                 }
 
-                if (sObserver != null) sObserver.onFlowIsKnown(mFreProperties);
                 recordFreProgressHistogram(mFreProgressStates.get(0));
                 long inflationCompletion = SystemClock.elapsedRealtime();
                 RecordHistogram.recordTimesHistogram("MobileFre.FromLaunch.FirstFragmentInflatedV2",
@@ -376,6 +405,29 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     @Override
     public void onStart() {
         super.onStart();
+
+        // Multiple active FREs does not really make sense for the user. Once one is complete, the
+        // others would become out of date. This approach turns out to be quite tricky to enforce
+        // completely with just Android configuration, because of all the different ways the FRE
+        // can be launched, especially when it is not launching a new task and another activity's
+        // traits are used. So instead just finish any FRE that is not ourselves manually.
+        for (Activity activity : ApplicationStatus.getRunningActivities()) {
+            if (activity instanceof FirstRunActivity && activity != this) {
+                // Simple finish call only works when in the same task.
+                if (activity.getTaskId() == this.getTaskId()) {
+                    activity.finish();
+                } else {
+                    ApiCompatibilityUtils.finishAndRemoveTask(activity);
+                    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                        // On L ApiCompatibilityUtils.finishAndRemoveTask() sometimes fails. Try one
+                        // last time, see crbug.com/781396 for origin of this approach.
+                        if (!activity.isFinishing()) {
+                            activity.finish();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -409,7 +461,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         finish();
 
         notifyCustomTabCallbackFirstRunIfNecessary(getIntent(), false);
-        if (sObserver != null) sObserver.onAbortFirstRunExperience();
+        if (sObserver != null) sObserver.onAbortFirstRunExperience(this);
     }
 
     @Override
@@ -453,7 +505,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
         // Update the search engine name cached by the widget.
         SearchWidgetProvider.updateCachedEngineName();
-        if (sObserver != null) sObserver.onUpdateCachedEngineName();
+        if (sObserver != null) sObserver.onUpdateCachedEngineName(this);
 
         launchPendingIntentAndFinish();
     }
@@ -489,7 +541,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             });
         }
 
-        if (sObserver != null) sObserver.onExitFirstRun();
+        if (sObserver != null) sObserver.onExitFirstRun(this);
     }
 
     @Override
@@ -521,7 +573,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         FirstRunStatus.setSkipWelcomePage(true);
         flushPersistentData();
 
-        if (sObserver != null) sObserver.onAcceptTermsOfService();
+        if (sObserver != null) sObserver.onAcceptTermsOfService(this);
 
         jumpToPage(mPager.getCurrentItem() + 1);
     }
@@ -544,7 +596,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
      * @return Whether the transition to a given page was allowed.
      */
     private boolean jumpToPage(int position) {
-        if (sObserver != null) sObserver.onJumpToPage(position);
+        if (sObserver != null) sObserver.onJumpToPage(this, position);
 
         if (!didAcceptTermsOfService()) {
             return position == 0;

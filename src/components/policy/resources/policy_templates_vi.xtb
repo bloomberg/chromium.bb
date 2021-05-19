@@ -776,6 +776,7 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
            cho tất cả thẻ đã tải. Việc các quy trình sử dụng những giá trị
           khác nhau của chính sách này trong khi chạy sẽ không gây ra vấn đề gì.
           </translation>
+<translation id="2029985289397958781">Tắt tính năng tìm kiếm bằng máy ảnh thông qua <ph name="GOOGLE_LENS_PRODUCT_NAME" /> đối với người dùng Enterprise</translation>
 <translation id="2030905906517501646">Từ khóa nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="203096360153626918">Chính sách này không ảnh hưởng đến các ứng dụng Android. Các ứng dụng đó sẽ có thể vào chế độ toàn màn hình ngay cả khi chính sách này được đặt thành <ph name="FALSE" />.</translation>
 <translation id="2032848225007871645">Việc đặt chính sách này sẽ kiểm soát chế độ mở khóa nhanh nào có thể mở khóa màn hình khóa.
@@ -1522,6 +1523,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn tắt chính sách này, <ph name="BOREALIS_NAME" /> sẽ không sử dụng được. Khi bạn bật hoặc không đặt chính sách này, <ph name="BOREALIS_NAME" /> sẽ chỉ sử dụng được nếu không bị chế độ cài đặt hoặc chính sách khác vô hiệu hóa.</translation>
 <translation id="2964373560810620158">Ngăn người dùng sử dụng trình duyệt <ph name="LACROS_NAME" /></translation>
+<translation id="2968177167006045252">Cho phép các trang web sử dụng SharedArrayBuffers</translation>
 <translation id="2969797921412053304">Chính sách này định cấu hình URL sẽ được cấp quyền sử dụng tính năng chứng thực từ xa danh tính thiết bị trong quy trình SAML trên màn hình đăng nhập.
 
       Cụ thể là nếu một URL khớp với một trong các mẫu được cung cấp thông qua chính sách này, thì URL đó sẽ được phép nhận tiêu đề HTTP chứa phản hồi của yêu cầu chứng thực từ xa, chứng thực danh tính thiết bị và trạng thái thiết bị.
@@ -1663,6 +1665,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3072847235228302527">Đặt Điều khoản dịch vụ cho một tài khoản cục bộ trên thiết bị</translation>
 <translation id="3083259245974004342">Bảo vệ bằng mật khẩu</translation>
 <translation id="3086995894968271156">Định cấu hình Bộ thu Google Cast trong <ph name="PRODUCT_NAME" />.</translation>
+<translation id="3087346703976541109">Chỉ định xem SharedArrayBuffers có thể dùng được trong bối cảnh không bị tách riêng trên nhiều nguồn gốc hay không</translation>
 <translation id="3088557424854005813">Chứng nhận</translation>
 <translation id="3091832372132789233">Sạc pin cho những thiết bị chủ yếu kết nối với nguồn điện bên ngoài.</translation>
 <translation id="3092059499596000593">Dùng máy in mặc định của hệ thống làm lựa chọn mặc định trong chế độ Xem trước bản in</translation>
@@ -1899,6 +1902,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3415954062311826850">Chính sách này không được hỗ trợ trong Arc.</translation>
 <translation id="34160070798637152">Kiểm soát cấu hình mạng cho toàn bộ thiết bị.</translation>
 <translation id="3417130629744653218">Cho phép các trang web truy vấn phương thức thanh toán có sẵn.</translation>
+<translation id="3417391585519621050">Bật tính năng tìm kiếm bằng máy ảnh thông qua <ph name="GOOGLE_LENS_PRODUCT_NAME" /> đối với người dùng Enterprise</translation>
 <translation id="3417418267404583991">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ bật tính năng đăng nhập với tư cách khách. Các đăng nhập với tư cách khách là các phiên người dùng ẩn danh và không yêu cầu mật khẩu.
 
       Nếu chính sách này được đặt thành sai, <ph name="PRODUCT_OS_NAME" /> sẽ không cho phép bắt đầu phiên khách.</translation>
@@ -3062,6 +3066,7 @@ Khi bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" /> chỉ cho phé
       Nếu bạn đặt chính sách này thành true, thì tên kiểu máy, cấu trúc và tốc độ xung nhịp tối đa của mỗi CPU sẽ
       được báo cáo.</translation>
 <translation id="5124368997194894978">Bật tính năng khởi động trên AC (dòng điện xoay chiều)</translation>
+<translation id="5130213897914754028">Ngăn các trang web sử dụng SharedArrayBuffers</translation>
 <translation id="5141670636904227950">Đặt loại kính lúp màn hình mặc định được bật trên màn hình đăng nhập</translation>
 <translation id="5142301680741828703">Luôn hiển thị các mẫu URL sau đây trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="514870861066611127">Chính sách này kiểm soát xem có báo cáo thông tin dùng để nhận dạng người dùng, chẳng hạn như thông tin đăng nhập trên hệ điều hành, thông tin đăng nhập hồ sơ trên <ph name="PRODUCT_NAME" />, tên hồ sơ trên <ph name="PRODUCT_NAME" />, đường dẫn hồ sơ trên <ph name="PRODUCT_NAME" /> và đường dẫn thực thi trên <ph name="PRODUCT_NAME" /> hay không.
@@ -3393,6 +3398,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
       Khi giá trị của chính sách này được đặt và giá trị đó khác 0, người dùng hiện được đăng nhập vào bản trình diễn sẽ tự động bị đăng xuất sau khi thời gian không hoạt động của khoảng thời gian đã chỉ định trôi qua.
 
       Giá trị của chính sách này sẽ được chỉ định theo mili giây.</translation>
+<translation id="55057839818162162">Cho phép tính năng tìm kiếm bằng máy ảnh thông qua <ph name="GOOGLE_LENS_PRODUCT_NAME" /></translation>
 <translation id="5508307164752647432">Bật chức năng Kerberos</translation>
 <translation id="5511702823008968136">Bật Thanh dấu trang</translation>
 <translation id="5512418063782665071">URL trang chủ</translation>
@@ -3851,6 +3857,12 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
 <translation id="6111936128861357925">Cho phép trò chơi trứng khủng long Phục sinh</translation>
 <translation id="6123052603197028610">Không cho phép gửi các truy vấn đến máy chủ của Google để truy xuất dấu thời gian</translation>
 <translation id="6132506775968708399">Chặn cookie của bên thứ ba</translation>
+<translation id="6132739217670763962">
+      Chỉ định xem SharedArrayBuffers có thể dùng được trong bối cảnh không bị tách riêng trên nhiều nguồn gốc
+      hay không. Chrome sẽ yêu cầu chế độ tách riêng trên nhiều nguồn gốc khi sử dụng
+      SharedArrayBuffers trên phiên bản Chrome 91 trở đi (25/05/2021) để đảm bảo khả năng tương thích
+      trên web. Bạn có thể xem thêm thông tin chi tiết trên:
+      https://developer.chrome.com/blog/enabling-shared-array-buffer/.</translation>
 <translation id="6133088669883929098">Cho phép tất cả các trang web sử dụng tạo khóa</translation>
 <translation id="6135398260575578389">Tính năng Duyệt web an toàn đang hoạt động ở chế độ nâng cao. Chế độ này bảo mật tốt hơn nhưng người dùng sẽ phải chia sẻ thêm thông tin duyệt web với Google.</translation>
 <translation id="6135895880862759946">Cho phép người dùng tạo hồ sơ phụ và sử dụng chế độ khách trong trình duyệt <ph name="LACROS_NAME" /></translation>
@@ -5251,7 +5263,7 @@ Nếu bạn đặt chính sách thành Tắt, thì <ph name="PRODUCT_NAME" /> s�
       – Định dạng mẫu URL theo định dạng này (https://www.chromium.org/administrators/url-blocklist-filter-format).
 
       Nếu bạn không đặt chính sách này, sẽ không có mức hạn chế nào được áp dụng.</translation>
-<translation id="7902040092815978832">Hiển thị bàn phím số để nhập mật khẩu</translation>
+<translation id="7902040092815978832">Hiện bàn phím số để nhập mật khẩu</translation>
 <translation id="7904177352786629708">Nếu bạn đặt chính sách này thành Bật, hệ thống sẽ bỏ qua quá trình tra cứu CNAME. Khi đó, tên máy chủ bạn đã nhập khi tạo SPN Kerberos sẽ được sử dụng.
 
       Nếu bạn đặt thành Tắt hoặc không đặt chính sách này, thì quá trình tra cứu CNAME sẽ xác định tên chuẩn của máy chủ khi tạo SPN Kerberos.</translation>
@@ -6124,6 +6136,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
       Nếu bạn đặt chính sách này thành Tắt, thiết bị đã đăng ký sẽ không ghi hoặc báo cáo thời gian hoạt động.</translation>
 <translation id="9077227880520270584">Hẹn giờ tự động đăng nhập vào tài khoản trên thiết bị</translation>
 <translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
+<translation id="9088191250434406767">Nếu bạn đặt thành Bật hoặc không đặt chính sách này, thì người dùng sẽ được phép tìm kiếm bằng máy ảnh thông qua <ph name="GOOGLE_LENS_PRODUCT_NAME" />. Nếu bạn đặt chính sách này thành Tắt, người dùng sẽ không thấy nút <ph name="GOOGLE_LENS_PRODUCT_NAME" /> trong hộp tìm kiếm dù họ có thể sử dụng tính năng tìm kiếm bằng máy ảnh thông qua <ph name="GOOGLE_LENS_PRODUCT_NAME" />.</translation>
 <translation id="9088433379343318874">Cho phép nhà cung cấp nội dung của người dùng được giám sát</translation>
 <translation id="9088444059179765143">Định cấu hình phương thức phát hiện múi giờ tự động</translation>
 <translation id="9095999573959728902">Nếu bạn bật tùy chọn cài đặt này, người dùng sẽ được phép chọn sử dụng Trung tâm điều khiển điện thoại. Trung tâm này cho phép họ tương tác với điện thoại của mình trên một thiết bị Chrome OS.
@@ -6220,6 +6233,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="927444535723396977">Nếu bạn đặt chính sách này thành 1, thì các trang web có thể chạy JavaScript. Nếu bạn đặt chính sách này thành 2, thì các trang web không được chạy JavaScript.
 
       Nếu bạn không đặt chính sách này, thì các trang web có thể chạy JavaScript nhưng người dùng có thể thay đổi tùy chọn cài đặt này.</translation>
+<translation id="928189505080808353">cổng 554 (hết hạn vào ngày 15/10/2021)</translation>
 <translation id="929549405492388749">Nếu bạn đặt chính sách này thành true, thì AppCache sẽ buộc phải bật, kể cả khi AppCache trong Chrome không có sẵn theo mặc định.
 
       Nếu bạn đặt chính sách này thành false hoặc không đặt chính sách này, thì AppCache sẽ tuân theo các tùy chọn mặc định của Chrome.</translation>

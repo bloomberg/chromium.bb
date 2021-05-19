@@ -17,6 +17,8 @@ load("//tools/build_defs/cc:cc_fake_binary.bzl", "cc_fake_binary")
 cc_library(
     name = "types",
     srcs = [
+        "monitored_runnable.cc",
+        "pending_job_registry.cc",
         "pipe.cc",
     ],
     hdrs = [
@@ -32,9 +34,11 @@ cc_library(
         "future.h",
         "lockable.h",
         "logging.h",
+        "monitored_runnable.h",
         "multi_thread_executor.h",
         "mutex.h",
         "mutex_lock.h",
+        "pending_job_registry.h",
         "pipe.h",
         "scheduled_executor.h",
         "settable_future.h",

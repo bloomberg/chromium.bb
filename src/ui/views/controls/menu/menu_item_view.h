@@ -506,6 +506,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   void invalidate_dimensions() { dimensions_.height = 0; }
   bool is_dimensions_valid() const { return dimensions_.height > 0; }
 
+  SkColor GetMinorIconColor(
+      const MenuDelegate::LabelStyle& default_style) const;
+
   // The delegate. This is only valid for the root menu item. You shouldn't
   // use this directly, instead use GetDelegate() which walks the tree as
   // as necessary.

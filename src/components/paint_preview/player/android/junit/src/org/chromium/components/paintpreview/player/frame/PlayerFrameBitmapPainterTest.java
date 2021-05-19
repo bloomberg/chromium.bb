@@ -292,16 +292,22 @@ public class PlayerFrameBitmapPainterTest {
         CompressibleBitmap[][] bitmaps = new CompressibleBitmap[3][2];
         CompressibleBitmap compressibleBitmap00 =
                 new CompressibleBitmap(bitmap00, taskRunner, false);
+        compressibleBitmap00.setIgnoreMissingAlphaForTesting(true);
         CompressibleBitmap compressibleBitmap10 =
                 new CompressibleBitmap(bitmap10, taskRunner, false);
+        compressibleBitmap10.setIgnoreMissingAlphaForTesting(true);
         CompressibleBitmap compressibleBitmap01 =
                 new CompressibleBitmap(bitmap01, taskRunner, false);
+        compressibleBitmap01.setIgnoreMissingAlphaForTesting(true);
         CompressibleBitmap compressibleBitmap11 =
                 new CompressibleBitmap(bitmap11, taskRunner, false);
+        compressibleBitmap11.setIgnoreMissingAlphaForTesting(true);
         CompressibleBitmap compressibleBitmap20 =
                 new CompressibleBitmap(bitmap20, taskRunner, false);
+        compressibleBitmap20.setIgnoreMissingAlphaForTesting(true);
         CompressibleBitmap compressibleBitmap21 =
                 new CompressibleBitmap(bitmap21, taskRunner, false);
+        compressibleBitmap21.setIgnoreMissingAlphaForTesting(true);
         bitmaps[0][0] = compressibleBitmap00;
         bitmaps[1][0] = compressibleBitmap10;
         bitmaps[0][1] = compressibleBitmap01;
@@ -318,15 +324,32 @@ public class PlayerFrameBitmapPainterTest {
         InOrder inOrder = inOrder(invalidator);
         inOrder.verify(invalidator, times(2)).run();
 
-        // Draw once to force decode.
+        // Draw once to force decodes. Lock bitmap 00 so it can't be decoded.
+        compressibleBitmap00.lock();
+        painter.onDraw(canvas);
+        shadowOf(Looper.getMainLooper()).idle();
+        // Invalidate once per inflate + once for the locked bitmap.
+        inOrder.verify(invalidator, times(4)).run();
+
+        // Now draw the inflated bitmaps (3 of them).
         painter.onDraw(canvas);
         shadowOf(Looper.getMainLooper()).idle();
         inOrder.verify(invalidator, times(1)).run();
-        // Now draw everything.
+
+        // Unlock bitmap 00 and allow it to be inflated (and draw 3).
+        compressibleBitmap00.unlock();
         painter.onDraw(canvas);
+        shadowOf(Looper.getMainLooper()).idle();
+        inOrder.verify(invalidator, times(1)).run();
+
+        // No invalidation required draw 4.
+        painter.onDraw(canvas);
+        shadowOf(Looper.getMainLooper()).idle();
+        inOrder.verify(invalidator, times(0)).run();
+
         // Verify that the correct portions of each bitmap tiles is painted in the correct
         // positions of in the canvas.
-        canvas.assertNumberOfBitmapDraws(4);
+        canvas.assertNumberOfBitmapDraws(3 + 3 + 4);
         canvas.assertDrawBitmap(
                 compressibleBitmap00.getBitmap(), new Rect(0, 0, 10, 15), new Rect(0, 0, 10, 15));
         canvas.assertDrawBitmap(
@@ -344,7 +367,7 @@ public class PlayerFrameBitmapPainterTest {
 
         painter.onDraw(canvas);
         shadowOf(Looper.getMainLooper()).idle();
-        inOrder.verify(invalidator, times(1)).run();
+        inOrder.verify(invalidator, times(2)).run();
         canvas.assertNumberOfBitmapDraws(2);
         canvas.assertDrawBitmap(
                 compressibleBitmap10.getBitmap(), new Rect(0, 0, 10, 15), new Rect(0, 0, 10, 15));

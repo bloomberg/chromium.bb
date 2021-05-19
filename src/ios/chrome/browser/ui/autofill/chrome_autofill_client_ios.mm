@@ -324,11 +324,18 @@ void ChromeAutofillClientIOS::ConfirmSaveAddressProfile(
     AddressProfileSavePromptCallback callback) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kAutofillAddressProfileSavePrompt));
-  auto delegate = std::make_unique<AutofillSaveAddressProfileDelegateIOS>(
-      profile, std::move(callback));
-  infobar_manager_->AddInfoBar(std::make_unique<InfoBarIOS>(
-      InfobarType::kInfobarTypeSaveAutofillAddressProfile,
-      std::move(delegate)));
+  if (IsInfobarOverlayUIEnabled()) {
+    auto delegate = std::make_unique<AutofillSaveAddressProfileDelegateIOS>(
+        profile, std::move(callback));
+    infobar_manager_->AddInfoBar(std::make_unique<InfoBarIOS>(
+        InfobarType::kInfobarTypeSaveAutofillAddressProfile,
+        std::move(delegate)));
+  } else {
+    // Fallback to the default behavior to saving without the confirmation.
+    std::move(callback).Run(
+        AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted,
+        profile);
+  }
 }
 
 bool ChromeAutofillClientIOS::HasCreditCardScanFeature() {

@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.download;
 import android.app.Activity;
 import android.content.Context;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUiEvent;
@@ -23,8 +25,10 @@ import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogCoordi
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.browser_ui.util.DownloadUtils;
 import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.net.ConnectionType;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -50,6 +54,7 @@ public class DownloadDialogBridge
     private Context mContext;
     private ModalDialogManager mModalDialogManager;
     private long mTotalBytes;
+    private @ConnectionType int mConnectionType = ConnectionType.CONNECTION_NONE;
     private @DownloadLocationDialogType int mLocationDialogType;
     private String mSuggestedPath;
     private PrefService mPrefService;
@@ -95,8 +100,8 @@ public class DownloadDialogBridge
 
     @CalledByNative
     private void showDialog(WindowAndroid windowAndroid, long totalBytes,
-            @DownloadLocationDialogType int dialogType, String suggestedPath,
-            boolean supportsLaterDialog) {
+            @ConnectionType int connectionType, @DownloadLocationDialogType int dialogType,
+            String suggestedPath, boolean supportsLaterDialog) {
         Activity activity = windowAndroid.getActivity().get();
         if (activity == null) {
             onCancel();
@@ -119,19 +124,22 @@ public class DownloadDialogBridge
                         DownloadLocationSuggestionEvent.LOCATION_SUGGESTION_SHOWN);
             }
 
-            showDialog(activity, modalDialogManager, getPrefService(), totalBytes,
+            showDialog(activity, modalDialogManager, getPrefService(), totalBytes, connectionType,
                     suggestedDialogType, suggestedPath, supportsLaterDialog);
         });
     }
 
+    @VisibleForTesting
     void showDialog(Context context, ModalDialogManager modalDialogManager, PrefService prefService,
-            long totalBytes, @DownloadLocationDialogType int dialogType, String suggestedPath,
+            long totalBytes, @ConnectionType int connectionType,
+            @DownloadLocationDialogType int dialogType, String suggestedPath,
             boolean supportsLaterDialog) {
         mContext = context;
         mModalDialogManager = modalDialogManager;
         mPrefService = prefService;
 
         mTotalBytes = totalBytes;
+        mConnectionType = connectionType;
         mLocationDialogType = dialogType;
         mSuggestedPath = suggestedPath;
 
@@ -218,8 +226,11 @@ public class DownloadDialogBridge
                 new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                         .with(DownloadLaterDialogProperties.CONTROLLER, mDownloadLaterDialog)
                         .with(DownloadLaterDialogProperties.INITIAL_CHOICE, mDownloadLaterChoice)
-                        .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION,
-                                promptStatus);
+                        .with(DownloadLaterDialogProperties.DONT_SHOW_AGAIN_SELECTION, promptStatus)
+                        .with(DownloadLaterDialogProperties.SUBTITLE_TEXT,
+                                getDownloadLaterDialogSubtitle())
+                        .with(DownloadLaterDialogProperties.SHOW_DATE_TIME_PICKER_OPTION,
+                                DownloadDialogBridgeJni.get().shouldShowDateTimePicker());
         if (mShowEditLocation) {
             builder.with(DownloadLaterDialogProperties.LOCATION_TEXT,
                     mContext.getResources().getString(R.string.menu_downloads));
@@ -229,6 +240,25 @@ public class DownloadDialogBridge
                 mContext, mModalDialogManager, mPrefService, builder.build());
         DownloadLaterMetrics.recordDownloadLaterUiEvent(
                 DownloadLaterUiEvent.DOWNLOAD_LATER_DIALOG_SHOW);
+    }
+
+    private String getDownloadLaterDialogSubtitle() {
+        if (mConnectionType == ConnectionType.CONNECTION_2G) {
+            return mContext.getResources().getString(R.string.download_later_slow_network_subtitle,
+                    mContext.getResources().getString(R.string.download_later_2g_connection));
+        }
+        if (mConnectionType == ConnectionType.CONNECTION_BLUETOOTH) {
+            return mContext.getResources().getString(R.string.download_later_slow_network_subtitle,
+                    mContext.getResources().getString(
+                            R.string.download_later_bluetooth_connection));
+        }
+
+        if (mTotalBytes >= DownloadDialogBridgeJni.get().getDownloadLaterMinFileSize()) {
+            return mContext.getResources().getString(R.string.download_later_large_file_subtitle,
+                    DownloadUtils.getStringForBytes(mContext, mTotalBytes));
+        }
+
+        return "";
     }
 
     // DownloadLocationDialogController implementation.
@@ -299,17 +329,23 @@ public class DownloadDialogBridge
         getPrefService().setInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID, status);
     }
 
+    public static boolean shouldShowDateTimePicker() {
+        return DownloadDialogBridgeJni.get().shouldShowDateTimePicker();
+    }
+
     private static PrefService getPrefService() {
         return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         void onComplete(long nativeDownloadDialogBridge, DownloadDialogBridge caller,
                 String returnedPath, boolean onWifi, long startTime);
         void onCanceled(long nativeDownloadDialogBridge, DownloadDialogBridge caller);
         String getDownloadDefaultDirectory();
         void setDownloadAndSaveFileDefaultDirectory(String directory);
         boolean isDataReductionProxyEnabled();
+        long getDownloadLaterMinFileSize();
+        boolean shouldShowDateTimePicker();
     }
 }

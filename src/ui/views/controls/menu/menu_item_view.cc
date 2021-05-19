@@ -1139,7 +1139,7 @@ void MenuItemView::PaintMinorIconAndText(
   }
 
   if (!minor_icon.empty()) {
-    gfx::ImageSkia image = minor_icon.GetImageSkia(style.foreground);
+    const gfx::ImageSkia image = minor_icon.GetImageSkia(GetNativeTheme());
 
     int image_x = GetMirroredRect(minor_text_bounds).right() -
                   render_text->GetContentWidth() -

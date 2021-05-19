@@ -155,6 +155,11 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDefaultWebAppInstallation;
 #endif
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kDefaultPinnedAppsUpdate2021Q2;
+#endif
+
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopCaptureTabSharingInfobar;
 
@@ -250,6 +255,9 @@ extern const base::Feature kEnableWebAppUninstallFromOsSettings;
 #if !defined(OS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kEnterpriseRealtimeExtensionRequest;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<base::TimeDelta>
+    kEnterpiseRealtimeExtensionRequestThrottleDelay;
 #endif
 
 #if defined(OS_MAC)

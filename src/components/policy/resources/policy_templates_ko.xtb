@@ -772,6 +772,7 @@
           완전히 다시 시작해야 합니다. 이 정책 값이 달라도 프로세스가 실행되는 데는
           어떠한 문제도 없습니다.
           </translation>
+<translation id="2029985289397958781">기업 사용자용 <ph name="GOOGLE_LENS_PRODUCT_NAME" /> 카메라 지원 검색 사용 중지</translation>
 <translation id="2030905906517501646">기본 검색 공급자 키워드</translation>
 <translation id="203096360153626918">이 정책은 Android 앱에 아무런 영향도 미치지 않습니다. 이 정책이 <ph name="FALSE" />로 설정되더라도 Android 앱이 전체화면 모드로 전환될 수 있습니다.</translation>
 <translation id="2032848225007871645">정책을 설정하면 잠금 화면을 해제할 빠른 잠금 해제 모드를 제어할 수 있습니다.
@@ -1519,6 +1520,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 
       정책이 False로 설정되면 <ph name="BOREALIS_NAME" />를 사용할 수 없습니다. 그렇지 않은 경우(정책이 설정되지 않거나 True로 설정됨) 다른 정책 또는 설정에서 사용 중지하지 않는 이상 <ph name="BOREALIS_NAME" />를 사용할 수 있습니다.</translation>
 <translation id="2964373560810620158">사용자가 <ph name="LACROS_NAME" /> 브라우저를 사용하지 못하도록 차단</translation>
+<translation id="2968177167006045252">사이트에서 SharedArrayBuffers를 사용하도록 허용</translation>
 <translation id="2969797921412053304">이 정책은 로그인 화면의 SAML 절차가 진행되는 동안 기기 ID의 원격 증명을 사용할 수 있는 액세스 권한이 부여되는 URL을 지정합니다.
 
       특히 URL이 이 정책을 통해 제공되는 패턴 중 하나와 일치하는 경우 원격 증명 자격 확인에 대한 응답을 포함하는 HTTP 헤더를 받을 수 있도록 허용하여 기기 ID 및 상태를 증명합니다.
@@ -1661,6 +1663,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="3072847235228302527">기기 로컬 계정에 대한 서비스 약관 설정</translation>
 <translation id="3083259245974004342">비밀번호 보호</translation>
 <translation id="3086995894968271156"><ph name="PRODUCT_NAME" />의 Cast 수신기를 설정합니다.</translation>
+<translation id="3087346703976541109">SharedArrayBuffers가 교차 출처 분리되지 않은 컨텍스트에서 사용될 수 있는지 지정</translation>
 <translation id="3088557424854005813">증명</translation>
 <translation id="3091832372132789233">주로 외부 전원에 연결된 기기의 배터리를 충전합니다.</translation>
 <translation id="3092059499596000593">인쇄 미리보기의 기본 선택으로 시스템 기본 프린터 사용</translation>
@@ -1893,6 +1896,7 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 <translation id="3415954062311826850">ARC 내에서 지원되지 않는 정책입니다.</translation>
 <translation id="34160070798637152">기기 전체 네트워크 구성을 제어합니다.</translation>
 <translation id="3417130629744653218">웹사이트가 사용 가능한 결제 수단을 쿼리하도록 허용</translation>
+<translation id="3417391585519621050">기업 사용자용 <ph name="GOOGLE_LENS_PRODUCT_NAME" /> 카메라 지원 검색 사용 설정</translation>
 <translation id="3417418267404583991">이 정책을 true로 설정하거나 구성하지 않으면 <ph name="PRODUCT_OS_NAME" />은(는) 게스트 로그인을 사용합니다. 게스트 로그인은 익명 사용자 세션이며 비밀번호가 필요없습니다.
 
       이 정책을 false로 설정하면, <ph name="PRODUCT_OS_NAME" />은(는) 게스트 세션을 시작하지 않습니다.</translation>
@@ -3055,6 +3059,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       정책이 False로 설정되거나 설정되지 않으면 정보가 보고되지 않습니다.
       True로 설정되면 CPU별로 CPU 모델 이름, 아키텍처 및 최대 클럭 속도가 보고됩니다.</translation>
 <translation id="5124368997194894978">AC(교류 전원)로 부팅 사용</translation>
+<translation id="5130213897914754028">사이트에서 SharedArrayBuffers를 사용하지 못하도록 차단</translation>
 <translation id="5141670636904227950">로그인 화면에서 기본 화면 돋보기 유형을 사용하도록 설정</translation>
 <translation id="5142301680741828703"><ph name="PRODUCT_FRAME_NAME" />에서 다음 URL 패턴을 항상 렌더링</translation>
 <translation id="514870861066611127">이 정책은 OS 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 이름, <ph name="PRODUCT_NAME" /> 프로필 경로, <ph name="PRODUCT_NAME" /> 실행 경로와 같이 사용자 식별을 위해 사용할 수 있는 정보의 보고 여부를 제어합니다.
@@ -3385,6 +3390,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
       이 정책 값이 설정되고 값이 0이 아니면 현재 로그인한 데모 사용자가 지정된 비활성화 시간 뒤에 자동으로 로그아웃됩니다.
 
       이 정책 값은 밀리초 단위로 지정되어야 합니다.</translation>
+<translation id="55057839818162162"><ph name="GOOGLE_LENS_PRODUCT_NAME" /> 카메라 지원 검색 허용</translation>
 <translation id="5508307164752647432">Kerberos 기능 사용</translation>
 <translation id="5511702823008968136">북마크바 사용</translation>
 <translation id="5512418063782665071">홈페이지 URL</translation>
@@ -3843,6 +3849,12 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 시스템 알림을 사�
 <translation id="6111936128861357925">공룡 부활절 달걀 게임 허용</translation>
 <translation id="6123052603197028610">Google 서버로 전송된 쿼리가 타임스탬프를 가져오도록 허용하지 않음</translation>
 <translation id="6132506775968708399">타사 쿠키 차단</translation>
+<translation id="6132739217670763962">
+      SharedArrayBuffers가 교차 출처 분리되지 않은 컨텍스트에서 사용될 수 있는지
+      지정합니다. Chrome은 Chrome 91 이상(2021-05-25)에서
+      SharedArrayBuffers를 사용할 때 웹 호환성을 이유로 교차 출처 분리를
+      요구합니다. 자세한 내용은 다음 페이지에서 확인하세요.
+      https://developer.chrome.com/blog/enabling-shared-array-buffer/</translation>
 <translation id="6133088669883929098">모든 사이트에서 키 생성 사용 허용</translation>
 <translation id="6135398260575578389">세이프 브라우징이 강화 모드에서 활성화됩니다. 이 모드에서는 보안이 강화되지만 Google과 인터넷 사용 정보를 더 많이 공유해야 합니다.</translation>
 <translation id="6135895880862759946">사용자가 <ph name="LACROS_NAME" /> 브라우저에서 보조 프로필을 만들고 게스트 모드를 사용하도록 허용</translation>
@@ -6119,6 +6131,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
       정책을 사용 중지하면 등록된 기기에서 활동 시간을 기록하거나 보고하지 않습니다.</translation>
 <translation id="9077227880520270584">기기 로컬 계정 자동 로그인 타이머</translation>
 <translation id="9084985621503260744">동영상 활동이 전원 관리에 영향을 미치는지 여부 지정</translation>
+<translation id="9088191250434406767">정책을 설정하지 않거나 사용 설정하면 사용자가 <ph name="GOOGLE_LENS_PRODUCT_NAME" />를 통해 카메라를 사용하여 검색할 수 있습니다. 정책을 사용 중지하면 <ph name="GOOGLE_LENS_PRODUCT_NAME" /> 카메라 지원 검색 기능이 제공될 때도 검색창에 <ph name="GOOGLE_LENS_PRODUCT_NAME" /> 버튼이 표시되지 않습니다.</translation>
 <translation id="9088433379343318874">관리 대상 사용자 콘텐츠 제공업체 사용</translation>
 <translation id="9088444059179765143">자동 시간대 감지 방법 설정</translation>
 <translation id="9095999573959728902">이 설정을 켜면 사용자가 Chrome OS 기기에서 휴대전화와 상호작용하게 해 주는 기능인 휴대전화 허브를 사용하도록 선택할 수 있습니다.
@@ -6215,6 +6228,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="927444535723396977">정책을 1로 설정하면 웹사이트에서 자바스크립트를 실행하도록 허용합니다. 정책을 2로 설정하면 자바스크립트를 거부합니다.
 
       정책을 설정하지 않으면 자바스크립트를 허용하지만 사용자가 이 설정을 변경할 수 있습니다.</translation>
+<translation id="928189505080808353">포트 554(2021년 10월 15일에 만료됨)</translation>
 <translation id="929549405492388749">정책이 true로 설정되면 Chrome에서 기본적으로 AppCache를 이용할 수 없는 경우에도 AppCache가 강제로 사용 설정됩니다.
 
       정책이 설정되어 있지 않거나 false로 설정되면 AppCache가 Chrome의 기본값을 따릅니다.</translation>

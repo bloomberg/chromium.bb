@@ -168,14 +168,7 @@ PrivacySandboxSettings::PrivacySandboxSettings(
 PrivacySandboxSettings::~PrivacySandboxSettings() = default;
 
 /*static*/ bool PrivacySandboxSettings::PrivacySandboxSettingsFunctional() {
-  // The order in which the features are checked matters here. Preventing
-  // checking for the PrivacySandboxSettings if all the APIs are disabled
-  // avoids polluting rollout data, as it stops clients reporting as active
-  // while the feature is enabled but not accessible.
-  return (base::FeatureList::IsEnabled(
-              blink::features::kInterestCohortAPIOriginTrial) ||
-          base::FeatureList::IsEnabled(features::kConversionMeasurement)) &&
-         base::FeatureList::IsEnabled(features::kPrivacySandboxSettings);
+  return base::FeatureList::IsEnabled(features::kPrivacySandboxSettings);
 }
 
 bool PrivacySandboxSettings::IsFlocAllowed(
@@ -224,39 +217,31 @@ bool PrivacySandboxSettings::ShouldSendConversionReport(
 bool PrivacySandboxSettings::IsFledgeAllowed(
     const url::Origin& top_frame_origin,
     const GURL& auction_party) {
-  ContentSettingsForOneType cookie_settings;
-  cookie_settings_->GetCookieSettings(&cookie_settings);
+  // If the sandbox is available and disabled, then FLEDGE is never allowed.
+  if (base::FeatureList::IsEnabled(features::kPrivacySandboxSettings) &&
+      !pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled)) {
+    return false;
+  }
 
-  return IsPrivacySandboxAllowedForContext(auction_party, top_frame_origin,
-                                           cookie_settings);
+  // Third party cookies must also be available for this context. An empty site
+  // for cookies is provided so the context is always treated as a third party.
+  return cookie_settings_->IsCookieAccessAllowed(auction_party, GURL(),
+                                                 top_frame_origin);
 }
 
 std::vector<GURL> PrivacySandboxSettings::FilterFledgeAllowedParties(
     const url::Origin& top_frame_origin,
     const std::vector<GURL>& auction_parties) {
-  ContentSettingsForOneType cookie_settings;
-  cookie_settings_->GetCookieSettings(&cookie_settings);
-
-  std::vector<GURL> allowed_parties;
-
-  // Cookie setting exceptions are rare, in most cases |cookie_settings| will
-  // have a length of 1 and only contain the default setting (which is ignored
-  // for determining if the Privacy Sandbox is allowed). If this is the case
-  // either all |auction_parties|, or none, are allowed based on the Privacy
-  // Sandbox preference, and invidiually checking each auction party can be
-  // avoided.
+  // If the sandbox is available and disabled, then no parties are allowed.
   if (base::FeatureList::IsEnabled(features::kPrivacySandboxSettings) &&
-      cookie_settings.size() == 1) {
-    if (pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled)) {
-      allowed_parties.insert(allowed_parties.begin(), auction_parties.begin(),
-                             auction_parties.end());
-    }
-    return allowed_parties;
+      !pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled)) {
+    return {};
   }
 
+  std::vector<GURL> allowed_parties;
   for (const auto& party : auction_parties) {
-    if (IsPrivacySandboxAllowedForContext(party, top_frame_origin,
-                                          cookie_settings)) {
+    if (cookie_settings_->IsCookieAccessAllowed(party, GURL(),
+                                                top_frame_origin)) {
       allowed_parties.push_back(party);
     }
   }

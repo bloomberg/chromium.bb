@@ -32,10 +32,6 @@ static const size_t VISUALSAMPLEENTRY_SIZE = 78;
 static const char xmpContentType[] = CONTENT_TYPE_XMP;
 static const size_t xmpContentTypeSize = sizeof(xmpContentType);
 
-// The only supported ipma box values for both version and flags are [0,1], so there technically
-// can't be more than 4 unique tuples right now.
-#define MAX_IPMA_VERSION_AND_FLAGS_SEEN 4
-
 // ---------------------------------------------------------------------------
 // Box data structures
 
@@ -712,30 +708,6 @@ static avifResult avifDecoderItemMaxExtent(const avifDecoderItem * item, avifExt
     return AVIF_RESULT_OK;
 }
 
-static avifResult avifDecoderItemValidateAV1(const avifDecoderItem * item)
-{
-    const avifProperty * av1CProp = avifPropertyArrayFind(&item->properties, "av1C");
-    if (!av1CProp) {
-        // An av1C box is mandatory in all valid AVIF configurations. Bail out.
-        return AVIF_RESULT_BMFF_PARSE_FAILED;
-    }
-    const uint32_t av1CDepth = avifCodecConfigurationBoxGetDepth(&av1CProp->u.av1C);
-
-    const avifProperty * pixiProp = avifPropertyArrayFind(&item->properties, "pixi");
-    if (!pixiProp) {
-        // A pixi box is mandatory in all valid AVIF configurations. Bail out.
-        return AVIF_RESULT_BMFF_PARSE_FAILED;
-    }
-
-    for (uint8_t i = 0; i < pixiProp->u.pixi.planeCount; ++i) {
-        if (pixiProp->u.pixi.planeDepths[i] != av1CDepth) {
-            // pixi depth must match av1C depth
-            return AVIF_RESULT_BMFF_PARSE_FAILED;
-        }
-    }
-    return AVIF_RESULT_OK;
-}
-
 static avifResult avifDecoderItemRead(avifDecoderItem * item, avifIO * io, avifROData * outData, size_t partialByteCount)
 {
     if (item->mergedExtents.data && !item->partialMergedExtents) {
@@ -1136,34 +1108,6 @@ static avifBool isAlphaURN(const char * urn)
 // ---------------------------------------------------------------------------
 // BMFF Parsing
 
-static avifBool avifParseHandlerBox(const uint8_t * raw, size_t rawLen)
-{
-    BEGIN_STREAM(s, raw, rawLen);
-
-    CHECK(avifROStreamReadAndEnforceVersion(&s, 0));
-
-    uint32_t predefined;
-    CHECK(avifROStreamReadU32(&s, &predefined)); // unsigned int(32) pre_defined = 0;
-    if (predefined != 0) {
-        return AVIF_FALSE;
-    }
-
-    uint8_t handlerType[4];
-    CHECK(avifROStreamRead(&s, handlerType, 4)); // unsigned int(32) handler_type;
-    if (memcmp(handlerType, "pict", 4) != 0) {
-        return AVIF_FALSE;
-    }
-
-    for (int i = 0; i < 3; ++i) {
-        uint32_t reserved;
-        CHECK(avifROStreamReadU32(&s, &reserved)); // const unsigned int(32)[3] reserved = 0;
-    }
-
-    // Verify that a valid string is here, but don't bother to store it
-    CHECK(avifROStreamReadString(&s, NULL, 0)); // string name;
-    return AVIF_TRUE;
-}
-
 static avifBool avifParseItemLocationBox(avifMeta * meta, const uint8_t * raw, size_t rawLen)
 {
     BEGIN_STREAM(s, raw, rawLen);
@@ -1492,18 +1436,14 @@ static avifBool avifParseItemPropertyContainerBox(avifPropertyArray * properties
     return AVIF_TRUE;
 }
 
-static avifBool avifParseItemPropertyAssociation(avifMeta * meta, const uint8_t * raw, size_t rawLen, uint32_t * outVersionAndFlags)
+static avifBool avifParseItemPropertyAssociation(avifMeta * meta, const uint8_t * raw, size_t rawLen)
 {
-    // NOTE: If this function ever adds support for versions other than [0,1] or flags other than
-    //       [0,1], please increase the value of MAX_IPMA_VERSION_AND_FLAGS_SEEN accordingly.
-
     BEGIN_STREAM(s, raw, rawLen);
 
     uint8_t version;
     uint32_t flags;
     CHECK(avifROStreamReadVersionAndFlags(&s, &version, &flags));
     avifBool propertyIndexIsU16 = ((flags & 0x1) != 0);
-    *outVersionAndFlags = ((uint32_t)version << 24) | flags;
 
     uint32_t entryCount;
     CHECK(avifROStreamReadU32(&s, &entryCount));
@@ -1640,30 +1580,13 @@ static avifBool avifParseItemPropertiesBox(avifMeta * meta, const uint8_t * raw,
     CHECK(avifParseItemPropertyContainerBox(&meta->properties, avifROStreamCurrent(&s), ipcoHeader.size));
     CHECK(avifROStreamSkip(&s, ipcoHeader.size));
 
-    uint32_t versionAndFlagsSeen[MAX_IPMA_VERSION_AND_FLAGS_SEEN];
-    uint32_t versionAndFlagsSeenCount = 0;
-
     // Now read all ItemPropertyAssociation until the end of the box, and make associations
     while (avifROStreamHasBytesLeft(&s, 1)) {
         avifBoxHeader ipmaHeader;
         CHECK(avifROStreamReadBoxHeader(&s, &ipmaHeader));
 
         if (!memcmp(ipmaHeader.type, "ipma", 4)) {
-            uint32_t versionAndFlags;
-            CHECK(avifParseItemPropertyAssociation(meta, avifROStreamCurrent(&s), ipmaHeader.size, &versionAndFlags));
-            for (uint32_t i = 0; i < versionAndFlagsSeenCount; ++i) {
-                if (versionAndFlagsSeen[i] == versionAndFlags) {
-                    // HEIF (ISO 23008-12:2017) 9.3.1 - There shall be at most one
-                    // ItemPropertyAssociation box with a given pair of values of version and
-                    // flags.
-                    return AVIF_FALSE;
-                }
-            }
-            if (versionAndFlagsSeenCount == MAX_IPMA_VERSION_AND_FLAGS_SEEN) {
-                return AVIF_FALSE;
-            }
-            versionAndFlagsSeen[versionAndFlagsSeenCount] = versionAndFlags;
-            ++versionAndFlagsSeenCount;
+            CHECK(avifParseItemPropertyAssociation(meta, avifROStreamCurrent(&s), ipmaHeader.size));
         } else {
             // These must all be type ipma
             return AVIF_FALSE;
@@ -1817,46 +1740,32 @@ static avifBool avifParseMetaBox(avifMeta * meta, const uint8_t * raw, size_t ra
 
     ++meta->idatID; // for tracking idat
 
-    avifBool firstBox = AVIF_TRUE;
     uint32_t uniqueBoxFlags = 0;
     while (avifROStreamHasBytesLeft(&s, 1)) {
         avifBoxHeader header;
         CHECK(avifROStreamReadBoxHeader(&s, &header));
 
-        if (firstBox) {
-            if (!memcmp(header.type, "hdlr", 4)) {
-                CHECK(uniqueBoxSeen(&uniqueBoxFlags, 0));
-                CHECK(avifParseHandlerBox(avifROStreamCurrent(&s), header.size));
-                firstBox = AVIF_FALSE;
-            } else {
-                // hdlr must be the first box!
-                return AVIF_FALSE;
-            }
-        } else if (!memcmp(header.type, "iloc", 4)) {
-            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 1));
+        if (!memcmp(header.type, "iloc", 4)) {
+            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 0));
             CHECK(avifParseItemLocationBox(meta, avifROStreamCurrent(&s), header.size));
         } else if (!memcmp(header.type, "pitm", 4)) {
-            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 2));
+            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 1));
             CHECK(avifParsePrimaryItemBox(meta, avifROStreamCurrent(&s), header.size));
         } else if (!memcmp(header.type, "idat", 4)) {
-            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 3));
+            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 2));
             CHECK(avifParseItemDataBox(meta, avifROStreamCurrent(&s), header.size));
         } else if (!memcmp(header.type, "iprp", 4)) {
-            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 4));
+            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 3));
             CHECK(avifParseItemPropertiesBox(meta, avifROStreamCurrent(&s), header.size));
         } else if (!memcmp(header.type, "iinf", 4)) {
-            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 5));
+            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 4));
             CHECK(avifParseItemInfoBox(meta, avifROStreamCurrent(&s), header.size));
         } else if (!memcmp(header.type, "iref", 4)) {
-            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 6));
+            CHECK(uniqueBoxSeen(&uniqueBoxFlags, 5));
             CHECK(avifParseItemReferenceBox(meta, avifROStreamCurrent(&s), header.size));
         }
 
         CHECK(avifROStreamSkip(&s, header.size));
-    }
-    if (firstBox) {
-        // The meta box must not be empty (it must contain at least a hdlr box)
-        return AVIF_FALSE;
     }
     return AVIF_TRUE;
 }
@@ -2738,11 +2647,6 @@ avifResult avifDecoderReset(avifDecoder * decoder)
         avifDecoderItem * colorItem = NULL;
         avifDecoderItem * alphaItem = NULL;
 
-        if (data->meta->primaryItemID == 0) {
-            // A primary item is required
-            return AVIF_RESULT_NO_AV1_ITEMS_FOUND;
-        }
-
         // Find the colorOBU (primary) item
         for (uint32_t itemIndex = 0; itemIndex < data->meta->items.count; ++itemIndex) {
             avifDecoderItem * item = &data->meta->items.item[itemIndex];
@@ -2894,17 +2798,6 @@ avifResult avifDecoderReset(avifDecoder * decoder)
         }
         decoder->alphaPresent = (alphaItem != NULL);
         decoder->image->alphaPremultiplied = decoder->alphaPresent && (colorItem->premByID == alphaItem->id);
-
-        avifResult colorItemValidationResult = avifDecoderItemValidateAV1(colorItem);
-        if (colorItemValidationResult != AVIF_RESULT_OK) {
-            return colorItemValidationResult;
-        }
-        if (alphaItem) {
-            avifResult alphaItemValidationResult = avifDecoderItemValidateAV1(alphaItem);
-            if (alphaItemValidationResult != AVIF_RESULT_OK) {
-                return alphaItemValidationResult;
-            }
-        }
     }
 
     // Sanity check tiles

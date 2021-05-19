@@ -132,9 +132,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="41" label="FLAG_REQUEST_FILTER_KEY_EVENTS"/>
   <int value="42" label="FLAG_REQUEST_TOUCH_EXPLORATION_MODE"/>
   <int value="43" label="FLAG_RETRIEVE_INTERACTIVE_WINDOWS"/>
-  <int value="44" label="SERVICE_TYPE_UNKNOWN"/>
-  <int value="45" label="SERVICE_TYPE_PASSWORD_MANAGER"/>
-  <int value="46" label="SERVICE_TYPE_ASSISTIVE_TECH"/>
 </enum>
 
 <enum name="AccessibilityATKAPIEnum">
@@ -2869,6 +2866,13 @@ Unknown properties are collapsed to zero. -->
   <int value="23" label="APP_LIST_MAIN_WEBSTORE"/>
   <int value="24" label="APP_LIST_SEARCH_CHROME"/>
   <int value="25" label="APP_LIST_SEARCH_WEBSTORE"/>
+</enum>
+
+<enum name="AppLaunchBlockDrawForInitialTabAccuracy">
+  <int value="0" label="Blocked draw correctly"/>
+  <int value="1" label="Blocked draw when should not have"/>
+  <int value="2" label="Did not block draw when should have"/>
+  <int value="3" label="Correctly did not block draw"/>
 </enum>
 
 <enum name="AppLaunchContainer">
@@ -7219,6 +7223,7 @@ Called by update_bad_message_reasons.py.-->
   <int value="240" label="WCI_INVALID_FULLSCREEN_OPTIONS"/>
   <int value="241" label="PAYMENTS_WITHOUT_PERMISSION"/>
   <int value="242" label="WEB_BUNDLE_INVALID_NAVIGATION_URL"/>
+  <int value="243" label="WCI_INVALID_DOWNLOAD_IMAGE_RESULT"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -15609,6 +15614,8 @@ metrics consent we also won't be able to send UMA metrics. -->
   <int value="60" label="MOUNT_CONTAINER_TIMED_OUT"/>
   <int value="61" label="UNKNOWN_STATE_TIMED_OUT"/>
   <int value="62" label="NEED_UPDATE"/>
+  <int value="63" label="SHARE_PATHS_FAILED"/>
+  <int value="64" label="UNREGISTERED_APPLICATION"/>
 </enum>
 
 <enum name="CrostiniSettingsEvent">
@@ -24128,6 +24135,7 @@ Called by update_document_policy_enum.py.-->
   <int value="848" label="DeviceAllowedBluetoothServices"/>
   <int value="849" label="ExplicitlyAllowedNetworkPorts"/>
   <int value="852" label="SharedArrayBufferUnrestrictedAccessAllowed"/>
+  <int value="853" label="LensCameraAssistedSearchEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -32126,6 +32134,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3875" label="FileHandlingLaunch"/>
   <int value="3876" label="SameOriginDocumentsWithDifferentCOOPStatus"/>
   <int value="3877" label="HTMLMediaElementSetSinkId"/>
+  <int value="3882" label="PostMessageFromSecureToSecure"/>
+  <int value="3883" label="PostMessageFromInsecureToInsecure"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -40921,6 +40931,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Remind Me Later"/>
 </enum>
 
+<enum name="IOSDefaultBrowserTailoredPromoType">
+  <int value="0" label="Unkown"/>
+  <int value="1" label="Made for iOS"/>
+  <int value="2" label="Stay Safe"/>
+  <int value="3" label="All Tabs"/>
+</enum>
+
 <enum name="IOSDeviceThermalState">
   <int value="0" label="0-Unknown"/>
   <int value="1" label="1-Nominal"/>
@@ -43007,10 +43024,10 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="8" label="Lens Search And Shop Supported"/>
   <int value="9" label="Camera Not Available"/>
   <int value="10" label="Disabled on Low End Device"/>
-  <int value="11" label="Disabled by Feature Flag"/>
-  <int value="12" label="AGSA Version Not Supported"/>
-  <int value="13" label="Disabled on Incognito"/>
-  <int value="14" label="Disabled on Tablet"/>
+  <int value="11" label="AGSA Version Not Supported"/>
+  <int value="12" label="Disabled on Incognito"/>
+  <int value="13" label="Disabled on Tablet"/>
+  <int value="14" label="Disabled for Enterprise user"/>
 </enum>
 
 <enum name="LevelDBCorruptionRestoreValue">
@@ -44163,6 +44180,7 @@ from previous Chrome versions.
   <int value="-1930720286" label="nacl-debug-mask"/>
   <int value="-1928198763" label="enable-async-dns"/>
   <int value="-1927080237" label="Vulkan:enabled"/>
+  <int value="-1926124919" label="WebViewOriginTrials:enabled"/>
   <int value="-1925453192" label="BlockInsecurePrivateNetworkRequests:enabled"/>
   <int value="-1925214028"
       label="EnterpriseReportingApiKeychainRecreation:enabled"/>
@@ -46527,6 +46545,7 @@ from previous Chrome versions.
   <int value="139569991" label="SharingDeviceExpiration:disabled"/>
   <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="146229312" label="WebPaymentsExperimentalFeatures:enabled"/>
+  <int value="146553675" label="BookmarkBottomSheet:disabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="147645817" label="DnsHttpssvc:enabled"/>
@@ -47652,6 +47671,7 @@ from previous Chrome versions.
   <int value="1167613030" label="enable-permission-action-reporting"/>
   <int value="1168226627" label="OmniboxMaxZeroSuggestMatches:enabled"/>
   <int value="1169418814" label="ManualFallbacksFilling:enabled"/>
+  <int value="1170030686" label="BookmarkBottomSheet:enabled"/>
   <int value="1173244409" label="AutofillUseMobileLabelDisambiguation:enabled"/>
   <int value="1174088940" label="enable-wasm"/>
   <int value="1176183341" label="SearchHistoryLink:enabled"/>
@@ -48666,6 +48686,7 @@ from previous Chrome versions.
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
   <int value="2063420769" label="SharedHighlightingV2:disabled"/>
   <int value="2066015302" label="QueryTiles:disabled"/>
+  <int value="2066508701" label="WebViewOriginTrials:disabled"/>
   <int value="2067634730" label="LsdPermissionPrompt:disabled"/>
   <int value="2067735898" label="WebVrAutopresentFromIntent:enabled"/>
   <int value="2067903732"
@@ -51665,6 +51686,24 @@ Called by update_use_counter_css.py.-->
   <int value="5" label="Could not identify the target language"/>
   <int value="6" label="Translate is not allowed by policy"/>
   <int value="7" label="Could not identify the source language"/>
+</enum>
+
+<enum name="MerchantTrustMessageClearReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Navigate to same domain"/>
+  <int value="2" label="Navigate to different domain"/>
+</enum>
+
+<enum name="MessageDismissReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Primary action"/>
+  <int value="2" label="Secondary action"/>
+  <int value="3" label="Timer"/>
+  <int value="4" label="Gesture"/>
+  <int value="5" label="Tab switched"/>
+  <int value="6" label="Tab destroyed"/>
+  <int value="7" label="Activity destroyed"/>
+  <int value="8" label="Scope destroyed"/>
 </enum>
 
 <enum name="MessageLoopProblems">
@@ -72702,6 +72741,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="40" label="UMA_WEB_FEED_FOLLOW_FAILURE"/>
   <int value="41" label="UMA_WEB_FEED_UNFOLLOW_SUCCESS"/>
   <int value="42" label="UMA_WEB_FEED_UNFOLLOW_FAILURE"/>
+  <int value="43" label="UMA_LANGUAGE_SPLIT_RESTART"/>
 </enum>
 
 <enum name="SnapshotItemId">

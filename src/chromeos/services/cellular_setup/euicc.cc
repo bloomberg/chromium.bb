@@ -11,7 +11,7 @@
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
-#include "chromeos/network/cellular_esim_connection_handler.h"
+#include "chromeos/network/cellular_connection_handler.h"
 #include "chromeos/network/cellular_esim_profile.h"
 #include "chromeos/network/cellular_inhibitor.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -264,12 +264,12 @@ void Euicc::OnProfileInstallResult(
   }
 
   install_calls_pending_connect_.emplace(*profile_path, std::move(callback));
-  esim_manager_->cellular_esim_connection_handler()
-      ->EnableNewProfileForConnection(
+  esim_manager_->cellular_connection_handler()
+      ->PrepareNewlyInstalledCellularNetworkForConnection(
           path_, *profile_path, std::move(inhibit_lock),
           base::BindOnce(&Euicc::OnNewProfileEnableSuccess,
                          weak_ptr_factory_.GetWeakPtr(), *profile_path),
-          base::BindOnce(&Euicc::OnNewProfileConnectFailure,
+          base::BindOnce(&Euicc::OnPrepareCellularNetworkForConnectionFailure,
                          weak_ptr_factory_.GetWeakPtr(), *profile_path));
 }
 
@@ -278,30 +278,24 @@ void Euicc::OnNewProfileEnableSuccess(const dbus::ObjectPath& profile_path,
   const NetworkState* network_state =
       esim_manager_->network_state_handler()->GetNetworkState(service_path);
   if (!network_state) {
-    OnNewProfileConnectFailure(profile_path,
-                               NetworkConnectionHandler::kErrorNotFound,
-                               /*error_data=*/nullptr);
+    HandleNewProfileEnableFailure(profile_path,
+                                  NetworkConnectionHandler::kErrorNotFound);
     return;
   }
 
-  if (network_state->IsConnectingOrConnected()) {
-    OnNewProfileConnectSuccess(profile_path);
-    return;
+  if (!network_state->IsConnectingOrConnected()) {
+    // The connection could fail but the user will be notified of connection
+    // failures separately.
+    esim_manager_->network_connection_handler()->ConnectToNetwork(
+        service_path,
+        /*success_callback=*/base::DoNothing(),
+        /*error_callback=*/base::DoNothing(),
+        /*check_error_state=*/false, ConnectCallbackMode::ON_STARTED);
   }
 
-  esim_manager_->network_connection_handler()->ConnectToNetwork(
-      service_path,
-      base::BindOnce(&Euicc::OnNewProfileConnectSuccess,
-                     weak_ptr_factory_.GetWeakPtr(), profile_path),
-      base::BindOnce(&Euicc::OnNewProfileConnectFailure,
-                     weak_ptr_factory_.GetWeakPtr(), profile_path),
-      /*check_error_state=*/false, ConnectCallbackMode::ON_STARTED);
-}
-
-void Euicc::OnNewProfileConnectSuccess(const dbus::ObjectPath& profile_path) {
   auto it = install_calls_pending_connect_.find(profile_path);
   if (it == install_calls_pending_connect_.end()) {
-    NET_LOG(ERROR) << "ESim profile install callback missing after connect "
+    NET_LOG(ERROR) << "ESim profile install callback missing after enable "
                       "success. profile_path="
                    << profile_path.value();
     return;
@@ -322,17 +316,22 @@ void Euicc::OnNewProfileConnectSuccess(const dbus::ObjectPath& profile_path) {
                           esim_profile->CreateRemote());
 }
 
-void Euicc::OnNewProfileConnectFailure(
+void Euicc::OnPrepareCellularNetworkForConnectionFailure(
     const dbus::ObjectPath& profile_path,
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  NET_LOG(ERROR) << "Error connecting to newly created profile path="
+    const std::string& service_path,
+    const std::string& error_name) {
+  HandleNewProfileEnableFailure(profile_path, error_name);
+}
+
+void Euicc::HandleNewProfileEnableFailure(const dbus::ObjectPath& profile_path,
+                                          const std::string& error_name) {
+  NET_LOG(ERROR) << "Error enabling newly created profile path="
                  << profile_path.value() << " error_name=" << error_name;
 
   auto it = install_calls_pending_connect_.find(profile_path);
   if (it == install_calls_pending_connect_.end()) {
     NET_LOG(ERROR)
-        << "ESim profile install callback missing after connect failure";
+        << "ESim profile install callback missing after enable failure";
     return;
   }
   std::move(it->second)

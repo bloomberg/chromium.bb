@@ -57,15 +57,19 @@ bool OutOfBounds(size_t a, size_t b, size_t size) {
 
 // Checks if a + b + c > size, taking possible integer overflow into account.
 bool OutOfBounds(size_t a, size_t b, size_t c, size_t size) {
-  size_t pos = a + b + c;
+  size_t pos = a + b;
+  if (pos < b) return true;  // overflow happened
+  pos += c;
+  if (pos < c) return true;  // overflow happened
   if (pos > size) return true;
-  if (pos < a || pos < b) return true;  // overflow happened
   return false;
 }
 
-bool SumOverflows(size_t a, size_t b) {
+bool SumOverflows(size_t a, size_t b, size_t c) {
   size_t sum = a + b;
-  if (sum < a) return true;
+  if (sum < b) return true;
+  sum += c;
+  if (sum < c) return true;
   return false;
 }
 
@@ -1420,6 +1424,9 @@ JxlDecoderStatus JxlDecoderProcessInput(JxlDecoder* dec) {
         if (box_size > 0 && box_size < header_size) {
           return JXL_API_ERROR("invalid box size");
         }
+        if (SumOverflows(dec->file_pos, pos, box_size)) {
+          return JXL_API_ERROR("Box size overflow");
+        }
         size_t avail_contents_size =
             (box_size == 0)
                 ? (size - pos)
@@ -1455,6 +1462,7 @@ JxlDecoderStatus JxlDecoderProcessInput(JxlDecoder* dec) {
             }
             size_t begin = dec->codestream_begin - dec->file_pos;
             size_t end = dec->codestream_end - dec->file_pos;
+            JXL_ASSERT(end <= *avail_in);
             dec->codestream.insert(dec->codestream.end(), *next_in + begin,
                                    *next_in + end);
           }
@@ -1507,6 +1515,7 @@ JxlDecoderStatus JxlDecoderProcessInput(JxlDecoder* dec) {
           } else {
             dec->jpeg_reconstruction_size = contents_size;
           }
+          dec->file_pos += pos;
           *next_in += pos;
           *avail_in -= pos;
           JxlDecoderStatus recon_result =

@@ -327,7 +327,6 @@
 <translation id="1354045473509304750">Continue allowing <ph name="HOST" /> to use and move your camera</translation>
 <translation id="1355088139103479645">Delete all data?</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> is blocked</translation>
-<translation id="1358612436266364864">Remove highlights</translation>
 <translation id="1358741672408003399">Spelling and Grammar</translation>
 <translation id="1359923111303110318">Your device can be unlocked with Smart Lock. Press enter to unlock.</translation>
 <translation id="1361164813881551742">Add Manually</translation>
@@ -919,6 +918,7 @@
 <translation id="1974821797477522211">Connect to network</translation>
 <translation id="1975841812214822307">Remove...</translation>
 <translation id="1976150099241323601">Sign in to Security Device</translation>
+<translation id="1976928778492259496">The fingerprint sensor is on the left-hand side of your <ph name="DEVICE_TYPE" />. Touch it lightly with any finger.</translation>
 <translation id="1977965994116744507">Bring your phone closer to unlock your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1978057560491495741">Remove address</translation>
 <translation id="1979095679518582070">Turning off this feature doesn't affect this device's ability to send the information needed for essential services such as system updates and security.</translation>
@@ -1318,6 +1318,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2428939361789119025">Turn off Wi-Fi</translation>
 <translation id="2428978615149723410">these baskets</translation>
 <translation id="2431027948063157455">Google Assistant was unable to load. Please check your network connection and retry.</translation>
+<translation id="243179355394256322">Your organisation limits device enrolment to authorised users only. This user is not authorised to enrol devices. Please make sure that the user has the 'Enrol Google Meet hardware' administrator privilege in the Users section of the Admin console.</translation>
 <translation id="2433452467737464329">Add a query param in URL to auto-refresh the page: chrome://network/?refresh=&lt;sec&gt;</translation>
 <translation id="2433507940547922241">Appearance</translation>
 <translation id="2433836460518180625">Unlock device only</translation>
@@ -1327,7 +1328,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2435457462613246316">Show password</translation>
 <translation id="2435579801172349831">Open all (<ph name="URL_COUNT" />) in incognito window</translation>
 <translation id="2436186046335138073">Allow <ph name="HANDLER_HOSTNAME" /> to open all <ph name="PROTOCOL" /> links?</translation>
-<translation id="2440366609912234507">{COUNT,plural, =1{app}other{# apps}}</translation>
 <translation id="2440604414813129000">View s&amp;ource</translation>
 <translation id="244231003699905658">Invalid address. Please check the address and try again.</translation>
 <translation id="2442916515643169563">Text shadow</translation>
@@ -1893,7 +1893,6 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="3031417829280473749">Agent X</translation>
 <translation id="3031557471081358569">Select items to be imported:</translation>
 <translation id="3036327949511794916">The deadline to return this <ph name="DEVICE_TYPE" /> has passed.</translation>
-<translation id="3036438888981457032">Remove Highlights</translation>
 <translation id="3036546437875325427">Enable Flash</translation>
 <translation id="3037754279345160234">Can't parse the configuration to join domain. Please contact your administrator.</translation>
 <translation id="3038612606416062604">Add a printer manually</translation>
@@ -1973,6 +1972,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="313205617302240621">Forgot password?</translation>
 <translation id="3132277757485842847">We were unable to maintain a connection with your phone. Make sure that your phone is nearby, unlocked and has Bluetooth and Wi-Fi turned on.</translation>
 <translation id="3132996321662585180">Refresh daily</translation>
+<translation id="3134393957315651797">Select experiment state for the <ph name="EXPERIMENT_NAME" /> experiment. Experiment description: <ph name="EXPERIMENT_DESCRIPTION" /></translation>
 <translation id="3138624403379688522">Invalid PIN. You have <ph name="RETRIES" /> remaining attempts.</translation>
 <translation id="313963229645891001">Downloading, <ph name="STATUS" /></translation>
 <translation id="3139925690611372679">Default yellow avatar</translation>
@@ -2388,8 +2388,8 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="3615579745882581859"><ph name="FILE_NAME" /> is being scanned.</translation>
 <translation id="3616741288025931835">&amp;Clear Browsing Data...</translation>
 <translation id="3617891479562106823">Backgrounds are unavailable. Try again later.</translation>
-<translation id="3618800144880386250">{COUNT,plural, =1{video}other{# videos}}</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
+<translation id="362266093274784978">{COUNT,plural, =1{an app}other{# apps}}</translation>
 <translation id="362333465072914957">Waiting for the CA to issue a certificate</translation>
 <translation id="3624567683873126087">Unlock device and sign in to Google Account</translation>
 <translation id="3625481642044239431">Invalid file selected. Try again.</translation>
@@ -2662,6 +2662,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="3895076768659607631">&amp;Manage search engines…</translation>
 <translation id="3895090224522145010">Kerberos username</translation>
 <translation id="389521680295183045">Sites can ask to know when you're actively using your device</translation>
+<translation id="3897298432557662720">{COUNT,plural, =1{an image}other{# images}}</translation>
 <translation id="3898233949376129212">Device language</translation>
 <translation id="3898327728850887246"><ph name="SITE_NAME" /> wants to: <ph name="FIRST_PERMISSION" /> and <ph name="SECOND_PERMISSION" /></translation>
 <translation id="389901847090970821">Select keyboard</translation>
@@ -3241,7 +3242,6 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="4568025708905928793">A security key is being requested</translation>
 <translation id="4568213207643490790">Sorry, Google accounts are not allowed on this device.</translation>
 <translation id="4569747168316751899">When idle</translation>
-<translation id="4569830245132310845">{COUNT,plural, =1{address}other{# addresses}}</translation>
 <translation id="4572659312570518089">Authentication cancelled while connecting to "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572779512957829735">Enter the PIN for your security key</translation>
 <translation id="4573515936045019911">A network connection is required to upgrade Linux. Please connect to the Internet and try again.</translation>
@@ -3391,6 +3391,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="473936925429402449">Selected; extra content <ph name="CURRENT_ELEMENT" /> out of <ph name="TOTAL_ELEMENTS" /></translation>
 <translation id="4739639199548674512">Tickets</translation>
 <translation id="4742334355511750246">Not allowed to show images</translation>
+<translation id="4742970037960872810">Remove highlight</translation>
 <translation id="4743260470722568160"><ph name="BEGIN_LINK" />Find out how to update applications<ph name="END_LINK" /></translation>
 <translation id="4744981231093950366">{NUM_TABS,plural, =1{Unmute site}other{Unmute sites}}</translation>
 <translation id="4746351372139058112">Messages</translation>
@@ -3427,7 +3428,6 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="4794810983896241342">Updates are managed by <ph name="BEGIN_LINK" />your administrator<ph name="END_LINK" /></translation>
 <translation id="479536056609751218">Web Page, HTML Only</translation>
 <translation id="4798236378408895261">Attach <ph name="BEGIN_LINK" />Bluetooth Logs<ph name="END_LINK" /> (Google internal)</translation>
-<translation id="4798543057539040565">{COUNT,plural, =1{item}other{# items}}</translation>
 <translation id="4801448226354548035">Hide accounts</translation>
 <translation id="4801512016965057443">Allow mobile data roaming</translation>
 <translation id="4804818685124855865">Disconnect</translation>
@@ -3570,6 +3570,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="4943368462779413526">Football</translation>
 <translation id="4943691134276646401">'<ph name="CHROME_EXTENSION_NAME" />' wants to connect to a serial port</translation>
 <translation id="4944310289250773232">This authentication service is hosted by <ph name="SAML_DOMAIN" /></translation>
+<translation id="495164417696120157">{COUNT,plural, =1{a file}other{# files}}</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4953808748584563296">Default orange avatar</translation>
 <translation id="4955710816792587366">Choose your PIN</translation>
@@ -3878,7 +3879,6 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="5310281978693206542">Send link to your devices</translation>
 <translation id="5311304534597152726">Signing in as</translation>
 <translation id="5311565231560644461">Do not allow sites to use your virtual reality devices and data</translation>
-<translation id="5312876166662946389">{COUNT,plural, =1{image}other{# images}}</translation>
 <translation id="5315179276708231080">Lacros is an experimental browser. Please report issues with: Help &gt; 'Report an issue…' The standard browser can be found by typing 'Chrome' into Launcher.</translation>
 <translation id="5315738755890845852">Extra curly bracket: <ph name="ERROR_LINE" /></translation>
 <translation id="5317780077021120954">Save</translation>
@@ -4416,6 +4416,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="5932124097031739492">Linux has been successfully upgraded.</translation>
 <translation id="5932224571077948991">Site shows intrusive or misleading ads</translation>
 <translation id="59324397759951282">USB device from <ph name="MANUFACTURER_NAME" /></translation>
+<translation id="5932441198730183141">You do not have enough available licences to enrol this Google Meet hardware device. Please contact sales to purchase more. If you believe that you're seeing this message in error, please contact support.</translation>
 <translation id="5932881020239635062">Serial</translation>
 <translation id="5933376509899483611">Time Zone</translation>
 <translation id="5933522550144185133"><ph name="APP_NAME" /> is using your camera and microphone</translation>
@@ -5069,6 +5070,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="6664237456442406323">Unfortunately, your computer is configured with a malformed hardware ID. This prevents Chrome OS from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD" />may be vulnerable to malicious attacks<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Something went wrong when opening your profile. Please sign out then sign in again.</translation>
 <translation id="6670142487971298264"><ph name="APP_NAME" /> is now available</translation>
+<translation id="6671320560732140690">{COUNT,plural, =1{an address}other{# addresses}}</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="6674571176963658787">To start sync, enter your passphrase</translation>
 <translation id="6675665718701918026">Pointing device connected</translation>
@@ -5194,7 +5196,6 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> cannot be run as root.</translation>
 <translation id="6812841287760418429">Keep changes</translation>
 <translation id="6813907279658683733">Entire screen</translation>
-<translation id="681584224457905309">{COUNT,plural, =1{file}other{# files}}</translation>
 <translation id="6817174620439930047">Ask when a site wants to use system exclusive messages to access MIDI devices (recommended)</translation>
 <translation id="6818198425579322765">Page language to translate</translation>
 <translation id="6818802132960437751">Built-in virus protection</translation>
@@ -5216,7 +5217,6 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="683373380308365518">Switch to a smart and secure browser</translation>
 <translation id="6835762382653651563">Please connect to the Internet to update your <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6838034009068684089">Ask when a site wants to open and place windows on your screens (recommended)</translation>
-<translation id="6838860780238890144">{COUNT,plural, =1{phone number}other{# phone numbers}}</translation>
 <translation id="6839225236531462745">Certificate Deletion Error</translation>
 <translation id="6839916869147598086">Sign-in has changed</translation>
 <translation id="6840155290835956714">Ask before sending</translation>
@@ -5325,7 +5325,6 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="6955446738988643816">Inspect Pop-up</translation>
 <translation id="6955535239952325894">This setting is disabled on managed browsers</translation>
 <translation id="6957044667612803194">This security key doesn’t support PINs</translation>
-<translation id="6957914043905853560">{COUNT,plural, =1{link}other{# links}}</translation>
 <translation id="6960507406838246615">Linux update required</translation>
 <translation id="6960565108681981554">Not activated. Contact your operator.</translation>
 <translation id="696103774840402661">All files and local data for all users on this <ph name="DEVICE_TYPE" /> has been permanently deleted.</translation>
@@ -5389,6 +5388,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="7009709314043432820"><ph name="APP_NAME" /> is using your camera</translation>
 <translation id="701080569351381435">View Source</translation>
 <translation id="7014174261166285193">Installation failed.</translation>
+<translation id="7014480873681694324">Remove highlight</translation>
 <translation id="7017004637493394352">Say 'OK Google' again</translation>
 <translation id="7017219178341817193">Add a new page</translation>
 <translation id="7017354871202642555">Cannot set mode after window is set.</translation>
@@ -5405,6 +5405,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="7029307918966275733">Crostini is not installed. Please install Crostini to view credits.</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – Serial port connected</translation>
+<translation id="7034692021407794547">An administrator with billing management privileges must first accept the Google Meet hardware Terms of Service in the Google Meet hardware section of the Admin console.</translation>
 <translation id="7036706669646341689"><ph name="DISK_SIZE" /> of space is recommended for Linux. To increase free space, delete files from your device.</translation>
 <translation id="7037509989619051237">Text to preview</translation>
 <translation id="7038632520572155338">Switch access</translation>
@@ -5770,6 +5771,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="7456142309650173560">dev</translation>
 <translation id="7456847797759667638">Open Location...</translation>
 <translation id="7457384018036134905">Manage languages in Chrome OS settings</translation>
+<translation id="7457831169406914076">{COUNT,plural, =1{a link}other{# links}}</translation>
 <translation id="7458168200501453431">Uses the same spell checker that’s used in Google search. Text that you type in the browser is sent to Google.</translation>
 <translation id="7460045493116006516">Current theme that you have installed</translation>
 <translation id="7461924472993315131">Pin</translation>
@@ -6170,6 +6172,7 @@ and Ctrl+Alt+Brightness down to zoom out.</translation>
 <translation id="7883792253546618164">Unsubscribe at any time.</translation>
 <translation id="788453346724465748">Loading account information…</translation>
 <translation id="7885253890047913815">Recent destinations</translation>
+<translation id="7886279613512920452">{COUNT,plural, =1{an item}other{# items}}</translation>
 <translation id="7886605625338676841">eSIM</translation>
 <translation id="7887334752153342268">Duplicate</translation>
 <translation id="7887864092952184874">Bluetooth mouse paired</translation>
@@ -6408,6 +6411,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="813913629614996137">Initialising...</translation>
 <translation id="8141584439523427891">Opening in alternative browser now</translation>
 <translation id="8141725884565838206">Manage your passwords</translation>
+<translation id="814204052173971714">{COUNT,plural, =1{a video}other{# videos}}</translation>
 <translation id="8143442547342702591">Invalid application</translation>
 <translation id="8143951647992294073">Select <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
 <translation id="8146177459103116374">If you've already registered on this device, you can <ph name="LINK2_START" />sign in as an existing user<ph name="LINK2_END" />.</translation>
@@ -6427,6 +6431,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8161293209665121583">Reader mode for web pages</translation>
 <translation id="8162984717805647492">{NUM_TABS,plural, =1{Move tab to new window}other{Move tabs to new window}}</translation>
 <translation id="8165997195302308593">Crostini port forwarding</translation>
+<translation id="816704878106051517">{COUNT,plural, =1{a phone number}other{# phone numbers}}</translation>
 <translation id="8168435359814927499">Content</translation>
 <translation id="8168943654413034772">Can’t remove the only switch assigned to Select. Press any key to exit.</translation>
 <translation id="8169165065843881617">{NUM_TABS,plural, =1{Add tab to reading list}other{Add tabs to reading list}}</translation>
@@ -6623,6 +6628,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8398877366907290961">Proceed anyway</translation>
 <translation id="8400146488506985033">Manage people</translation>
 <translation id="8401432541486058167">Provide the PIN that’s associated with your smart card.</translation>
+<translation id="8404893580027489425">The fingerprint sensor is on the right-hand side of your <ph name="DEVICE_TYPE" />. Touch it lightly with any finger.</translation>
 <translation id="8405046151008197676">Get highlights from the latest update</translation>
 <translation id="8407199357649073301">Log level:</translation>
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> network, connecting</translation>

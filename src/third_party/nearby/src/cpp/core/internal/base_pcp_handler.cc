@@ -53,22 +53,22 @@ BasePcpHandler::BasePcpHandler(Mediums* mediums,
       bwu_manager_(bwu_manager) {}
 
 BasePcpHandler::~BasePcpHandler() {
-  NEARBY_LOGS(INFO) << "BasePcpHandler: going down; strategy="
-                    << strategy_.GetName();
+  NEARBY_LOG(INFO, "Initiating shutdown of PcpHandler(%s)",
+             strategy_.GetName().c_str());
   DisconnectFromEndpointManager();
   // Stop all the ongoing Runnables (as gracefully as possible).
-  NEARBY_LOGS(INFO) << "BasePcpHandler: bringing down executors; strategy="
-                    << strategy_.GetName();
+  NEARBY_LOG(INFO, "BasePcpHandler: bringing down executors; strategy=%s",
+             strategy_.GetName().c_str());
   serial_executor_.Shutdown();
   alarm_executor_.Shutdown();
-  NEARBY_LOGS(INFO) << "BasePcpHandler: is down; strategy="
-                    << strategy_.GetName();
+  NEARBY_LOG(INFO, "PcpHandler(%s) has shut down.",
+             strategy_.GetName().c_str());
 }
 
 void BasePcpHandler::DisconnectFromEndpointManager() {
   if (stop_.Set(true)) return;
-  NEARBY_LOGS(INFO) << "BasePcpHandler: Unregister from EPM; strategy="
-                    << strategy_.GetName();
+  NEARBY_LOG(INFO, "BasePcpHandler: Unregister from EPM; strategy=%s",
+             strategy_.GetName().c_str());
   // Unregister ourselves from EPM message dispatcher.
   endpoint_manager_->UnregisterFrameProcessor(V1Frame::CONNECTION_RESPONSE,
                                               this);
@@ -82,46 +82,51 @@ Status BasePcpHandler::StartAdvertising(ClientProxy* client,
   NEARBY_LOG(INFO, "StartAdvertising with supported mediums: %s",
              GetStringValueOfSupportedMediums(options).c_str());
   ConnectionOptions advertising_options = options.CompatibleOptions();
-  RunOnPcpHandlerThread([this, client, &service_id, &info, &advertising_options,
-                         &response]() RUN_ON_PCP_HANDLER_THREAD() {
-    // The endpoint id inside of the advertisement is different to high
-    // visibility and low visibility mode. In order to decide if client should
-    // grab the high visibility or low visibility id, it needs to tell client
-    // which one right now, before client#StartedAdvertising.
-    if (ShouldEnterHighVisibilityMode(advertising_options)) {
-      client->EnterHighVisibilityMode();
-    }
+  RunOnPcpHandlerThread(
+      "start-advertising",
+      [this, client, &service_id, &info, &advertising_options, &response]()
+          RUN_ON_PCP_HANDLER_THREAD() {
+            // The endpoint id inside of the advertisement is different to high
+            // visibility and low visibility mode. In order to decide if client
+            // should grab the high visibility or low visibility id, it needs to
+            // tell client which one right now, before
+            // client#StartedAdvertising.
+            if (ShouldEnterHighVisibilityMode(advertising_options)) {
+              client->EnterHighVisibilityMode();
+            }
 
-    auto result =
-        StartAdvertisingImpl(client, service_id, client->GetLocalEndpointId(),
-                             info.endpoint_info, advertising_options);
-    if (!result.status.Ok()) {
-      client->ExitHighVisibilityMode();
-      response.Set(result.status);
-      return;
-    }
+            auto result = StartAdvertisingImpl(
+                client, service_id, client->GetLocalEndpointId(),
+                info.endpoint_info, advertising_options);
+            if (!result.status.Ok()) {
+              client->ExitHighVisibilityMode();
+              response.Set(result.status);
+              return;
+            }
 
-    // Now that we've succeeded, mark the client as advertising.
-    // Save the advertising options for local reference in later process like
-    // upgrading bandwidth.
-    advertising_listener_ = info.listener;
-    client->StartedAdvertising(service_id, GetStrategy(), info.listener,
-                               absl::MakeSpan(result.mediums),
-                               advertising_options);
-    response.Set({Status::kSuccess});
-  });
+            // Now that we've succeeded, mark the client as advertising.
+            // Save the advertising options for local reference in later process
+            // like upgrading bandwidth.
+            advertising_listener_ = info.listener;
+            client->StartedAdvertising(service_id, GetStrategy(), info.listener,
+                                       absl::MakeSpan(result.mediums),
+                                       advertising_options);
+            response.Set({Status::kSuccess});
+          });
   return WaitForResult(absl::StrCat("StartAdvertising(", service_id, ")"),
                        client->GetClientId(), &response);
 }
 
 void BasePcpHandler::StopAdvertising(ClientProxy* client) {
-  NEARBY_LOGS(INFO) << "StopAdvertising id=" << client->GetLocalEndpointId();
+  NEARBY_LOG(INFO, "StopAdvertising local_endpoint_id=%s",
+             client->GetLocalEndpointId().c_str());
   CountDownLatch latch(1);
-  RunOnPcpHandlerThread([this, client, &latch]() RUN_ON_PCP_HANDLER_THREAD() {
-    StopAdvertisingImpl(client);
-    client->StoppedAdvertising();
-    latch.CountDown();
-  });
+  RunOnPcpHandlerThread("stop-advertising",
+                        [this, client, &latch]() RUN_ON_PCP_HANDLER_THREAD() {
+                          StopAdvertisingImpl(client);
+                          client->StoppedAdvertising();
+                          latch.CountDown();
+                        });
   WaitForLatch("StopAdvertising", &latch);
 }
 
@@ -188,33 +193,36 @@ Status BasePcpHandler::StartDiscovery(ClientProxy* client,
 
   NEARBY_LOG(INFO, "StartDiscovery with supported mediums: %s",
              GetStringValueOfSupportedMediums(options).c_str());
-  RunOnPcpHandlerThread([this, client, service_id, discovery_options, &listener,
-                         &response]() RUN_ON_PCP_HANDLER_THREAD() {
-    // Ask the implementation to attempt to start discovery.
-    auto result = StartDiscoveryImpl(client, service_id, discovery_options);
-    if (!result.status.Ok()) {
-      response.Set(result.status);
-      return;
-    }
+  RunOnPcpHandlerThread(
+      "start-discovery", [this, client, service_id, discovery_options,
+                          &listener, &response]() RUN_ON_PCP_HANDLER_THREAD() {
+        // Ask the implementation to attempt to start discovery.
+        auto result = StartDiscoveryImpl(client, service_id, discovery_options);
+        if (!result.status.Ok()) {
+          response.Set(result.status);
+          return;
+        }
 
-    // Now that we've succeeded, mark the client as discovering and clear
-    // out any old endpoints we had discovered.
-    discovered_endpoints_.clear();
-    client->StartedDiscovery(service_id, GetStrategy(), listener,
-                             absl::MakeSpan(result.mediums), discovery_options);
-    response.Set({Status::kSuccess});
-  });
+        // Now that we've succeeded, mark the client as discovering and clear
+        // out any old endpoints we had discovered.
+        discovered_endpoints_.clear();
+        client->StartedDiscovery(service_id, GetStrategy(), listener,
+                                 absl::MakeSpan(result.mediums),
+                                 discovery_options);
+        response.Set({Status::kSuccess});
+      });
   return WaitForResult(absl::StrCat("StartDiscovery(", service_id, ")"),
                        client->GetClientId(), &response);
 }
 
 void BasePcpHandler::StopDiscovery(ClientProxy* client) {
   CountDownLatch latch(1);
-  RunOnPcpHandlerThread([this, client, &latch]() RUN_ON_PCP_HANDLER_THREAD() {
-    StopDiscoveryImpl(client);
-    client->StoppedDiscovery();
-    latch.CountDown();
-  });
+  RunOnPcpHandlerThread("stop-discovery",
+                        [this, client, &latch]() RUN_ON_PCP_HANDLER_THREAD() {
+                          StopDiscoveryImpl(client);
+                          client->StoppedDiscovery();
+                          latch.CountDown();
+                        });
 
   WaitForLatch("StopDiscovery", &latch);
 }
@@ -223,7 +231,8 @@ void BasePcpHandler::InjectEndpoint(
     ClientProxy* client, const std::string& service_id,
     const OutOfBandConnectionMetadata& metadata) {
   CountDownLatch latch(1);
-  RunOnPcpHandlerThread([this, client, service_id, metadata, &latch]()
+  RunOnPcpHandlerThread("inject-endpoint",
+                        [this, client, service_id, metadata, &latch]()
                             RUN_ON_PCP_HANDLER_THREAD() {
                               InjectEndpointImpl(client, service_id, metadata);
                               latch.CountDown();
@@ -261,8 +270,9 @@ Status BasePcpHandler::WaitForResult(const std::string& method_name,
   return result.result();
 }
 
-void BasePcpHandler::RunOnPcpHandlerThread(Runnable runnable) {
-  serial_executor_.Execute(std::move(runnable));
+void BasePcpHandler::RunOnPcpHandlerThread(const std::string& name,
+                                           Runnable runnable) {
+  serial_executor_.Execute(name, std::move(runnable));
 }
 
 EncryptionRunner::ResultListener BasePcpHandler::GetResultListener() {
@@ -273,6 +283,7 @@ EncryptionRunner::ResultListener BasePcpHandler::GetResultListener() {
                  const std::string& auth_token,
                  const ByteArray& raw_auth_token) {
             RunOnPcpHandlerThread(
+                "encryption-success",
                 [this, endpoint_id, raw_ukey2 = ukey2.release(), auth_token,
                  raw_auth_token]() RUN_ON_PCP_HANDLER_THREAD() mutable {
                   OnEncryptionSuccessRunnable(
@@ -282,12 +293,13 @@ EncryptionRunner::ResultListener BasePcpHandler::GetResultListener() {
           },
       .on_failure_cb =
           [this](const std::string& endpoint_id, EndpointChannel* channel) {
-            RunOnPcpHandlerThread([this, endpoint_id,
-                                   channel]() RUN_ON_PCP_HANDLER_THREAD() {
-              NEARBY_LOG(ERROR, "Encryption failed for %s on medium %d",
-                         endpoint_id.c_str(), channel->GetMedium());
-              OnEncryptionFailureRunnable(endpoint_id, channel);
-            });
+            RunOnPcpHandlerThread(
+                "encryption-failure",
+                [this, endpoint_id, channel]() RUN_ON_PCP_HANDLER_THREAD() {
+                  NEARBY_LOG(ERROR, "Encryption failed for %s on medium %d",
+                             endpoint_id.c_str(), channel->GetMedium());
+                  OnEncryptionFailureRunnable(endpoint_id, channel);
+                });
           },
   };
 }
@@ -299,9 +311,10 @@ void BasePcpHandler::OnEncryptionSuccessRunnable(
   // busy running UKEY2.
   auto it = pending_connections_.find(endpoint_id);
   if (it == pending_connections_.end()) {
-    NEARBY_LOG(INFO,
-               "Connection not found on UKEY negotination complete; id=%s",
-               endpoint_id.c_str());
+    NEARBY_LOG(
+        INFO,
+        "Connection not found on UKEY negotination complete; endpoint_id=%s",
+        endpoint_id.c_str());
     return;
   }
 
@@ -316,7 +329,8 @@ void BasePcpHandler::OnEncryptionSuccessRunnable(
   }
 
   connection_info.SetCryptoContext(std::move(ukey2));
-  NEARBY_LOG(INFO, "Register encrypted connection; wait for response; id=%s",
+  NEARBY_LOG(INFO,
+             "Register encrypted connection; wait for response; endpoint_id=%s",
              endpoint_id.c_str());
 
   // Set ourselves up so that we receive all acceptance/rejection messages
@@ -350,6 +364,10 @@ void BasePcpHandler::OnEncryptionSuccessRunnable(
               connection_info.options.remote_bluetooth_mac_address,
           .fast_advertisement_service_uuid =
               connection_info.options.fast_advertisement_service_uuid,
+          .keep_alive_interval_millis =
+              connection_info.options.keep_alive_interval_millis,
+          .keep_alive_timeout_millis =
+              connection_info.options.keep_alive_timeout_millis,
       },
       std::move(connection_info.channel), connection_info.listener);
 
@@ -364,9 +382,10 @@ void BasePcpHandler::OnEncryptionFailureRunnable(
     const std::string& endpoint_id, EndpointChannel* endpoint_channel) {
   auto it = pending_connections_.find(endpoint_id);
   if (it == pending_connections_.end()) {
-    NEARBY_LOG(INFO,
-               "Connection not found on UKEY negotination complete; id=%s",
-               endpoint_id.c_str());
+    NEARBY_LOG(
+        INFO,
+        "Connection not found on UKEY negotination complete; endpoint_id=%s",
+        endpoint_id.c_str());
     return;
   }
 
@@ -395,120 +414,138 @@ Status BasePcpHandler::RequestConnection(ClientProxy* client,
                                          const ConnectionRequestInfo& info,
                                          const ConnectionOptions& options) {
   auto result = std::make_shared<Future<Status>>();
-  RunOnPcpHandlerThread([this, client, &info, options, endpoint_id,
-                         result]() RUN_ON_PCP_HANDLER_THREAD() {
-    absl::Time start_time = SystemClock::ElapsedRealtime();
+  RunOnPcpHandlerThread(
+      "request-connection", [this, client, &info, options, endpoint_id,
+                             result]() RUN_ON_PCP_HANDLER_THREAD() {
+        absl::Time start_time = SystemClock::ElapsedRealtime();
 
-    // If we already have a pending connection, then we shouldn't allow any more
-    // outgoing connections to this endpoint.
-    if (pending_connections_.count(endpoint_id)) {
-      NEARBY_LOG(INFO, "Connection already exists: id=%s", endpoint_id.c_str());
-      result->Set({Status::kAlreadyConnectedToEndpoint});
-      return;
-    }
+        // If we already have a pending connection, then we shouldn't allow any
+        // more outgoing connections to this endpoint.
+        if (pending_connections_.count(endpoint_id)) {
+          NEARBY_LOG(INFO,
+                     "In requestConnection(), connection requested with "
+                     "endpoint(id=%s), "
+                     "but we already have a pending connection with them.",
+                     endpoint_id.c_str());
+          result->Set({Status::kAlreadyConnectedToEndpoint});
+          return;
+        }
 
-    // If our child class says we can't send any more outgoing connections,
-    // listen to them.
-    if (ShouldEnforceTopologyConstraints(client->GetAdvertisingOptions()) &&
-        !CanSendOutgoingConnection(client)) {
-      NEARBY_LOG(INFO, "Outgoing connection not allowed: id=%s",
-                 endpoint_id.c_str());
-      result->Set({Status::kOutOfOrderApiCall});
-      return;
-    }
+        // If our child class says we can't send any more outgoing connections,
+        // listen to them.
+        if (ShouldEnforceTopologyConstraints(client->GetAdvertisingOptions()) &&
+            !CanSendOutgoingConnection(client)) {
+          NEARBY_LOG(
+              INFO,
+              "In requestConnection(), client=%" PRIx64
+              " attempted a connection with endpoint(id=%s), but outgoing "
+              "connections are disallowed",
+              client->GetClientId(), endpoint_id.c_str());
+          result->Set({Status::kOutOfOrderApiCall});
+          return;
+        }
 
-    DiscoveredEndpoint* endpoint = GetDiscoveredEndpoint(endpoint_id);
-    if (endpoint == nullptr) {
-      NEARBY_LOG(INFO, "Discovered endpoint not found: id=%s",
-                 endpoint_id.c_str());
-      result->Set({Status::kEndpointUnknown});
-      return;
-    }
+        DiscoveredEndpoint* endpoint = GetDiscoveredEndpoint(endpoint_id);
+        if (endpoint == nullptr) {
+          NEARBY_LOG(INFO, "Discovered endpoint not found: endpoint_id=%s",
+                     endpoint_id.c_str());
+          result->Set({Status::kEndpointUnknown});
+          return;
+        }
 
-    auto remote_bluetooth_mac_address =
-        BluetoothUtils::ToString(options.remote_bluetooth_mac_address);
-    if (!remote_bluetooth_mac_address.empty()) {
-      if (AppendRemoteBluetoothMacAddressEndpoint(
-              endpoint_id, remote_bluetooth_mac_address,
-              client->GetDiscoveryOptions()))
-        NEARBY_LOGS(INFO) << "Appended remote Bluetooth MAC Address endpoint "
-                          << "[" << remote_bluetooth_mac_address << "]";
-    }
+        auto remote_bluetooth_mac_address =
+            BluetoothUtils::ToString(options.remote_bluetooth_mac_address);
+        if (!remote_bluetooth_mac_address.empty()) {
+          if (AppendRemoteBluetoothMacAddressEndpoint(
+                  endpoint_id, remote_bluetooth_mac_address,
+                  client->GetDiscoveryOptions()))
+            NEARBY_LOG(INFO,
+                       "Appended remote Bluetooth MAC Address endpoint [%s]",
+                       remote_bluetooth_mac_address.c_str());
+        }
 
-    if (AppendWebRTCEndpoint(endpoint_id, client->GetDiscoveryOptions()))
-      NEARBY_LOGS(INFO) << "Appended Web RTC endpoint.";
+        if (AppendWebRTCEndpoint(endpoint_id, client->GetDiscoveryOptions()))
+          NEARBY_LOG(INFO, "Appended Web RTC endpoint.");
 
-    auto discovered_endpoints = GetDiscoveredEndpoints(endpoint_id);
-    std::unique_ptr<EndpointChannel> channel;
-    ConnectImplResult connect_impl_result;
+        auto discovered_endpoints = GetDiscoveredEndpoints(endpoint_id);
+        std::unique_ptr<EndpointChannel> channel;
+        ConnectImplResult connect_impl_result;
 
-    for (auto connect_endpoint : discovered_endpoints) {
-      if (!MediumSupportedByClientOptions(connect_endpoint->medium, options))
-        continue;
-      connect_impl_result = ConnectImpl(client, connect_endpoint);
-      if (connect_impl_result.status.Ok()) {
-        channel = std::move(connect_impl_result.endpoint_channel);
-        break;
-      }
-    }
+        for (auto connect_endpoint : discovered_endpoints) {
+          if (!MediumSupportedByClientOptions(connect_endpoint->medium,
+                                              options))
+            continue;
+          connect_impl_result = ConnectImpl(client, connect_endpoint);
+          if (connect_impl_result.status.Ok()) {
+            channel = std::move(connect_impl_result.endpoint_channel);
+            break;
+          }
+        }
 
-    if (channel == nullptr) {
-      NEARBY_LOG(INFO, "Endpoint channel not available: id=%s",
-                 endpoint_id.c_str());
-      ProcessPreConnectionInitiationFailure(
-          endpoint_id, channel.get(), connect_impl_result.status, result.get());
-      return;
-    }
+        if (channel == nullptr) {
+          NEARBY_LOG(INFO, "Endpoint channel not available: endpoint_id=%s",
+                     endpoint_id.c_str());
+          ProcessPreConnectionInitiationFailure(endpoint_id, channel.get(),
+                                                connect_impl_result.status,
+                                                result.get());
+          return;
+        }
 
-    NEARBY_LOG(INFO, "Sending connection request: id=%s", endpoint_id.c_str());
-    // Generate the nonce to use for this connection.
-    std::int32_t nonce = prng_.NextInt32();
+        NEARBY_LOG(INFO,
+                   "In requestConnection(), wrote ConnectionRequestFrame "
+                   "to endpoint(id=%s)",
+                   endpoint_id.c_str());
+        // Generate the nonce to use for this connection.
+        std::int32_t nonce = prng_.NextInt32();
 
-    // The first message we have to send, after connecting, is to tell the
-    // endpoint about ourselves.
-    Exception write_exception = WriteConnectionRequestFrame(
-        channel.get(), client->GetLocalEndpointId(), info.endpoint_info, nonce,
-        GetSupportedConnectionMediumsByPriority(options));
-    if (!write_exception.Ok()) {
-      NEARBY_LOG(INFO, "Failed to send connection request: id=%s",
-                 endpoint_id.c_str());
-      ProcessPreConnectionInitiationFailure(
-          endpoint_id, channel.get(), {Status::kEndpointIoError}, result.get());
-      return;
-    }
+        // The first message we have to send, after connecting, is to tell the
+        // endpoint about ourselves.
+        Exception write_exception = WriteConnectionRequestFrame(
+            channel.get(), client->GetLocalEndpointId(), info.endpoint_info,
+            nonce, GetSupportedConnectionMediumsByPriority(options),
+            options.keep_alive_interval_millis,
+            options.keep_alive_timeout_millis);
+        if (!write_exception.Ok()) {
+          NEARBY_LOG(INFO, "Failed to send connection request: endpoint_id=%s",
+                     endpoint_id.c_str());
+          ProcessPreConnectionInitiationFailure(endpoint_id, channel.get(),
+                                                {Status::kEndpointIoError},
+                                                result.get());
+          return;
+        }
 
-    NEARBY_LOG(INFO, "adding connection to pending set: id=%s",
-               endpoint_id.c_str());
+        NEARBY_LOG(INFO, "Adding connection to pending set: endpoint_id=%s",
+                   endpoint_id.c_str());
 
-    // We've successfully connected to the device, and are now about to jump on
-    // to the EncryptionRunner thread to start running our encryption protocol.
-    // We'll mark ourselves as pending in case we get another call to
-    // RequestConnection or OnIncomingConnection, so that we can cancel the
-    // connection if needed.
-    EndpointChannel* endpoint_channel =
-        pending_connections_
-            .emplace(endpoint_id,
-                     PendingConnectionInfo{
-                         .client = client,
-                         .remote_endpoint_info = endpoint->endpoint_info,
-                         .nonce = nonce,
-                         .is_incoming = false,
-                         .start_time = start_time,
-                         .listener = info.listener,
-                         .options = options,
-                         .result = result,
-                         .channel = std::move(channel),
-                     })
-            .first->second.channel.get();
+        // We've successfully connected to the device, and are now about to jump
+        // on to the EncryptionRunner thread to start running our encryption
+        // protocol. We'll mark ourselves as pending in case we get another call
+        // to RequestConnection or OnIncomingConnection, so that we can cancel
+        // the connection if needed.
+        EndpointChannel* endpoint_channel =
+            pending_connections_
+                .emplace(endpoint_id,
+                         PendingConnectionInfo{
+                             .client = client,
+                             .remote_endpoint_info = endpoint->endpoint_info,
+                             .nonce = nonce,
+                             .is_incoming = false,
+                             .start_time = start_time,
+                             .listener = info.listener,
+                             .options = options,
+                             .result = result,
+                             .channel = std::move(channel),
+                         })
+                .first->second.channel.get();
 
-    NEARBY_LOG(INFO, "Initiating secure connection: id=%s",
-               endpoint_id.c_str());
-    // Next, we'll set up encryption. When it's done, our future will return and
-    // RequestConnection() will finish.
-    encryption_runner_.StartClient(client, endpoint_id, endpoint_channel,
-                                   GetResultListener());
-  });
-  NEARBY_LOG(INFO, "Waiting for connection to complete: id=%s",
+        NEARBY_LOG(INFO, "Initiating secure connection: endpoint_id=%s",
+                   endpoint_id.c_str());
+        // Next, we'll set up encryption. When it's done, our future will return
+        // and RequestConnection() will finish.
+        encryption_runner_.StartClient(client, endpoint_id, endpoint_channel,
+                                       GetResultListener());
+      });
+  NEARBY_LOG(INFO, "Waiting for connection to complete: endpoint_id=%s",
              endpoint_id.c_str());
   auto status =
       WaitForResult(absl::StrCat("RequestConnection(", endpoint_id, ")"),
@@ -616,10 +653,13 @@ bool BasePcpHandler::CanReceiveIncomingConnection(ClientProxy* client) const {
 Exception BasePcpHandler::WriteConnectionRequestFrame(
     EndpointChannel* endpoint_channel, const std::string& local_endpoint_id,
     const ByteArray& local_endpoint_info, std::int32_t nonce,
-    const std::vector<proto::connections::Medium>& supported_mediums) {
+    const std::vector<proto::connections::Medium>& supported_mediums,
+    std::int32_t keep_alive_interval_millis,
+    std::int32_t keep_alive_timeout_millis) {
   return endpoint_channel->Write(parser::ForConnectionRequest(
       local_endpoint_id, local_endpoint_info, nonce, /*supports_5_ghz =*/false,
-      /*bssid=*/std::string{}, supported_mediums));
+      /*bssid=*/std::string{}, supported_mediums, keep_alive_interval_millis,
+      keep_alive_timeout_millis));
 }
 
 void BasePcpHandler::ProcessPreConnectionInitiationFailure(
@@ -672,12 +712,16 @@ Status BasePcpHandler::AcceptConnection(
     const PayloadListener& payload_listener) {
   Future<Status> response;
   RunOnPcpHandlerThread(
-      [this, client, endpoint_id, payload_listener,
-       &response]() RUN_ON_PCP_HANDLER_THREAD() {
-        NEARBY_LOG(INFO, "AcceptConnection: id=%s", endpoint_id.c_str());
+      "accept-connection", [this, client, endpoint_id, payload_listener,
+                            &response]() RUN_ON_PCP_HANDLER_THREAD() {
+        NEARBY_LOG(INFO, "AcceptConnection: endpoint_id=%s",
+                   endpoint_id.c_str());
         if (!pending_connections_.count(endpoint_id)) {
-          NEARBY_LOG(INFO, "AcceptConnection: no pending connection for id=%s",
-                     endpoint_id.c_str());
+          NEARBY_LOG(
+              INFO,
+              "AcceptConnection: no pending connection for endpoint_id=%s",
+              endpoint_id.c_str());
+
           response.Set({Status::kEndpointUnknown});
           return;
         }
@@ -691,10 +735,10 @@ Status BasePcpHandler::AcceptConnection(
         std::shared_ptr<EndpointChannel> channel =
             channel_manager_->GetChannelForEndpoint(endpoint_id);
         if (channel == nullptr) {
-          NEARBY_LOG(
-              ERROR,
-              "Channel destroyed before Accept; bring down connection: id=%s",
-              endpoint_id.c_str());
+          NEARBY_LOG(ERROR,
+                     "Channel destroyed before Accept; bring down "
+                     "connection: endpoint_id=%s",
+                     endpoint_id.c_str());
           ProcessPreConnectionResultFailure(client, endpoint_id);
           response.Set({Status::kEndpointUnknown});
           return;
@@ -703,14 +747,15 @@ Status BasePcpHandler::AcceptConnection(
         Exception write_exception =
             channel->Write(parser::ForConnectionResponse(Status::kSuccess));
         if (!write_exception.Ok()) {
-          NEARBY_LOG(INFO, "AcceptConnection: failed to send response: id=%s",
-                     endpoint_id.c_str());
+          NEARBY_LOG(
+              INFO, "AcceptConnection: failed to send response: endpoint_id=%s",
+              endpoint_id.c_str());
           ProcessPreConnectionResultFailure(client, endpoint_id);
           response.Set({Status::kEndpointIoError});
           return;
         }
 
-        NEARBY_LOG(INFO, "AcceptConnection: accepting locally: id=%s",
+        NEARBY_LOG(INFO, "AcceptConnection: accepting locally: endpoint_id=%s",
                    endpoint_id.c_str());
         connection_info.LocalEndpointAcceptedConnection(endpoint_id,
                                                         payload_listener);
@@ -726,51 +771,55 @@ Status BasePcpHandler::AcceptConnection(
 Status BasePcpHandler::RejectConnection(ClientProxy* client,
                                         const std::string& endpoint_id) {
   Future<Status> response;
-  RunOnPcpHandlerThread([this, client, endpoint_id,
-                         &response]() RUN_ON_PCP_HANDLER_THREAD() {
-    NEARBY_LOG(INFO, "RejectConnection: id=%s", endpoint_id.c_str());
-    if (!pending_connections_.count(endpoint_id)) {
-      NEARBY_LOG(INFO, "RejectConnection: no pending connection for id=%s",
-                 endpoint_id.c_str());
-      response.Set({Status::kEndpointUnknown});
-      return;
-    }
-    auto& connection_info = pending_connections_[endpoint_id];
+  RunOnPcpHandlerThread(
+      "reject-connection",
+      [this, client, endpoint_id, &response]() RUN_ON_PCP_HANDLER_THREAD() {
+        NEARBY_LOG(INFO, "RejectConnection: id=%s", endpoint_id.c_str());
+        if (!pending_connections_.count(endpoint_id)) {
+          NEARBY_LOG(
+              INFO,
+              "RejectConnection: no pending connection for endpoint_id=%s",
+              endpoint_id.c_str());
+          response.Set({Status::kEndpointUnknown});
+          return;
+        }
+        auto& connection_info = pending_connections_[endpoint_id];
 
-    // By this point in the flow, connection_info->endpoint_channel_ has been
-    // nulled out because ownership of that EndpointChannel was passed on to
-    // EndpointChannelManager via a call to
-    // EndpointManager::registerEndpoint(), so we now need to get access to the
-    // EndpointChannel from the authoritative owner.
-    std::shared_ptr<EndpointChannel> channel =
-        channel_manager_->GetChannelForEndpoint(endpoint_id);
-    if (channel == nullptr) {
-      NEARBY_LOG(
-          ERROR,
-          "Channel destroyed before Reject; bring down connection: id=%s",
-          endpoint_id.c_str());
-      ProcessPreConnectionResultFailure(client, endpoint_id);
-      response.Set({Status::kEndpointUnknown});
-      return;
-    }
+        // By this point in the flow, connection_info->endpoint_channel_ has
+        // been nulled out because ownership of that EndpointChannel was passed
+        // on to EndpointChannelManager via a call to
+        // EndpointManager::registerEndpoint(), so we now need to get access to
+        // the EndpointChannel from the authoritative owner.
+        std::shared_ptr<EndpointChannel> channel =
+            channel_manager_->GetChannelForEndpoint(endpoint_id);
+        if (channel == nullptr) {
+          NEARBY_LOG(ERROR,
+                     "Channel destroyed before Reject; bring down connection: "
+                     "endpoint_id=%s",
+                     endpoint_id.c_str());
+          ProcessPreConnectionResultFailure(client, endpoint_id);
+          response.Set({Status::kEndpointUnknown});
+          return;
+        }
 
-    Exception write_exception = channel->Write(
-        parser::ForConnectionResponse(Status::kConnectionRejected));
-    if (!write_exception.Ok()) {
-      NEARBY_LOG(INFO, "RejectConnection: failed to send response: id=%s",
-                 endpoint_id.c_str());
-      ProcessPreConnectionResultFailure(client, endpoint_id);
-      response.Set({Status::kEndpointIoError});
-      return;
-    }
+        Exception write_exception = channel->Write(
+            parser::ForConnectionResponse(Status::kConnectionRejected));
+        if (!write_exception.Ok()) {
+          NEARBY_LOG(
+              INFO, "RejectConnection: failed to send response: endpoint_id=%s",
+              endpoint_id.c_str());
+          ProcessPreConnectionResultFailure(client, endpoint_id);
+          response.Set({Status::kEndpointIoError});
+          return;
+        }
 
-    NEARBY_LOG(INFO, "RejectConnection: rejecting locally: id=%s",
-               endpoint_id.c_str());
-    connection_info.LocalEndpointRejectedConnection(endpoint_id);
-    EvaluateConnectionResult(client, endpoint_id,
-                             false /* can_close_immediately */);
-    response.Set({Status::kSuccess});
-  });
+        NEARBY_LOG(INFO, "RejectConnection: rejecting locally: endpoint_id=%s",
+                   endpoint_id.c_str());
+        connection_info.LocalEndpointRejectedConnection(endpoint_id);
+        EvaluateConnectionResult(client, endpoint_id,
+                                 false /* can_close_immediately */);
+        response.Set({Status::kSuccess});
+      });
 
   return WaitForResult(absl::StrCat("RejectConnection(", endpoint_id, ")"),
                        client->GetClientId(), &response);
@@ -781,45 +830,50 @@ void BasePcpHandler::OnIncomingFrame(OfflineFrame& frame,
                                      ClientProxy* client,
                                      proto::connections::Medium medium) {
   CountDownLatch latch(1);
-  RunOnPcpHandlerThread([this, client, endpoint_id, frame,
-                         &latch]() RUN_ON_PCP_HANDLER_THREAD() {
-    NEARBY_LOG(INFO, "OnConnectionResponse: id=%s", endpoint_id.c_str());
+  RunOnPcpHandlerThread(
+      "incoming-frame",
+      [this, client, endpoint_id, frame, &latch]() RUN_ON_PCP_HANDLER_THREAD() {
+        NEARBY_LOG(INFO, "OnConnectionResponse: endpoint_id=%s",
+                   endpoint_id.c_str());
 
-    if (client->HasRemoteEndpointResponded(endpoint_id)) {
-      NEARBY_LOG(INFO, "OnConnectionResponse: already handled; id=%s",
-                 endpoint_id.c_str());
-      return;
-    }
+        if (client->HasRemoteEndpointResponded(endpoint_id)) {
+          NEARBY_LOG(INFO,
+                     "OnConnectionResponse: already handled; endpoint_id=%s",
+                     endpoint_id.c_str());
+          return;
+        }
 
-    const ConnectionResponseFrame& connection_response =
-        frame.v1().connection_response();
+        const ConnectionResponseFrame& connection_response =
+            frame.v1().connection_response();
 
-    // For backward compatible, here still check both status and
-    // response parameters until the response feature is roll out in all
-    // supported devices.
-    bool accepted = false;
-    if (connection_response.has_response()) {
-      accepted =
-          connection_response.response() == ConnectionResponseFrame::ACCEPT;
-    } else {
-      accepted = connection_response.status() == Status::kSuccess;
-    }
-    if (accepted) {
-      NEARBY_LOG(INFO, "OnConnectionResponse: remote accepted; id=%s",
-                 endpoint_id.c_str());
-      client->RemoteEndpointAcceptedConnection(endpoint_id);
-    } else {
-      NEARBY_LOG(INFO,
-                 "OnConnectionResponse: remote rejected; id=%s; status=%d",
-                 endpoint_id.c_str(), connection_response.status());
-      client->RemoteEndpointRejectedConnection(endpoint_id);
-    }
+        // For backward compatible, here still check both status and
+        // response parameters until the response feature is roll out in all
+        // supported devices.
+        bool accepted = false;
+        if (connection_response.has_response()) {
+          accepted =
+              connection_response.response() == ConnectionResponseFrame::ACCEPT;
+        } else {
+          accepted = connection_response.status() == Status::kSuccess;
+        }
+        if (accepted) {
+          NEARBY_LOG(INFO,
+                     "OnConnectionResponse: remote accepted; endpoint_id=%s",
+                     endpoint_id.c_str());
+          client->RemoteEndpointAcceptedConnection(endpoint_id);
+        } else {
+          NEARBY_LOG(INFO,
+                     "OnConnectionResponse: remote rejected; endpoint_id=%s; "
+                     "status=%d",
+                     endpoint_id.c_str(), connection_response.status());
+          client->RemoteEndpointRejectedConnection(endpoint_id);
+        }
 
-    EvaluateConnectionResult(client, endpoint_id,
-                             /* can_close_immediately= */ true);
+        EvaluateConnectionResult(client, endpoint_id,
+                                 /* can_close_immediately= */ true);
 
-    latch.CountDown();
-  });
+        latch.CountDown();
+      });
   WaitForLatch("OnIncomingFrame()", &latch);
 }
 
@@ -830,17 +884,19 @@ void BasePcpHandler::OnEndpointDisconnect(ClientProxy* client,
     barrier.CountDown();
     return;
   }
-  RunOnPcpHandlerThread([this, client, endpoint_id,
-                         barrier]() RUN_ON_PCP_HANDLER_THREAD() mutable {
-    auto item = pending_alarms_.find(endpoint_id);
-    if (item != pending_alarms_.end()) {
-      auto& alarm = item->second;
-      alarm.Cancel();
-      pending_alarms_.erase(item);
-    }
-    ProcessPreConnectionResultFailure(client, endpoint_id);
-    barrier.CountDown();
-  });
+  RunOnPcpHandlerThread("on-endpoint-disconnect",
+                        [this, client, endpoint_id, barrier]()
+                            RUN_ON_PCP_HANDLER_THREAD() mutable {
+                              auto item = pending_alarms_.find(endpoint_id);
+                              if (item != pending_alarms_.end()) {
+                                auto& alarm = item->second;
+                                alarm.Cancel();
+                                pending_alarms_.erase(item);
+                              }
+                              ProcessPreConnectionResultFailure(client,
+                                                                endpoint_id);
+                              barrier.CountDown();
+                            });
 }
 
 BluetoothDevice BasePcpHandler::GetRemoteBluetoothDevice(
@@ -883,14 +939,16 @@ void BasePcpHandler::OnEndpointFound(
   // Range is empty: this is the first endpoint we discovered so far.
   // Report this endpoint_id to client.
   if (range.first == range.second) {
-    NEARBY_LOG(INFO, "Adding new endpoint: id=%s", endpoint_id.c_str());
+    NEARBY_LOG(INFO, "Adding new endpoint: endpoint_id=%s",
+               endpoint_id.c_str());
     // And, as it's the first time, report it to the client.
     client->OnEndpointFound(
         owned_endpoint->service_id, owned_endpoint->endpoint_id,
         owned_endpoint->endpoint_info, owned_endpoint->medium);
   } else {
-    NEARBY_LOGS(INFO) << "Adding new medium for endpoint: id=" << endpoint_id
-                      << "; medium=" << owned_endpoint->medium;
+    NEARBY_LOG(INFO,
+               "Adding new medium for endpoint: endpoint_id=%s; medium=%d",
+               endpoint_id.c_str(), owned_endpoint->medium);
   }
 }
 
@@ -899,7 +957,7 @@ void BasePcpHandler::OnEndpointLost(
   // Look up the DiscoveredEndpoint we have in our cache.
   const auto* discovered_endpoint = GetDiscoveredEndpoint(endpoint.endpoint_id);
   if (discovered_endpoint == nullptr) {
-    NEARBY_LOG(INFO, "No previous endpoint (nothing to lose): id=%s",
+    NEARBY_LOG(INFO, "No previous endpoint (nothing to lose): endpoint_id=%s",
                endpoint.endpoint_id.c_str());
     return;
   }
@@ -945,9 +1003,10 @@ bool BasePcpHandler::IsPreferred(
     absl::StrAppend(&medium_string, medium, "; ");
   }
   NEARBY_LOG(FATAL,
-             "Failed to determine preferred medium; bailing out; mediums=%s; "
-             "new=%d; old=%d",
-             medium_string.c_str(), new_endpoint.medium, old_endpoint.medium);
+             "Failed to find either %d or %d in the list of locally supported "
+             "mediums despite expecting to find both, when deciding which "
+             "medium %s is preferred.",
+             new_endpoint.medium, old_endpoint.medium, medium_string.c_str());
   return false;
 }
 
@@ -961,10 +1020,11 @@ Exception BasePcpHandler::OnIncomingConnection(
   //  the client stopped advertising and we nulled out state, followed by an
   //  incoming connection where we attempted to check that state.
   if (!client->IsAdvertising()) {
-    NEARBY_LOG(WARNING,
-               "Ignoring incoming connection because client 0x%" PRIX64
-               " is no longer advertising.",
-               client->GetClientId());
+    NEARBY_LOG(
+        WARNING,
+        "Ignoring incoming connection on medium %d because client=%" PRIX64
+        " is no longer advertising",
+        channel->GetMedium(), client->GetClientId());
     return {Exception::kIo};
   }
 
@@ -974,12 +1034,11 @@ Exception BasePcpHandler::OnIncomingConnection(
 
   if (!wrapped_frame.ok()) {
     if (wrapped_frame.exception()) {
-      NEARBY_LOG(
-          ERROR,
-          "Failed to parse incoming connection request; client_id=0x%" PRIX64
-          "; device=%s",
-          client->GetClientId(),
-          absl::BytesToHexString(remote_endpoint_info.data()).c_str());
+      NEARBY_LOG(ERROR,
+                 "Failed to parse incoming connection request; client=%" PRIx64
+                 "; device=%s",
+                 client->GetClientId(),
+                 absl::BytesToHexString(remote_endpoint_info.data()).c_str());
       ProcessPreConnectionInitiationFailure("", channel.get(), {Status::kError},
                                             nullptr);
       return {Exception::kSuccess};
@@ -991,12 +1050,15 @@ Exception BasePcpHandler::OnIncomingConnection(
   const ConnectionRequestFrame& connection_request =
       frame.v1().connection_request();
   NEARBY_LOG(INFO,
-             "Incoming connection request; client_id=0x%" PRIX64
-             "; device=%s; id=%s",
-             client->GetClientId(),
-             absl::BytesToHexString(remote_endpoint_info.data()).c_str(),
+             "In onIncomingConnection(%d) for client=%" PRIx64
+             ", read ConnectionRequestFrame from endpoint(id=%s)",
+             channel->GetMedium(), client->GetClientId(),
              connection_request.endpoint_id().c_str());
   if (client->IsConnectedToEndpoint(connection_request.endpoint_id())) {
+    NEARBY_LOG(ERROR,
+               "Incoming connection on medium %d was denied because we're "
+               "already connected to endpoint(id=%s).",
+               channel->GetMedium(), connection_request.endpoint_id().c_str());
     return {Exception::kIo};
   }
 
@@ -1011,6 +1073,7 @@ Exception BasePcpHandler::OnIncomingConnection(
   // listen to them.
   if (ShouldEnforceTopologyConstraints(client->GetAdvertisingOptions()) &&
       !CanReceiveIncomingConnection(client)) {
+    NEARBY_LOG(ERROR, "Incoming connections are currently disallowed.");
     return {Exception::kIo};
   }
 
@@ -1021,6 +1084,32 @@ Exception BasePcpHandler::OnIncomingConnection(
   const ByteArray endpoint_info{connection_request.has_endpoint_info()
                                     ? connection_request.endpoint_info()
                                     : connection_request.endpoint_name()};
+
+  // Retrieve the keep-alive frame interval and timeout fields. If the frame
+  // doesn't have those fields, we need to get them as default from feature
+  // flags to prevent 0-values causing thread ill.
+  ConnectionOptions options = {.keep_alive_interval_millis = 0,
+                               .keep_alive_timeout_millis = 0};
+  if (connection_request.has_keep_alive_interval_millis() &&
+      connection_request.has_keep_alive_timeout_millis()) {
+    options.keep_alive_interval_millis =
+        connection_request.keep_alive_interval_millis();
+    options.keep_alive_timeout_millis =
+        connection_request.keep_alive_timeout_millis();
+  }
+  if (options.keep_alive_interval_millis == 0 ||
+      options.keep_alive_timeout_millis == 0 ||
+      options.keep_alive_interval_millis >= options.keep_alive_timeout_millis) {
+    NEARBY_LOG(WARNING,
+               "Incoming connection has wrong keep-alive frame interval=%d, "
+               "timeout=%d values; correct them as default.",
+               options.keep_alive_interval_millis,
+               options.keep_alive_timeout_millis);
+    options.keep_alive_interval_millis =
+        FeatureFlags::GetInstance().GetFlags().keep_alive_interval_millis;
+    options.keep_alive_timeout_millis =
+        FeatureFlags::GetInstance().GetFlags().keep_alive_timeout_millis;
+  }
 
   // We've successfully connected to the device, and are now about to jump on to
   // the EncryptionRunner thread to start running our encryption protocol. We'll
@@ -1036,6 +1125,7 @@ Exception BasePcpHandler::OnIncomingConnection(
                        .is_incoming = true,
                        .start_time = start_time,
                        .listener = advertising_listener_,
+                       .options = options,
                        .supported_mediums =
                            parser::ConnectionRequestMediumsToMediums(
                                connection_request),
@@ -1057,21 +1147,37 @@ bool BasePcpHandler::BreakTie(ClientProxy* client,
   if (it != pending_connections_.end()) {
     BasePcpHandler::PendingConnectionInfo& info = it->second;
 
-    NEARBY_LOG(INFO, "BreakTie: id=%s", endpoint_id.c_str());
+    NEARBY_LOG(
+        INFO,
+        "In onIncomingConnection(%d) for client=%" PRIx64 ", found a collision "
+        "with endpoint %s. We've already sent a connection request to them with"
+        " nonce %d, but they're also trying to connect to us with nonce %d.",
+        endpoint_channel->GetMedium(), client->GetClientId(),
+        endpoint_id.c_str(), info.nonce, incoming_nonce);
     // Break the lowest connection. In the (extremely) rare case of a tie, break
     // both.
     if (info.nonce > incoming_nonce) {
       // Our connection won! Clean up their connection.
       endpoint_channel->Close();
 
-      NEARBY_LOG(INFO, "BreakTie: We won; id=%s", endpoint_id.c_str());
+      NEARBY_LOG(
+          INFO,
+          "In onIncomingConnection(%d) for client=%" PRIx64
+          ", cleaned up the collision with endpoint(id=%s) by closing their "
+          "channel.",
+          endpoint_channel->GetMedium(), client->GetClientId(),
+          endpoint_id.c_str());
       return true;
     } else if (info.nonce < incoming_nonce) {
       // Aw, we lost. Clean up our connection, and then we'll let their
       // connection continue on.
       ProcessTieBreakLoss(client, endpoint_id, &info);
-
-      NEARBY_LOG(INFO, "BreakTie: We lost; id=%s", endpoint_id.c_str());
+      NEARBY_LOG(INFO,
+                 "In onIncomingConnection(%d) for client=%" PRIx64
+                 ", cleaned up the collision with endpoint %s by closing our "
+                 "channel and notifying our client of the failure.",
+                 endpoint_channel->GetMedium(), client->GetClientId(),
+                 endpoint_id.c_str());
     } else {
       // Oh. Huh. We both lost. Well, that's awkward. We'll clean up both and
       // just force the devices to retry.
@@ -1079,7 +1185,13 @@ bool BasePcpHandler::BreakTie(ClientProxy* client,
 
       ProcessTieBreakLoss(client, endpoint_id, &info);
 
-      NEARBY_LOG(INFO, "BreakTie: Both lost; id=%s", endpoint_id.c_str());
+      NEARBY_LOG(INFO,
+                 "In onIncomingConnection(%d) for client=%" PRIx64
+                 ", cleaned up the collision with endpoint %s by closing both "
+                 "channels. Our nonces were identical, so we couldn't decide "
+                 "which channel to use.",
+                 endpoint_channel->GetMedium(), client->GetClientId(),
+                 endpoint_id.c_str());
       return true;
     }
   }
@@ -1111,10 +1223,11 @@ bool BasePcpHandler::AppendRemoteBluetoothMacAddressEndpoint(
   auto endpoint = it.first->second.get();
   for (auto item = it.first; item != it.second; item++) {
     if (item->second->medium == proto::connections::Medium::BLUETOOTH) {
-      NEARBY_LOGS(INFO)
-          << "Cannot append remote Bluetooth MAC Address endpoint, because the "
-             "endpoint has already been found over Bluetooth "
-          << "[" << remote_bluetooth_mac_address << "]";
+      NEARBY_LOG(
+          INFO,
+          "Cannot append remote Bluetooth MAC Address endpoint, because the "
+          "endpoint has already been found over Bluetooth [%s]",
+          remote_bluetooth_mac_address.c_str());
       return false;
     }
   }
@@ -1122,10 +1235,10 @@ bool BasePcpHandler::AppendRemoteBluetoothMacAddressEndpoint(
   auto remote_bluetooth_device =
       GetRemoteBluetoothDevice(remote_bluetooth_mac_address);
   if (!remote_bluetooth_device.IsValid()) {
-    NEARBY_LOGS(INFO) << "Cannot append remote Bluetooth MAC Address endpoint, "
-                         "because a valid "
-                         "Bluetooth device could not be derived "
-                      << "[" << remote_bluetooth_mac_address << "]";
+    NEARBY_LOG(INFO,
+               "Cannot append remote Bluetooth MAC Address endpoint, because a "
+               "valid Bluetooth device could not be derived [%s]",
+               remote_bluetooth_mac_address.c_str());
     return false;
   }
 
@@ -1178,11 +1291,15 @@ void BasePcpHandler::EvaluateConnectionResult(ClientProxy* client,
   if (!client->IsConnectionAccepted(endpoint_id) &&
       !client->IsConnectionRejected(endpoint_id)) {
     if (!client->HasLocalEndpointResponded(endpoint_id)) {
-      NEARBY_LOG(INFO, "ConnectionResult: local client did not respond; id=%s",
-                 endpoint_id.c_str());
+      NEARBY_LOG(
+          INFO,
+          "ConnectionResult: local client did not respond; endpoint_id=%s",
+          endpoint_id.c_str());
     } else if (!client->HasRemoteEndpointResponded(endpoint_id)) {
-      NEARBY_LOG(INFO, "ConnectionResult: remote client did not respond; id=%s",
-                 endpoint_id.c_str());
+      NEARBY_LOG(
+          INFO,
+          "ConnectionResult: remote client did not respond; endpoint_id=%s",
+          endpoint_id.c_str());
     }
     return;
   }
@@ -1191,7 +1308,7 @@ void BasePcpHandler::EvaluateConnectionResult(ClientProxy* client,
   // no longer pending.
   auto it = pending_connections_.find(endpoint_id);
   if (it == pending_connections_.end()) {
-    NEARBY_LOG(INFO, "No pending connection to evaluate; id=%s",
+    NEARBY_LOG(INFO, "No pending connection to evaluate; endpoint_id=%s",
                endpoint_id.c_str());
     return;
   }
@@ -1202,7 +1319,8 @@ void BasePcpHandler::EvaluateConnectionResult(ClientProxy* client,
 
   Status response_code;
   if (is_connection_accepted) {
-    NEARBY_LOG(INFO, "Pending connection accepted; id=%s", endpoint_id.c_str());
+    NEARBY_LOG(INFO, "Pending connection accepted; endpoint_id=%s",
+               endpoint_id.c_str());
     response_code = {Status::kSuccess};
 
     // Both sides have accepted, so we can now start talking over encrypted
@@ -1219,7 +1337,8 @@ void BasePcpHandler::EvaluateConnectionResult(ClientProxy* client,
     channel_manager_->EncryptChannelForEndpoint(endpoint_id,
                                                 std::move(context));
   } else {
-    NEARBY_LOG(INFO, "Pending connection rejected; id=%s", endpoint_id.c_str());
+    NEARBY_LOG(INFO, "Pending connection rejected; endpoint_id=%s",
+               endpoint_id.c_str());
     response_code = {Status::kConnectionRejected};
   }
 

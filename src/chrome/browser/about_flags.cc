@@ -1746,7 +1746,13 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_SearchChip[] = {
     {"enable_search_term_chip", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_PriceAlerts[] = {
-    {"enable_price_tracking", "true"}};
+    {"enable_price_tracking", "true"},
+    {"price_tracking_with_optimization_guide", "false"}};
+
+const FeatureEntry::FeatureParam
+    kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide[] = {
+        {"enable_price_tracking", "true"},
+        {"price_tracking_with_optimization_guide", "true"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TabGroupAutoCreation[] =
     {{"enable_tab_group_auto_creation", "false"}};
@@ -1765,6 +1771,10 @@ const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
      base::size(kTabGridLayoutAndroid_SearchChip), nullptr},
     {"Price alerts", kTabGridLayoutAndroid_PriceAlerts,
      base::size(kTabGridLayoutAndroid_PriceAlerts), nullptr},
+    {"Price alerts with OptimizationGuide",
+     kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide,
+     base::size(kTabGridLayoutAndroid_PriceAlerts_WithOptimizationGuide),
+     nullptr},
     {"Without auto group", kTabGridLayoutAndroid_TabGroupAutoCreation,
      base::size(kTabGridLayoutAndroid_TabGroupAutoCreation), nullptr},
     {"Price notifications", kTabGridLayoutAndroid_PriceNotifications,
@@ -1909,6 +1919,14 @@ const FeatureEntry::FeatureVariation kLensCameraAssistedSearchVariations[] = {
      base::size(kLensCameraAssistedSearchLensButtonStart), nullptr},
     {"(Mic then Lens)", kLensCameraAssistedSearchLensButtonEnd,
      base::size(kLensCameraAssistedSearchLensButtonEnd), nullptr}};
+
+const FeatureEntry::FeatureParam kLensContextMenuTranslateHideRemoveIcon[] = {
+    {"hideChipRemoveIcon", "true"}};
+
+const FeatureEntry::FeatureVariation kLensContextMenuTranslateVariations[] = {
+    {"(Hide Remove Icon)", kLensContextMenuTranslateHideRemoveIcon,
+     base::size(kLensContextMenuTranslateHideRemoveIcon), nullptr},
+};
 
 #endif  // defined(OS_ANDROID)
 
@@ -4619,6 +4637,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kReadLaterReminderNotificationDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          reading_list::switches::kReadLaterReminderNotification)},
+
+    {"bookmark-bottom-sheet", flag_descriptions::kBookmarkBottomSheetName,
+     flag_descriptions::kBookmarkBottomSheetDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kBookmarkBottomSheet)},
 #endif
 
     {"tab-groups-auto-create", flag_descriptions::kTabGroupsAutoCreateName,
@@ -6058,7 +6080,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextMenuTranslateWithGoogleLensName,
      flag_descriptions::kContextMenuTranslateWithGoogleLensDescription,
      kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContextMenuTranslateWithGoogleLens)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kContextMenuTranslateWithGoogleLens,
+         kLensContextMenuTranslateVariations,
+         "LensContextMenuTranslate")},
 
     {"lens-camera-assisted-search",
      flag_descriptions::kLensCameraAssistedSearchName,

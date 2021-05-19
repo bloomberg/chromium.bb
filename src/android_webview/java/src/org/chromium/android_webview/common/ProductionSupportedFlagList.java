@@ -11,6 +11,7 @@ import org.chromium.components.metrics.MetricsSwitches;
 import org.chromium.components.viz.common.VizFeatures;
 import org.chromium.gpu.config.GpuFeatures;
 import org.chromium.gpu.config.GpuSwitches;
+import org.chromium.services.network.NetworkServiceFeatures;
 import org.chromium.ui.base.UiFeatures;
 
 /**
@@ -120,7 +121,13 @@ public final class ProductionSupportedFlagList {
                             + "This flag will only take effect on Android 11 and above."),
             Flag.baseFeature(AwFeatures.WEBVIEW_JAVA_JS_BRIDGE_MOJO,
                     "Enables the new Java/JS Bridge code path with mojo implementation."),
+            Flag.baseFeature(
+                    AwFeatures.WEBVIEW_ORIGIN_TRIALS, "Enables Origin Trials support on WebView."),
             Flag.baseFeature(UiFeatures.FORM_CONTROLS_REFRESH,
                     "Enables the Form Controls visual improvements and dark mode."),
+            Flag.baseFeature(
+                    NetworkServiceFeatures.TRUST_TOKENS, "Enables the prototype Trust Tokens API."),
+            Flag.baseFeature(
+                    BlinkFeatures.LAYOUT_NG_TABLE, "Enables Blink's next generation table layout."),
     };
 }

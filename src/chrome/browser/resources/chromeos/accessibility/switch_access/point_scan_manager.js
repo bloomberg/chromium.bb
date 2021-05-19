@@ -28,15 +28,14 @@ export class PointScanManager extends PointNavigatorInterface {
   }
 
   start() {
-    SwitchAccess.mode = SAConstants.Mode.POINT_SCAN;
     FocusRingManager.clearAll();
+    SwitchAccess.mode = SAConstants.Mode.POINT_SCAN;
     chrome.accessibilityPrivate.onPointScanSet.addListener(this.pointListener_);
     chrome.accessibilityPrivate.setPointScanState(PointScanState.START);
   }
 
   stop() {
     chrome.accessibilityPrivate.setPointScanState(PointScanState.STOP);
-    SwitchAccess.mode = SAConstants.Mode.ITEM_SCAN;
   }
 
   // ============= Private Methods =============

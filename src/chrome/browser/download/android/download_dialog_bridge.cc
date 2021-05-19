@@ -13,8 +13,12 @@
 #include "chrome/browser/download/android/jni_headers/DownloadDialogBridge_jni.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "components/download/public/common/download_features.h"
 #include "components/prefs/pref_service.h"
 #include "ui/android/window_android.h"
+
+// Default minimum file size in kilobyte to trigger download later feature.
+const int64_t kDownloadLaterDefaultMinFileSizeKb = 300 * 1024;
 
 // -----------------------------------------------------------------------------
 // DownloadDialogResult
@@ -40,12 +44,15 @@ DownloadDialogBridge::~DownloadDialogBridge() {
   Java_DownloadDialogBridge_destroy(env, java_obj_);
 }
 
-void DownloadDialogBridge::ShowDialog(gfx::NativeWindow native_window,
-                                      int64_t total_bytes,
-                                      DownloadLocationDialogType dialog_type,
-                                      const base::FilePath& suggested_path,
-                                      bool supports_later_dialog,
-                                      DialogCallback dialog_callback) {
+void DownloadDialogBridge::ShowDialog(
+    gfx::NativeWindow native_window,
+    int64_t total_bytes,
+    net::NetworkChangeNotifier::ConnectionType connection_type,
+    DownloadLocationDialogType dialog_type,
+    const base::FilePath& suggested_path,
+    bool supports_later_dialog,
+    bool show_date_time_picker,
+    DialogCallback dialog_callback) {
   if (!native_window)
     return;
 
@@ -77,7 +84,8 @@ void DownloadDialogBridge::ShowDialog(gfx::NativeWindow native_window,
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadDialogBridge_showDialog(
       env, java_obj_, native_window->GetJavaObject(),
-      static_cast<long>(total_bytes), static_cast<int>(dialog_type),
+      static_cast<long>(total_bytes), static_cast<int>(connection_type),
+      static_cast<int>(dialog_type),
       base::android::ConvertUTF8ToJavaString(env,
                                              suggested_path.AsUTF8Unsafe()),
       supports_later_dialog);
@@ -150,9 +158,36 @@ void JNI_DownloadDialogBridge_SetDownloadAndSaveFileDefaultDirectory(
   pref_service->SetFilePath(prefs::kSaveFileDefaultDirectory, path);
 }
 
+// static
 jboolean JNI_DownloadDialogBridge_IsDataReductionProxyEnabled(JNIEnv* env) {
   auto* data_reduction_settings =
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
           ProfileManager::GetActiveUserProfile());
   return data_reduction_settings->IsDataReductionProxyEnabled();
+}
+
+// static
+jlong JNI_DownloadDialogBridge_GetDownloadLaterMinFileSize(JNIEnv* env) {
+  return DownloadDialogBridge::GetDownloadLaterMinFileSize();
+}
+
+// static
+jboolean JNI_DownloadDialogBridge_ShouldShowDateTimePicker(JNIEnv* env) {
+  return DownloadDialogBridge::ShouldShowDateTimePicker();
+}
+
+// static
+long DownloadDialogBridge::GetDownloadLaterMinFileSize() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      download::features::kDownloadLater,
+      download::features::kDownloadLaterMinFileSizeKb,
+      kDownloadLaterDefaultMinFileSizeKb);
+}
+
+// static
+bool DownloadDialogBridge::ShouldShowDateTimePicker() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      download::features::kDownloadLater,
+      download::features::kDownloadLaterShowDateTimePicker,
+      /*default_value=*/true);
 }

@@ -29,7 +29,7 @@ class AtomicUint32 : public api::AtomicUint32 {
 
   // Atomically reads and returns stored value.
   // TODO(b/184975123): replace with real implementation.
-  std::uint32_t Get() const override = 0;
+  std::uint32_t Get() const override { return 0; };
 
   // Atomically stores value.
   // TODO(b/184975123): replace with real implementation.

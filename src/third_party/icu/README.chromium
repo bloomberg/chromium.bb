@@ -323,3 +323,9 @@ D. Local Modifications
   - updatream PR:
     https://github.com/unicode-org/icu/pull/1618
 
+20. Patch locale to fix assign and assing move operators:
+    patches/locid_operators.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21587
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/1698

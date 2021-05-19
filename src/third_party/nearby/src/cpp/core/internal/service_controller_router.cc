@@ -14,6 +14,7 @@
 
 #include "core/internal/service_controller_router.h"
 
+#include <cinttypes>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -47,6 +48,12 @@ const std::size_t kEndpointIdLength = 4u;
 const std::size_t kMaxEndpointInfoLength = 131u;
 }  // namespace
 
+ServiceControllerRouter::ServiceControllerRouter(
+    std::function<ServiceController*()> factory)
+    : service_controller_factory_(std::move(factory)) {
+  NEARBY_LOG(INFO, "ServiceControllerRouter going up.");
+}
+
 ServiceControllerRouter::~ServiceControllerRouter() {
   NEARBY_LOG(INFO, "ServiceControllerRouter going down.");
 
@@ -61,28 +68,31 @@ void ServiceControllerRouter::StartAdvertising(
     ClientProxy* client, absl::string_view service_id,
     const ConnectionOptions& options, const ConnectionRequestInfo& info,
     const ResultCallback& callback) {
-  RouteToServiceController([this, client, service_id = std::string(service_id),
-                            options, info, callback]() {
-    Status status = AcquireServiceControllerForClient(client, options.strategy);
-    if (!status.Ok()) {
-      callback.result_cb(status);
-      return;
-    }
+  RouteToServiceController(
+      "scr-start-advertising",
+      [this, client, service_id = std::string(service_id), options, info,
+       callback]() {
+        Status status =
+            AcquireServiceControllerForClient(client, options.strategy);
+        if (!status.Ok()) {
+          callback.result_cb(status);
+          return;
+        }
 
-    if (client->IsAdvertising()) {
-      callback.result_cb({Status::kAlreadyAdvertising});
-      return;
-    }
+        if (client->IsAdvertising()) {
+          callback.result_cb({Status::kAlreadyAdvertising});
+          return;
+        }
 
-    status = service_controller_->StartAdvertising(client, service_id, options,
-                                                   info);
-    callback.result_cb(status);
-  });
+        status = service_controller_->StartAdvertising(client, service_id,
+                                                       options, info);
+        callback.result_cb(status);
+      });
 }
 
 void ServiceControllerRouter::StopAdvertising(ClientProxy* client,
                                               const ResultCallback& callback) {
-  RouteToServiceController([this, client, callback]() {
+  RouteToServiceController("scr-stop-advertising", [this, client, callback]() {
     if (ClientHasAcquiredServiceController(client) && client->IsAdvertising()) {
       service_controller_->StopAdvertising(client);
     }
@@ -95,8 +105,11 @@ void ServiceControllerRouter::StartDiscovery(ClientProxy* client,
                                              const ConnectionOptions& options,
                                              const DiscoveryListener& listener,
                                              const ResultCallback& callback) {
-  RouteToServiceController([this, client, service_id = std::string(service_id),
-                            options, listener, callback]() {
+  RouteToServiceController("scr-start-discovery", [this, client,
+                                                   service_id =
+                                                       std::string(service_id),
+                                                   options, listener,
+                                                   callback]() {
     Status status = AcquireServiceControllerForClient(client, options.strategy);
     if (!status.Ok()) {
       callback.result_cb(status);
@@ -116,7 +129,7 @@ void ServiceControllerRouter::StartDiscovery(ClientProxy* client,
 
 void ServiceControllerRouter::StopDiscovery(ClientProxy* client,
                                             const ResultCallback& callback) {
-  RouteToServiceController([this, client, callback]() {
+  RouteToServiceController("scr-stop-discovery", [this, client, callback]() {
     if (ClientHasAcquiredServiceController(client) && client->IsDiscovering()) {
       service_controller_->StopDiscovery(client);
     }
@@ -128,8 +141,10 @@ void ServiceControllerRouter::InjectEndpoint(
     ClientProxy* client, absl::string_view service_id,
     const OutOfBandConnectionMetadata& metadata,
     const ResultCallback& callback) {
-  RouteToServiceController([this, client, service_id = std::string(service_id),
-                            metadata, callback]() {
+  RouteToServiceController("scr-inject-endpoint", [this, client,
+                                                   service_id =
+                                                       std::string(service_id),
+                                                   metadata, callback]() {
     // Currently, Bluetooth is the only supported medium for endpoint injection.
     if (metadata.medium != Medium::BLUETOOTH ||
         metadata.remote_bluetooth_mac_address.size() != kMacAddressLength) {
@@ -167,36 +182,38 @@ void ServiceControllerRouter::RequestConnection(
   // CancellationListener as soon as possible.
   client->AddCancellationFlag(std::string(endpoint_id));
 
-  RouteToServiceController([this, client,
-                            endpoint_id = std::string(endpoint_id), info,
-                            options, callback]() {
-    if (!ClientHasAcquiredServiceController(client)) {
-      callback.result_cb({Status::kOutOfOrderApiCall});
-      return;
-    }
+  RouteToServiceController(
+      "scr-request-connection",
+      [this, client, endpoint_id = std::string(endpoint_id), info, options,
+       callback]() {
+        if (!ClientHasAcquiredServiceController(client)) {
+          callback.result_cb({Status::kOutOfOrderApiCall});
+          return;
+        }
 
-    if (client->HasPendingConnectionToEndpoint(endpoint_id) ||
-        client->IsConnectedToEndpoint(endpoint_id)) {
-      callback.result_cb({Status::kAlreadyConnectedToEndpoint});
-      return;
-    }
+        if (client->HasPendingConnectionToEndpoint(endpoint_id) ||
+            client->IsConnectedToEndpoint(endpoint_id)) {
+          callback.result_cb({Status::kAlreadyConnectedToEndpoint});
+          return;
+        }
 
-    Status status = service_controller_->RequestConnection(client, endpoint_id,
-                                                           info, options);
-    if (!status.Ok()) {
-      client->CancelEndpoint(endpoint_id);
-    }
-    callback.result_cb(status);
-  });
+        Status status = service_controller_->RequestConnection(
+            client, endpoint_id, info, options);
+        if (!status.Ok()) {
+          client->CancelEndpoint(endpoint_id);
+        }
+        callback.result_cb(status);
+      });
 }
 
 void ServiceControllerRouter::AcceptConnection(ClientProxy* client,
                                                absl::string_view endpoint_id,
                                                const PayloadListener& listener,
                                                const ResultCallback& callback) {
-  RouteToServiceController([this, client,
-                            endpoint_id = std::string(endpoint_id), listener,
-                            callback]() {
+  RouteToServiceController("scr-accept-connection", [this, client,
+                                                     endpoint_id = std::string(
+                                                         endpoint_id),
+                                                     listener, callback]() {
     if (!ClientHasAcquiredServiceController(client)) {
       callback.result_cb({Status::kOutOfOrderApiCall});
       return;
@@ -208,10 +225,11 @@ void ServiceControllerRouter::AcceptConnection(ClientProxy* client,
     }
 
     if (client->HasLocalEndpointResponded(endpoint_id)) {
-      NEARBY_LOG(INFO,
-                 "[ServiceControllerRouter:Accept]: Client has local "
-                 "endpoint responded; id=%s",
-                 endpoint_id.c_str());
+      NEARBY_LOG(WARNING,
+                 "Client %" PRIx64
+                 " invoked acceptConnectionRequest() after having already "
+                 "accepted/rejected the connection to endpoint(id=%s)",
+                 client->GetClientId(), endpoint_id.c_str());
       callback.result_cb({Status::kOutOfOrderApiCall});
       return;
     }
@@ -227,6 +245,7 @@ void ServiceControllerRouter::RejectConnection(ClientProxy* client,
   client->CancelEndpoint(std::string(endpoint_id));
 
   RouteToServiceController(
+      "scr-reject-connection",
       [this, client, endpoint_id = std::string(endpoint_id), callback]() {
         if (!ClientHasAcquiredServiceController(client)) {
           callback.result_cb({Status::kOutOfOrderApiCall});
@@ -239,10 +258,11 @@ void ServiceControllerRouter::RejectConnection(ClientProxy* client,
         }
 
         if (client->HasLocalEndpointResponded(endpoint_id)) {
-          NEARBY_LOG(INFO,
-                     "[ServiceControllerRouter:Reject]: Client has local "
-                     "endpoint responded; id=%s",
-                     endpoint_id.c_str());
+          NEARBY_LOG(WARNING,
+                     "Client %" PRIx64
+                     " invoked rejectConnectionRequest() after having already "
+                     "accepted/rejected the connection to endpoint(id=%s)",
+                     client->GetClientId(), endpoint_id.c_str());
           callback.result_cb({Status::kOutOfOrderApiCall});
           return;
         }
@@ -256,6 +276,7 @@ void ServiceControllerRouter::InitiateBandwidthUpgrade(
     ClientProxy* client, absl::string_view endpoint_id,
     const ResultCallback& callback) {
   RouteToServiceController(
+      "scr-init-bwu",
       [this, client, endpoint_id = std::string(endpoint_id), callback]() {
         if (!ClientHasAcquiredServiceController(client) ||
             !client->IsConnectedToEndpoint(endpoint_id)) {
@@ -285,6 +306,7 @@ void ServiceControllerRouter::SendPayload(
       std::vector<std::string>(endpoint_ids.begin(), endpoint_ids.end());
 
   RouteToServiceController(
+      "scr-send-payload",
       [this, client, shared_payload, endpoints, callback]() {
         if (!ClientHasAcquiredServiceController(client)) {
           callback.result_cb({Status::kOutOfOrderApiCall});
@@ -310,7 +332,8 @@ void ServiceControllerRouter::SendPayload(
 void ServiceControllerRouter::CancelPayload(ClientProxy* client,
                                             std::uint64_t payload_id,
                                             const ResultCallback& callback) {
-  RouteToServiceController([this, client, payload_id, callback]() {
+  RouteToServiceController("scr-cancel-payload", [this, client, payload_id,
+                                                  callback]() {
     if (!ClientHasAcquiredServiceController(client)) {
       callback.result_cb({Status::kOutOfOrderApiCall});
       return;
@@ -328,6 +351,7 @@ void ServiceControllerRouter::DisconnectFromEndpoint(
   client->CancelEndpoint(std::string(endpoint_id));
 
   RouteToServiceController(
+      "scr-disconnect-endpoint",
       [this, client, endpoint_id = std::string(endpoint_id), callback]() {
         if (ClientHasAcquiredServiceController(client)) {
           if (!client->IsConnectedToEndpoint(endpoint_id) &&
@@ -347,8 +371,14 @@ void ServiceControllerRouter::StopAllEndpoints(ClientProxy* client,
   // without further posting it.
   client->CancelAllEndpoints();
 
-  RouteToServiceController([this, client, callback]() {
-    if (ClientHasAcquiredServiceController(client)) {
+  RouteToServiceController("scr-stop-all-endpoints", [this, client,
+                                                      callback]() {
+    NEARBY_LOG(INFO,
+               "Client %" PRIx64
+               " has requested us to stop all endpoints. We will now reset the "
+               "client.",
+               client->GetClientId());
+        if (ClientHasAcquiredServiceController(client)) {
       DoneWithStrategySessionForClient(client);
     }
     callback.result_cb({Status::kSuccess});
@@ -361,12 +391,13 @@ void ServiceControllerRouter::ClientDisconnecting(
   // without further posting it.
   client->CancelAllEndpoints();
 
-  RouteToServiceController([this, client, callback]() {
+  RouteToServiceController("scr-client-disconnecting", [this, client,
+                                                        callback]() {
     if (ClientHasAcquiredServiceController(client)) {
       DoneWithStrategySessionForClient(client);
       NEARBY_LOG(INFO,
-                 "[ServiceControllerRouter:Disconnect]: Client has completed "
-                 "the client's connection");
+                 "Client %" PRIx64 " has completed the client's connection.",
+                 client->GetClientId());
     }
     callback.result_cb({Status::kSuccess});
   });
@@ -399,18 +430,14 @@ Status ServiceControllerRouter::AcquireServiceControllerForClient(
     bool is_the_only_client_of_service_controller =
         clients_.size() == 1 && ClientHasAcquiredServiceController(client);
     if (!is_the_only_client_of_service_controller) {
-      NEARBY_LOG(INFO,
-                 "[ServiceControllerRouter:AcquireServiceControllerForClient]: "
-                 "Client has already active strategy.");
+      NEARBY_LOG(INFO, "Client has already active strategy.");
       return {Status::kAlreadyHaveActiveStrategy};
     }
 
     // If the client still has connected endpoints, they must disconnect before
     // they can switch.
     if (!client->GetConnectedEndpoints().empty()) {
-      NEARBY_LOG(INFO,
-                 "[ServiceControllerRouter:AcquireServiceControllerForClient]: "
-                 "Client has connected endpoints.");
+      NEARBY_LOG(INFO, "Client has connected endpoints.");
       return {Status::kOutOfOrderApiCall};
     }
 
@@ -459,8 +486,9 @@ void ServiceControllerRouter::DoneWithStrategySessionForClient(
   ReleaseServiceControllerForClient(client);
 }
 
-void ServiceControllerRouter::RouteToServiceController(Runnable runnable) {
-  serializer_.Execute(std::move(runnable));
+void ServiceControllerRouter::RouteToServiceController(const std::string& name,
+                                                       Runnable runnable) {
+  serializer_.Execute(name, std::move(runnable));
 }
 
 bool ServiceControllerRouter::ClientHasConnectionToAtLeastOneEndpoint(

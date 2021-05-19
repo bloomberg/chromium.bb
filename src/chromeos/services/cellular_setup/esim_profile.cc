@@ -10,7 +10,7 @@
 #include "chromeos/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/dbus/hermes/hermes_profile_client.h"
 #include "chromeos/dbus/hermes/hermes_response_status.h"
-#include "chromeos/network/cellular_esim_connection_handler.h"
+#include "chromeos/network/cellular_connection_handler.h"
 #include "chromeos/network/cellular_esim_profile.h"
 #include "chromeos/network/cellular_esim_uninstall_handler.h"
 #include "chromeos/network/cellular_inhibitor.h"
@@ -380,50 +380,44 @@ void ESimProfile::OnPendingProfileInstallResult(
 
   // inhibit_lock will be released by esim connection handler.
   // Cellular device will uninhibit automatically at that point.
-  esim_manager_->cellular_esim_connection_handler()
-      ->EnableNewProfileForConnection(
+  esim_manager_->cellular_connection_handler()
+      ->PrepareNewlyInstalledCellularNetworkForConnection(
           euicc_->path(), path_, std::move(inhibit_lock),
           base::BindOnce(&ESimProfile::OnNewProfileEnableSuccess,
                          weak_ptr_factory_.GetWeakPtr()),
-          base::BindOnce(&ESimProfile::OnNewProfileConnectFailure,
-                         weak_ptr_factory_.GetWeakPtr()));
+          base::BindOnce(
+              &ESimProfile::OnPrepareCellularNetworkForConnectionFailure,
+              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ESimProfile::OnNewProfileEnableSuccess(const std::string& service_path) {
   const NetworkState* network_state =
       esim_manager_->network_state_handler()->GetNetworkState(service_path);
   if (!network_state) {
-    OnNewProfileConnectFailure(NetworkConnectionHandler::kErrorNotFound,
-                               /*error_data=*/nullptr);
+    OnPrepareCellularNetworkForConnectionFailure(
+        service_path, NetworkConnectionHandler::kErrorNotFound);
     return;
   }
 
-  if (network_state->IsConnectingOrConnected()) {
-    OnNewProfileConnectSuccess();
-    return;
+  if (!network_state->IsConnectingOrConnected()) {
+    // The connection could fail but the user will be notified of connection
+    // failures separately.
+    esim_manager_->network_connection_handler()->ConnectToNetwork(
+        service_path, /*success_callback=*/base::DoNothing(),
+        /*error_callback=*/base::DoNothing(),
+        /*check_error_state=*/false, ConnectCallbackMode::ON_STARTED);
   }
 
-  esim_manager_->network_connection_handler()->ConnectToNetwork(
-      service_path,
-      base::BindOnce(&ESimProfile::OnNewProfileConnectSuccess,
-                     weak_ptr_factory_.GetWeakPtr()),
-      base::BindOnce(&ESimProfile::OnNewProfileConnectFailure,
-                     weak_ptr_factory_.GetWeakPtr()),
-      /*check_error_state=*/false, ConnectCallbackMode::ON_STARTED);
-}
-
-void ESimProfile::OnNewProfileConnectSuccess() {
   DCHECK(install_callback_);
   std::move(install_callback_).Run(mojom::ProfileInstallResult::kSuccess);
 }
 
-void ESimProfile::OnNewProfileConnectFailure(
-    const std::string& error_name,
-    std::unique_ptr<base::DictionaryValue> error_data) {
-  NET_LOG(ERROR) << "Error connecting to newly created profile path="
-                 << path_.value() << " error_name=" << error_name;
-
-  DCHECK(install_callback_);
+void ESimProfile::OnPrepareCellularNetworkForConnectionFailure(
+    const std::string& service_path,
+    const std::string& error_name) {
+  NET_LOG(ERROR) << "Error preparing network for connection. "
+                 << "Error: " << error_name
+                 << ", Service path: " << service_path;
   std::move(install_callback_).Run(mojom::ProfileInstallResult::kFailure);
 }
 

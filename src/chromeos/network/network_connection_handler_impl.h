@@ -37,6 +37,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   // NetworkStateHandlerObserver
   void NetworkListChanged() override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
+  void NetworkIdentifierTransitioned(const std::string& old_service_path,
+                                     const std::string& new_service_path,
+                                     const std::string& old_guid,
+                                     const std::string& new_guid) override;
 
   // NetworkCertLoader::Observer
   void OnCertificatesLoaded() override;
@@ -45,7 +49,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
       NetworkStateHandler* network_state_handler,
       NetworkConfigurationHandler* network_configuration_handler,
       ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
-      CellularESimConnectionHandler* cellular_esim_connection_handler) override;
+      CellularConnectionHandler* cellular_connection_handler) override;
 
  private:
   struct ConnectRequest {
@@ -75,10 +79,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
 
   ConnectRequest* GetPendingRequest(const std::string& service_path);
 
-  void OnEnableESimProfileFailure(
+  void OnPrepareCellularNetworkForConnectionFailure(
       const std::string& service_path,
-      const std::string& error_name,
-      std::unique_ptr<base::DictionaryValue> error_data);
+      const std::string& error_name);
 
   // Callback from Shill.Service.GetProperties. Parses |properties| to verify
   // whether or not the network appears to be configured. If configured,
@@ -142,7 +145,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConnectionHandlerImpl
   NetworkStateHandler* network_state_handler_ = nullptr;
   NetworkConfigurationHandler* configuration_handler_ = nullptr;
   ManagedNetworkConfigurationHandler* managed_configuration_handler_ = nullptr;
-  CellularESimConnectionHandler* cellular_esim_connection_handler_ = nullptr;
+  CellularConnectionHandler* cellular_connection_handler_ = nullptr;
 
   // Map of pending connect requests, used to prevent repeated attempts while
   // waiting for Shill and to trigger callbacks on eventual success or failure.
