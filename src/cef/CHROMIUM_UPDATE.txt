@@ -1,0 +1,66 @@
+# The Chromium Embedded Framework (CEF) project is built on top of the Chromium
+# project source tree. When updating Chromium to a new version certain files and
+# patterns should be observed for changes. If changes are detected then the CEF
+# source code or patch files will likely need to be updated.
+#
+# Add `--log-chromium-changes` to the automate-git.py command-line to output
+# the following files in the <download-dir>:
+#
+# * chromium_update_changes.diff
+#   Files in the chromium/src directory that have changed. See the 'files'
+#   section below.
+#
+# * chromium_update_patterns.txt
+#   Files in the chromium/src directory that contain invalid/unexpected
+#   patterns. See the 'patterns' section below. Failure of this step is
+#   considered a fatal error during update.
+#
+# * chromium_update_patches.txt
+#   Output from attempting to update existing Chromium patch files using the
+#   patch_updater.py tool. Failure of this step is considered a fatal error
+#   during update.
+#
+# For complete update instructions see:
+# https://bitbucket.org/chromiumembedded/cef/wiki/ChromiumUpdate.md
+
+{
+  # Files in the chromium/src directory that should be evaluated for changes.
+  # Similar changes may need to be applied to the CEF source code.
+  'files': [
+    'chrome/browser/browser_process.h',
+    'chrome/browser/extensions/api/tabs/tabs_api.*',
+    'chrome/browser/extensions/chrome_component_extension_resource_manager.*',
+    'chrome/browser/extensions/chrome_extension_web_contents_observer.*',
+    'chrome/browser/extensions/component_loader.*',
+    'chrome/browser/extensions/extension_service.*',
+    'chrome/browser/printing/print_view_manager*',
+    'chrome/browser/printing/printing_message_filter*',
+    'chrome/browser/profiles/profile.h',
+    'chrome/browser/renderer_host/chrome_resource_dispatcher_host_delegate.*',
+    'chrome/common/extensions/api/*_features.json',
+    'chrome/renderer/chrome_content_renderer_client.*',
+    'chrome/renderer/extensions/chrome_extensions_renderer_client.*',
+    'content/browser/renderer_host/render_widget_host_view_base.*',
+    'content/public/browser/content_browser_client.*',
+    'content/public/browser/render_widget_host_view.h',
+    'content/public/browser/storage_partition.h',
+    'content/public/browser/web_contents_delegate.h',
+    'content/public/common/content_features.cc',
+    'content/shell/BUILD.gn',
+    'content/shell/app/*',
+    'content/shell/browser/shell_*',
+    'content/shell/browser/renderer_host/shell_*',
+    'content/shell/common/shell_*',
+    'content/shell/gpu/shell_*',
+    'content/shell/renderer/shell_*',
+    'content/shell/utility/shell_*',
+    'extensions/shell/*',
+    'net/base/features.cc',
+    'net/cookies/cookie_store.h',
+    'services/network/public/cpp/features.cc',
+    'ui/base/ui_base_features.cc',
+  ],
+  # Patterns that should not be found in the chromium/src directory after
+  # applying patch files.
+  'patterns': [],
+}

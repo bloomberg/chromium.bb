@@ -314,7 +314,8 @@ void Widget::Init(InitParams params) {
   parent_ = params.parent ? GetWidgetForNativeView(params.parent) : nullptr;
 
   params.child |= (params.type == InitParams::TYPE_CONTROL);
-  is_top_level_ = !params.child;
+  is_top_level_ = !params.child ||
+                  params.parent_widget != gfx::kNullAcceleratedWidget;
 
   if (params.opacity == views::Widget::InitParams::WindowOpacity::kInferred &&
       params.type != views::Widget::InitParams::TYPE_WINDOW) {
@@ -396,7 +397,12 @@ void Widget::Init(InitParams params) {
     }
   } else if (delegate) {
     SetContentsView(delegate->TransferOwnershipOfContentsView());
-    SetInitialBoundsForFramelessWindow(bounds);
+    if (params.parent_widget != gfx::kNullAcceleratedWidget) {
+      // Set the bounds directly instead of applying an inset.
+      SetBounds(bounds);
+    } else {
+      SetInitialBoundsForFramelessWindow(bounds);
+    }
   }
 
   observation_.Observe(GetNativeTheme());
@@ -1203,10 +1209,16 @@ void Widget::OnNativeWidgetDestroyed() {
 }
 
 gfx::Size Widget::GetMinimumSize() const {
+  gfx::Size size;
+  if (widget_delegate_->MaybeGetMinimumSize(&size))
+    return size;
   return non_client_view_ ? non_client_view_->GetMinimumSize() : gfx::Size();
 }
 
 gfx::Size Widget::GetMaximumSize() const {
+  gfx::Size size;
+  if (widget_delegate_->MaybeGetMaximumSize(&size))
+    return size;
   return non_client_view_ ? non_client_view_->GetMaximumSize() : gfx::Size();
 }
 

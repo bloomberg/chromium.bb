@@ -152,7 +152,7 @@ StoragePartition* BrowserContext::GetStoragePartition(
     BrowserContext* self,
     const StoragePartitionConfig& storage_partition_config,
     bool can_create) {
-  if (self->IsOffTheRecord()) {
+  if (self->IsOffTheRecord() || self->GetPath().empty()) {
     // An off the record profile MUST only use in memory storage partitions.
     CHECK(storage_partition_config.in_memory());
   }
@@ -430,7 +430,8 @@ BrowserContext::CreateVideoDecodePerfHistory() {
   const bool kUseInMemoryDBDefault = false;
   bool use_in_memory_db = base::GetFieldTrialParamByFeatureAsBool(
       media::kMediaCapabilitiesWithParameters, kUseInMemoryDBParamName,
-      kUseInMemoryDBDefault);
+      kUseInMemoryDBDefault) ||
+      GetPath().empty();
 
   std::unique_ptr<media::VideoDecodeStatsDB> stats_db;
   if (use_in_memory_db) {

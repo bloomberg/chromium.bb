@@ -2748,8 +2748,13 @@ MenuItemView* MenuController::FindNextSelectableMenuItem(
 
 void MenuController::OpenSubmenuChangeSelectionIfCan() {
   MenuItemView* item = pending_state_.item;
-  if (!item->HasSubmenu() || !item->GetEnabled())
+  if (!item->HasSubmenu() || !item->GetEnabled() || !item->GetParentMenuItem()) {
+    MenuItemView* submenu_item =
+        item->GetParentMenuItem() ? item->GetParentMenuItem() : item;
+    submenu_item->GetDelegate()->OnUnhandledOpenSubmenu(submenu_item,
+                                                        base::i18n::IsRTL());
     return;
+  }
   MenuItemView* to_select = nullptr;
   if (!item->GetSubmenu()->GetMenuItems().empty())
     to_select = FindInitialSelectableMenuItem(item, INCREMENT_SELECTION_DOWN);
@@ -2768,8 +2773,10 @@ void MenuController::OpenSubmenuChangeSelectionIfCan() {
 void MenuController::CloseSubmenu() {
   MenuItemView* item = state_.item;
   DCHECK(item);
-  if (!item->GetParentMenuItem())
+  if (!item->GetParentMenuItem()) {
+    item->GetDelegate()->OnUnhandledCloseSubmenu(item, base::i18n::IsRTL());
     return;
+  }
   if (item->SubmenuIsShowing())
     SetSelection(item, SELECTION_UPDATE_IMMEDIATELY);
   else if (item->GetParentMenuItem()->GetParentMenuItem())

@@ -8,6 +8,7 @@
 
 #include "base/feature_list.h"
 #include "build/buildflag.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/content_settings/one_time_geolocation_permission_provider.h"
 #include "chrome/browser/permissions/last_tab_standing_tracker_factory.h"
 #include "chrome/browser/profiles/off_the_record_profile_impl.h"
@@ -21,6 +22,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ui/webui/webui_allowlist_provider.h"
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/common/extensions/extensions_util.h"
+#endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_service.h"
@@ -51,8 +56,14 @@ HostContentSettingsMapFactory::HostContentSettingsMapFactory()
   DependsOn(SupervisedUserSettingsServiceFactory::GetInstance());
 #endif
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CEF)
+  if (!cef::IsAlloyRuntimeEnabled() || extensions::ExtensionsEnabled()) {
+#endif
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+#if BUILDFLAG(ENABLE_CEF)
+  }
+#endif
 #endif
 }
 
@@ -110,10 +121,16 @@ scoped_refptr<RefcountedKeyedService>
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_CEF)
+  if (!cef::IsAlloyRuntimeEnabled() || extensions::ExtensionsEnabled()) {
+#endif
   // These must be registered before before the HostSettings are passed over to
   // the IOThread.  Simplest to do this on construction.
   extensions::ExtensionService::RegisterContentSettings(settings_map.get(),
                                                         profile);
+#if BUILDFLAG(ENABLE_CEF)
+  }
+#endif
 #endif // BUILDFLAG(ENABLE_EXTENSIONS)
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   SupervisedUserSettingsService* supervised_service =

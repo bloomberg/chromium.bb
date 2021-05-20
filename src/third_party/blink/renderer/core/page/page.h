@@ -156,7 +156,8 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   ViewportDescription GetViewportDescription() const;
 
   // Returns the plugin data associated with |main_frame_origin|.
-  PluginData* GetPluginData(const SecurityOrigin* main_frame_origin);
+  PluginData* GetPluginData(bool is_main_frame,
+                            const SecurityOrigin* main_frame_origin);
 
   // Resets the plugin data for all pages in the renderer process and notifies
   // PluginsChangedObservers.
@@ -435,7 +436,8 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   const Member<LinkHighlight> link_highlight_;
   Member<SpatialNavigationController> spatial_navigation_controller_;
 
-  Member<PluginData> plugin_data_;
+  Member<PluginData> plugin_data_main_frame_;
+  Member<PluginData> plugin_data_sub_frame_;
 
   Member<ValidationMessageClient> validation_message_client_;
 

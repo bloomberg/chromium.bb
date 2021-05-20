@@ -12,7 +12,7 @@
 // Common base class for windows that host a OpenGL surface that renders under
 // the window. Previously contained methods related to hole punching, now just
 // contains common asserts.
-COMPONENT_EXPORT(UI_BASE)
+__attribute__((visibility("default")))
 @interface UnderlayOpenGLHostingWindow : NSWindow
 @end
 

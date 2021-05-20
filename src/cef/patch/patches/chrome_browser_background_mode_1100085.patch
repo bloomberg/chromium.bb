@@ -1,0 +1,173 @@
+diff --git chrome/browser/app_controller_mac.mm chrome/browser/app_controller_mac.mm
+index 8fd9ba22110e..327c788df2d3 100644
+--- chrome/browser/app_controller_mac.mm
++++ chrome/browser/app_controller_mac.mm
+@@ -31,6 +31,7 @@
+ #include "base/threading/scoped_blocking_call.h"
+ #include "base/threading/thread_restrictions.h"
+ #include "build/branding_buildflags.h"
++#include "cef/libcef/features/features.h"
+ #include "chrome/app/chrome_command_ids.h"
+ #include "chrome/browser/apps/app_shim/app_shim_manager_mac.h"
+ #include "chrome/browser/apps/app_shim/app_shim_termination_manager.h"
+@@ -1211,6 +1212,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
+ 
+ // Run a (background) application in a new tab.
+ - (void)executeApplication:(id)sender {
++#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+   NSInteger tag = [sender tag];
+   Profile* profile = [self lastProfile];
+   DCHECK(profile);
+@@ -1219,6 +1221,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
+          tag < static_cast<int>(applications.size()));
+   const extensions::Extension* extension = applications.GetExtension(tag);
+   BackgroundModeManager::LaunchBackgroundApplication(profile, extension);
++#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
+ }
+ 
+ // Same as |-commandDispatch:|, but executes commands using a disposition
+@@ -1607,6 +1610,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
+   // TODO(rickcam): Mock out BackgroundApplicationListModel, then add unit
+   // tests which use the mock in place of the profile-initialized model.
+ 
++#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+   // Avoid breaking unit tests which have no profile.
+   if (profile) {
+     BackgroundApplicationListModel applications(profile);
+@@ -1633,6 +1637,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
+       }
+     }
+   }
++#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
+ 
+   return dockMenu;
+ }
+@@ -1862,11 +1867,13 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
+ namespace {
+ 
+ void UpdateProfileInUse(Profile* profile, Profile::CreateStatus status) {
++#if !BUILDFLAG(ENABLE_CEF)
+   if (status == Profile::CREATE_STATUS_INITIALIZED) {
+     AppController* controller =
+         base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+     [controller windowChangedToProfile:profile];
+   }
++#endif  // !BUILDFLAG(ENABLE_CEF)
+ }
+ 
+ }  // namespace
+diff --git chrome/browser/browser_process.h chrome/browser/browser_process.h
+index 3d634db18900..96e44ad48e5e 100644
+--- chrome/browser/browser_process.h
++++ chrome/browser/browser_process.h
+@@ -197,9 +197,9 @@ class BrowserProcess {
+   virtual DownloadStatusUpdater* download_status_updater() = 0;
+   virtual DownloadRequestLimiter* download_request_limiter() = 0;
+ 
++#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+   // Returns the object that manages background applications.
+   virtual BackgroundModeManager* background_mode_manager() = 0;
+-#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+   virtual void set_background_mode_manager_for_test(
+       std::unique_ptr<BackgroundModeManager> manager) = 0;
+ #endif
+diff --git chrome/browser/browser_process_impl.cc chrome/browser/browser_process_impl.cc
+index 89a682d5c935..946ccbda587c 100644
+--- chrome/browser/browser_process_impl.cc
++++ chrome/browser/browser_process_impl.cc
+@@ -947,18 +947,14 @@ DownloadRequestLimiter* BrowserProcessImpl::download_request_limiter() {
+   return download_request_limiter_.get();
+ }
+ 
+-BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
+ #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
++BackgroundModeManager* BrowserProcessImpl::background_mode_manager() {
+   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+   if (!background_mode_manager_)
+     CreateBackgroundModeManager();
+   return background_mode_manager_.get();
+-#else
+-  return nullptr;
+-#endif
+ }
+ 
+-#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+ void BrowserProcessImpl::set_background_mode_manager_for_test(
+     std::unique_ptr<BackgroundModeManager> manager) {
+   background_mode_manager_ = std::move(manager);
+diff --git chrome/browser/browser_process_impl.h chrome/browser/browser_process_impl.h
+index b4ceefbccd08..7d60206c83b1 100644
+--- chrome/browser/browser_process_impl.h
++++ chrome/browser/browser_process_impl.h
+@@ -169,8 +169,8 @@ class BrowserProcessImpl : public BrowserProcess,
+   void SetApplicationLocale(const std::string& actual_locale) override;
+   DownloadStatusUpdater* download_status_updater() override;
+   DownloadRequestLimiter* download_request_limiter() override;
+-  BackgroundModeManager* background_mode_manager() override;
+ #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
++  BackgroundModeManager* background_mode_manager() override;
+   void set_background_mode_manager_for_test(
+       std::unique_ptr<BackgroundModeManager> manager) override;
+ #endif
+diff --git chrome/browser/lifetime/browser_close_manager.cc chrome/browser/lifetime/browser_close_manager.cc
+index e0cafee5eedd..06ded156be3c 100644
+--- chrome/browser/lifetime/browser_close_manager.cc
++++ chrome/browser/lifetime/browser_close_manager.cc
+@@ -148,12 +148,14 @@ void BrowserCloseManager::CloseBrowsers() {
+   // exit can restore all browsers open before exiting.
+   ProfileManager::ShutdownSessionServices();
+ #endif
++#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+   if (!browser_shutdown::IsTryingToQuit()) {
+     BackgroundModeManager* background_mode_manager =
+         g_browser_process->background_mode_manager();
+     if (background_mode_manager)
+       background_mode_manager->SuspendBackgroundMode();
+   }
++#endif
+ 
+   // Make a copy of the BrowserList to simplify the case where we need to
+   // destroy a Browser during the loop.
+diff --git chrome/browser/sessions/app_session_service.cc chrome/browser/sessions/app_session_service.cc
+index cb12e5b6e8d9..ae24f7ad5f5d 100644
+--- chrome/browser/sessions/app_session_service.cc
++++ chrome/browser/sessions/app_session_service.cc
+@@ -165,8 +165,11 @@ void AppSessionService::MaybeDeleteSessionOnlyData() {
+   // Clear session data if the last window for a profile has been closed and
+   // closing the last window would normally close Chrome, unless background mode
+   // is active.  Tests don't have a background_mode_manager.
+-  if (browser_defaults::kBrowserAliveWithNoWindows ||
+-      g_browser_process->background_mode_manager()->IsBackgroundModeActive()) {
++  if (browser_defaults::kBrowserAliveWithNoWindows
++#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
++      || g_browser_process->background_mode_manager()->IsBackgroundModeActive()
++#endif
++      ) {
+     return;
+   }
+ 
+diff --git chrome/browser/sessions/session_service.cc chrome/browser/sessions/session_service.cc
+index 24a6b1a3634d..abcb36d783de 100644
+--- chrome/browser/sessions/session_service.cc
++++ chrome/browser/sessions/session_service.cc
+@@ -516,12 +516,19 @@ void SessionService::MaybeDeleteSessionOnlyData() {
+   if (profile()->AsTestingProfile())
+     return;
+ 
++#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
++  const bool background_mode_active =
++      g_browser_process->background_mode_manager()->IsBackgroundModeActive();
++#else
++  const bool background_mode_active = false;
++#endif
++
+   // Clear session data if the last window for a profile has been closed and
+   // closing the last window would normally close Chrome, unless background mode
+   // is active.  Tests don't have a background_mode_manager.
+   if (has_open_trackable_browsers_ ||
+       browser_defaults::kBrowserAliveWithNoWindows ||
+-      g_browser_process->background_mode_manager()->IsBackgroundModeActive()) {
++      background_mode_active) {
+     return;
+   }
+ 

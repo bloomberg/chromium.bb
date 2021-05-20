@@ -5,6 +5,7 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/crypto.gni")
+import("//build/config/locales.gni")
 import("//build/config/ui.gni")
 
 grit_defines = [
@@ -101,6 +102,13 @@ if (is_android) {
   grit_defines += [
     "-E",
     "ANDROID_JAVA_TAGGED_ONLY=true",
+  ]
+}
+
+if (enable_pseudolocales) {
+  grit_defines += [
+    "-D",
+    "enable_pseudolocales",
   ]
 }
 

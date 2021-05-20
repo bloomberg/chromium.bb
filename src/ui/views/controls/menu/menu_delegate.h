@@ -79,6 +79,22 @@ class VIEWS_EXPORT MenuDelegate {
   // parts of |style| or leave it unmodified.
   virtual void GetLabelStyle(int id, LabelStyle* style) const;
 
+  // Override the text color of a given menu item dependent on the |command_id|
+  // and its |is_hovered| state. |is_minor| will be true for accelerator text.
+  // Returns true if it chooses to override the color.
+  virtual bool GetTextColor(int command_id,
+                            bool is_minor,
+                            bool is_hovered,
+                            SkColor* override_color) const { return false; }
+
+  // Override the background color of a given menu item dependent on the
+  // |command_id| and its |is_hovered| state. Returns true if it chooses to
+  // override the color.
+  virtual bool GetBackgroundColor(int command_id,
+                                  bool is_hovered,
+                                  SkColor* override_color) const
+                                  { return false; }
+
   // The tooltip shown for the menu item. This is invoked when the user
   // hovers over the item, and no tooltip text has been set for that item.
   virtual std::u16string GetTooltipText(int id,
@@ -206,6 +222,11 @@ class VIEWS_EXPORT MenuDelegate {
                                        MenuAnchorPosition* anchor,
                                        bool* has_mnemonics,
                                        MenuButton** button);
+
+  // Called on unhandled open/close submenu keyboard commands. |is_rtl| will be
+  // true if the menu is displaying a right-to-left language.
+  virtual void OnUnhandledOpenSubmenu(MenuItemView* menu, bool is_rtl) {}
+  virtual void OnUnhandledCloseSubmenu(MenuItemView* menu, bool is_rtl) {}
 
   // Returns the max width menus can grow to be.
   virtual int GetMaxWidthForMenu(MenuItemView* menu);

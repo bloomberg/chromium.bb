@@ -59,7 +59,8 @@ class PruneCondition {
   //! of 128 MB.
   //!
   //! \return A PruneCondition for use with PruneCrashReportDatabase().
-  static std::unique_ptr<PruneCondition> GetDefault();
+  static std::unique_ptr<PruneCondition> GetDefault(int max_size_in_mb,
+                                                    int max_age_in_days);
 
   virtual ~PruneCondition() {}
 

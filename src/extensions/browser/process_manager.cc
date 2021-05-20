@@ -392,9 +392,17 @@ bool ProcessManager::CreateBackgroundHost(const Extension* extension,
     return true;  // TODO(kalman): return false here? It might break things...
 
   DVLOG(1) << "CreateBackgroundHost " << extension->id();
-  ExtensionHost* host =
+  ExtensionHost* host = nullptr;
+  if (ExtensionsBrowserClient::Get()->CreateBackgroundExtensionHost(
+          extension, browser_context_, url, &host) && !host) {
+    // Explicitly fail if the client can't create the host.
+    return false;
+  }
+  if (!host) {
+    host =
       new ExtensionHost(extension, GetSiteInstanceForURL(url).get(), url,
                         mojom::ViewType::kExtensionBackgroundPage);
+  }
   host->CreateRendererSoon();
   OnBackgroundHostCreated(host);
   return true;

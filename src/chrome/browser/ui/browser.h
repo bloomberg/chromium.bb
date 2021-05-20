@@ -21,6 +21,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/profiles/scoped_profile_keep_alive.h"
 #include "chrome/browser/themes/theme_service_observer.h"
@@ -55,6 +56,10 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
+
+#if BUILDFLAG(ENABLE_CEF)
+#include "cef/libcef/browser/chrome/browser_delegate.h"
+#endif
 
 #if defined(OS_ANDROID)
 #error This file should only be included on desktop.
@@ -279,6 +284,11 @@ class Browser : public TabStripModelObserver,
     // maximizable.
     bool can_maximize = true;
 
+#if BUILDFLAG(ENABLE_CEF)
+    // Opaque CEF-specific configuration. Will be propagated to new Browsers.
+    scoped_refptr<cef::BrowserDelegate::CreateParams> cef_params;
+#endif
+
    private:
     friend class Browser;
     friend class WindowSizerChromeOSTest;
@@ -343,6 +353,13 @@ class Browser : public TabStripModelObserver,
 
   bool is_focus_mode() const { return is_focus_mode_; }
 
+  // Return true if CEF will expose the toolbar to the client. This value is
+  // used to selectively enable toolbar behaviors such as command processing
+  // and omnibox focus without also including the toolbar in BrowserView layout
+  // calculations.
+  void set_toolbar_overridden(bool val) { toolbar_overridden_ = val; }
+  bool toolbar_overridden() const { return toolbar_overridden_; }
+
   // Accessors ////////////////////////////////////////////////////////////////
 
   const CreateParams& create_params() const { return create_params_; }
@@ -400,6 +417,12 @@ class Browser : public TabStripModelObserver,
   }
 
   base::WeakPtr<Browser> AsWeakPtr();
+
+#if BUILDFLAG(ENABLE_CEF)
+  cef::BrowserDelegate* cef_delegate() const {
+    return cef_browser_delegate_.get();
+  }
+#endif
 
   // Get the FindBarController for this browser, creating it if it does not
   // yet exist.
@@ -781,6 +804,11 @@ class Browser : public TabStripModelObserver,
   void SetContentsBounds(content::WebContents* source,
                          const gfx::Rect& bounds) override;
   void UpdateTargetURL(content::WebContents* source, const GURL& url) override;
+  bool DidAddMessageToConsole(content::WebContents* source,
+                              blink::mojom::ConsoleMessageLevel log_level,
+                              const std::u16string& message,
+                              int32_t line_no,
+                              const std::u16string& source_id) override;
   void ContentsMouseEvent(content::WebContents* source,
                           bool motion,
                           bool exited) override;
@@ -1171,6 +1199,8 @@ class Browser : public TabStripModelObserver,
   const std::string initial_workspace_;
   bool initial_visible_on_all_workspaces_state_;
 
+  bool toolbar_overridden_ = false;
+
   // Tracks when this browser is being created by session restore.
   bool is_session_restore_;
 
@@ -1229,6 +1259,10 @@ class Browser : public TabStripModelObserver,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
       extension_browser_window_helper_;
+#endif
+
+#if BUILDFLAG(ENABLE_CEF)
+  std::unique_ptr<cef::BrowserDelegate> cef_browser_delegate_;
 #endif
 
   const base::ElapsedTimer creation_timer_;

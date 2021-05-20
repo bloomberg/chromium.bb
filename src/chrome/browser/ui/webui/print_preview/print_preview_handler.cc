@@ -24,6 +24,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "cef/libcef/features/features.h"
 #include "chrome/browser/account_manager_facade_factory.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/bad_message.h"
@@ -1076,7 +1077,7 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
     }
     return extension_printer_handler_.get();
   }
-#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+#if BUILDFLAG(ENABLE_SERVICE_DISCOVERY) && !BUILDFLAG(ENABLE_CEF)
   if (printer_type == PrinterType::kPrivet &&
       GetPrefs()->GetBoolean(prefs::kForceEnablePrivetPrinting)) {
     if (!privet_printer_handler_) {
@@ -1085,6 +1086,9 @@ PrinterHandler* PrintPreviewHandler::GetPrinterHandler(
     }
     return privet_printer_handler_.get();
   }
+#else  // !BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
+  if (printer_type == PrinterType::kPrivet)
+    return nullptr;
 #endif
   if (printer_type == PrinterType::kPdf) {
     if (!pdf_printer_handler_) {
@@ -1147,6 +1151,7 @@ void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
 }
 
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
+#if !BUILDFLAG(ENABLE_CEF)
   DCHECK(!identity_manager_);
   cloud_print_enabled_ =
       !base::Contains(printer_type_deny_list_, PrinterType::kCloud) &&
@@ -1163,6 +1168,7 @@ void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
 
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
   identity_manager_->AddObserver(this);
+#endif
 }
 
 void PrintPreviewHandler::UnregisterForGaiaCookieChanges() {

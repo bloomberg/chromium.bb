@@ -862,6 +862,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
 
     if ((status == chrome::mojom::PluginStatus::kUnauthorized ||
          status == chrome::mojom::PluginStatus::kBlocked) &&
+        content_settings_agent_delegate &&
         content_settings_agent_delegate->IsPluginTemporarilyAllowed(
             identifier)) {
       status = chrome::mojom::PluginStatus::kAllowed;
@@ -1067,7 +1068,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
             plugin_auth_host.BindNewEndpointAndPassReceiver());
         plugin_auth_host->BlockedUnauthorizedPlugin(group_name, identifier);
-        content_settings_agent->DidBlockContentType(content_type);
+        if (content_settings_agent)
+          content_settings_agent->DidBlockContentType(content_type);
         break;
       }
       case chrome::mojom::PluginStatus::kBlocked: {
@@ -1076,7 +1078,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
         placeholder->AllowLoading();
         RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Blocked"));
-        content_settings_agent->DidBlockContentType(content_type);
+        if (content_settings_agent)
+          content_settings_agent->DidBlockContentType(content_type);
         break;
       }
       case chrome::mojom::PluginStatus::kBlockedByPolicy: {
@@ -1086,7 +1089,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
                                        group_name));
         RenderThread::Get()->RecordAction(
             UserMetricsAction("Plugin_BlockedByPolicy"));
-        content_settings_agent->DidBlockContentType(content_type);
+        if (content_settings_agent)
+          content_settings_agent->DidBlockContentType(content_type);
         break;
       }
       case chrome::mojom::PluginStatus::kBlockedNoLoading: {
@@ -1094,7 +1098,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED_NO_LOADING,
                                        group_name));
-        content_settings_agent->DidBlockContentType(content_type);
+        if (content_settings_agent)
+          content_settings_agent->DidBlockContentType(content_type);
         break;
       }
     }

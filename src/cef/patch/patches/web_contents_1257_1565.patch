@@ -1,0 +1,136 @@
+diff --git content/browser/web_contents/web_contents_impl.cc content/browser/web_contents/web_contents_impl.cc
+index 77cd0e129e6d..5276cf79c605 100644
+--- content/browser/web_contents/web_contents_impl.cc
++++ content/browser/web_contents/web_contents_impl.cc
+@@ -2739,6 +2739,12 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
+   frame_tree_.Init(site_instance.get(), params.renderer_initiated_creation,
+                    params.main_frame_name, type);
+ 
++  if (params.view && params.delegate_view) {
++    view_.reset(params.view);
++    render_view_host_delegate_view_ = params.delegate_view;
++  }
++
++  if (!view_) {
+   WebContentsViewDelegate* delegate =
+       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
+ 
+@@ -2749,6 +2755,7 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
+     view_.reset(CreateWebContentsView(this, delegate,
+                                       &render_view_host_delegate_view_));
+   }
++  }
+   CHECK(render_view_host_delegate_view_);
+   CHECK(view_.get());
+ 
+@@ -3598,6 +3605,15 @@ RenderFrameHostDelegate* WebContentsImpl::CreateNewWindow(
+   // objects.
+   create_params.renderer_initiated_creation = !is_new_browsing_instance;
+ 
++  if (delegate_) {
++    delegate_->GetCustomWebContentsView(this,
++                                        params.target_url,
++                                        render_process_id,
++                                        opener->GetRoutingID(),
++                                        &create_params.view,
++                                        &create_params.delegate_view);
++  }
++
+   std::unique_ptr<WebContentsImpl> new_contents;
+   if (!is_guest) {
+     create_params.context = view_->GetNativeView();
+@@ -7268,6 +7284,9 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
+     // This is an outermost WebContents.
+     SetAsFocusedWebContentsIfNecessary();
+   }
++
++  observers_.NotifyObservers(&WebContentsObserver::OnFrameFocused,
++                             node->current_frame_host());
+ }
+ 
+ void WebContentsImpl::DidCallFocus() {
+diff --git content/public/browser/web_contents.cc content/public/browser/web_contents.cc
+index f1dcf53ea481..192f7c0ddd04 100644
+--- content/public/browser/web_contents.cc
++++ content/public/browser/web_contents.cc
+@@ -29,6 +29,7 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
+       renderer_initiated_creation(false),
+       desired_renderer_state(kOkayToHaveRendererProcess),
+       starting_sandbox_flags(network::mojom::WebSandboxFlags::kNone),
++      delegate_view(nullptr),
+       is_never_visible(false) {}
+ 
+ WebContents::CreateParams::CreateParams(const CreateParams& other) = default;
+diff --git content/public/browser/web_contents.h content/public/browser/web_contents.h
+index fe5bc4ade5cd..266a37c66001 100644
+--- content/public/browser/web_contents.h
++++ content/public/browser/web_contents.h
+@@ -88,8 +88,10 @@ class BrowserContext;
+ class BrowserPluginGuestDelegate;
+ class RenderFrameHost;
+ class RenderViewHost;
++class RenderViewHostDelegateView;
+ class RenderWidgetHostView;
+ class WebContentsDelegate;
++class WebContentsView;
+ class WebUI;
+ struct DropData;
+ struct MHTMLGenerationParams;
+@@ -229,6 +231,10 @@ class WebContents : public PageNavigator,
+     // Sandboxing flags set on the new WebContents.
+     network::mojom::WebSandboxFlags starting_sandbox_flags;
+ 
++    // Optionally specify the view and delegate view.
++    content::WebContentsView* view;
++    content::RenderViewHostDelegateView* delegate_view;
++
+     // Value used to set the last time the WebContents was made active, this is
+     // the value that'll be returned by GetLastActiveTime(). If this is left
+     // default initialized then the value is not passed on to the WebContents
+diff --git content/public/browser/web_contents_delegate.h content/public/browser/web_contents_delegate.h
+index 96c3b9e9b7e1..087a717df368 100644
+--- content/public/browser/web_contents_delegate.h
++++ content/public/browser/web_contents_delegate.h
+@@ -59,10 +59,12 @@ class EyeDropperListener;
+ class FileSelectListener;
+ class JavaScriptDialogManager;
+ class RenderFrameHost;
++class RenderViewHostDelegateView;
+ class RenderWidgetHost;
+ class SessionStorageNamespace;
+ class SiteInstance;
+ class WebContentsImpl;
++class WebContentsView;
+ struct ContextMenuParams;
+ struct DropData;
+ struct MediaPlayerWatchTime;
+@@ -340,6 +342,14 @@ class CONTENT_EXPORT WebContentsDelegate {
+       const StoragePartitionId& partition_id,
+       SessionStorageNamespace* session_storage_namespace);
+ 
++  virtual void GetCustomWebContentsView(
++      WebContents* web_contents,
++      const GURL& target_url,
++      int opener_render_process_id,
++      int opener_render_frame_id,
++      content::WebContentsView** view,
++      content::RenderViewHostDelegateView** delegate_view) {}
++
+   // Notifies the delegate about the creation of a new WebContents. This
+   // typically happens when popups are created.
+   virtual void WebContentsCreated(WebContents* source_contents,
+diff --git content/public/browser/web_contents_observer.h content/public/browser/web_contents_observer.h
+index 5217a3a513d8..4d63c24eb30f 100644
+--- content/public/browser/web_contents_observer.h
++++ content/public/browser/web_contents_observer.h
+@@ -649,6 +649,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
+   // WebContents has gained/lost focus.
+   virtual void OnFocusChangedInPage(FocusedNodeDetails* details) {}
+ 
++  // Notification that |render_frame_host| for this WebContents has gained
++  // focus.
++  virtual void OnFrameFocused(RenderFrameHost* render_frame_host) {}
++
+   // Notifies that the manifest URL for the main frame changed to
+   // |manifest_url|. This will be invoked when a document with a manifest loads
+   // or when the manifest URL changes (possibly to nothing). It is not invoked

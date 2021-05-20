@@ -29,6 +29,7 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
       renderer_initiated_creation(false),
       desired_renderer_state(kOkayToHaveRendererProcess),
       starting_sandbox_flags(network::mojom::WebSandboxFlags::kNone),
+      delegate_view(nullptr),
       is_never_visible(false) {}
 
 WebContents::CreateParams::CreateParams(const CreateParams& other) = default;

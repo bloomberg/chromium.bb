@@ -210,7 +210,8 @@ Page::Page(PageClients& page_clients,
           MakeGarbageCollected<OverscrollController>(GetVisualViewport(),
                                                      GetChromeClient())),
       link_highlight_(MakeGarbageCollected<LinkHighlight>(*this)),
-      plugin_data_(nullptr),
+      plugin_data_main_frame_(nullptr),
+      plugin_data_sub_frame_(nullptr),
       // TODO(pdr): Initialize |validation_message_client_| lazily.
       validation_message_client_(
           MakeGarbageCollected<ValidationMessageClientImpl>(*this)),
@@ -402,21 +403,41 @@ void Page::InitialStyleChanged() {
   }
 }
 
-PluginData* Page::GetPluginData(const SecurityOrigin* main_frame_origin) {
-  if (!plugin_data_)
-    plugin_data_ = MakeGarbageCollected<PluginData>();
+PluginData* Page::GetPluginData(bool is_main_frame,
+                                const SecurityOrigin* main_frame_origin) {
+  if (is_main_frame) {
+    if (!plugin_data_main_frame_)
+      plugin_data_main_frame_ = MakeGarbageCollected<PluginData>();
 
-  if (!plugin_data_->Origin() ||
-      !main_frame_origin->IsSameOriginWith(plugin_data_->Origin()))
-    plugin_data_->UpdatePluginList(main_frame_origin);
 
-  return plugin_data_.Get();
+    if (!plugin_data_main_frame_->Origin() ||
+        !main_frame_origin->IsSameOriginWith(
+            plugin_data_main_frame_->Origin())) {
+      plugin_data_main_frame_->UpdatePluginList(true, main_frame_origin);
+    }
+
+    return plugin_data_main_frame_.Get();
+  } else {
+    if (!plugin_data_sub_frame_)
+      plugin_data_sub_frame_ = MakeGarbageCollected<PluginData>();
+
+    if (!plugin_data_sub_frame_->Origin() ||
+        !main_frame_origin->IsSameOriginWith(
+            plugin_data_sub_frame_->Origin())) {
+      plugin_data_sub_frame_->UpdatePluginList(false, main_frame_origin);
+    }
+
+    return plugin_data_sub_frame_.Get();
+  }
 }
 
 void Page::ResetPluginData() {
   for (Page* page : AllPages()) {
-    if (page->plugin_data_) {
-      page->plugin_data_->ResetPluginData();
+    if (page->plugin_data_main_frame_ || page->plugin_data_sub_frame_) {
+      if (page->plugin_data_main_frame_)
+        page->plugin_data_main_frame_->ResetPluginData();
+      if (page->plugin_data_sub_frame_)
+        page->plugin_data_sub_frame_->ResetPluginData();
       page->NotifyPluginsChanged();
     }
   }
@@ -928,7 +949,8 @@ void Page::Trace(Visitor* visitor) const {
   visitor->Trace(link_highlight_);
   visitor->Trace(spatial_navigation_controller_);
   visitor->Trace(main_frame_);
-  visitor->Trace(plugin_data_);
+  visitor->Trace(plugin_data_main_frame_);
+  visitor->Trace(plugin_data_sub_frame_);
   visitor->Trace(validation_message_client_);
   visitor->Trace(plugins_changed_observers_);
   visitor->Trace(next_related_page_);

@@ -49,6 +49,7 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/active_use_util.h"
 #include "chrome/browser/after_startup_task_utils.h"
@@ -896,8 +897,10 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #if !defined(OS_ANDROID)
   // Create the RunLoop for MainMessageLoopRun() to use, and pass a copy of
   // its QuitClosure to the BrowserProcessImpl to call when it is time to exit.
+  // CEF with the Chrome runtime will create and manage its own RunLoop.
   DCHECK(!GetMainRunLoopInstance());
-  GetMainRunLoopInstance() = std::make_unique<base::RunLoop>();
+  if (!cef::IsChromeRuntimeEnabled())
+    GetMainRunLoopInstance() = std::make_unique<base::RunLoop>();
 
   // These members must be initialized before returning from this function.
   // Android doesn't use StartupBrowserCreator.
@@ -1639,11 +1642,14 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // This step is costly and is already measured in
   // Startup.StartupBrowserCreator_Start.
   // See the comment above for an explanation of |process_command_line|.
+  // Bypass StartupBrowserCreator with CEF where |GetMainRunLoopInstance()| is
+  // nullptr.
   const bool started =
+      !GetMainRunLoopInstance() ||
       !process_command_line ||
       browser_creator_->Start(parsed_command_line(), base::FilePath(), profile_,
                               last_opened_profiles);
-  if (started) {
+  if (started && GetMainRunLoopInstance()) {
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))

@@ -516,12 +516,19 @@ void SessionService::MaybeDeleteSessionOnlyData() {
   if (profile()->AsTestingProfile())
     return;
 
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+  const bool background_mode_active =
+      g_browser_process->background_mode_manager()->IsBackgroundModeActive();
+#else
+  const bool background_mode_active = false;
+#endif
+
   // Clear session data if the last window for a profile has been closed and
   // closing the last window would normally close Chrome, unless background mode
   // is active.  Tests don't have a background_mode_manager.
   if (has_open_trackable_browsers_ ||
       browser_defaults::kBrowserAliveWithNoWindows ||
-      g_browser_process->background_mode_manager()->IsBackgroundModeActive()) {
+      background_mode_active) {
     return;
   }
 

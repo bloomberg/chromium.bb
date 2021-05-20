@@ -2001,15 +2001,26 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
         network_service_->network_quality_estimator());
   }
 
+  std::unique_ptr<net::CookieMonster> cookie_store;
   if (session_cleanup_cookie_store) {
-    std::unique_ptr<net::CookieMonster> cookie_store =
+    cookie_store =
         std::make_unique<net::CookieMonster>(session_cleanup_cookie_store.get(),
                                              net_log);
     if (params_->persist_session_cookies)
       cookie_store->SetPersistSessionCookies(true);
 
-    builder.SetCookieStore(std::move(cookie_store));
+  } else {
+    cookie_store =
+        std::make_unique<net::CookieMonster>(nullptr /* store */, net_log);
   }
+
+  if (params_->cookieable_schemes.has_value()) {
+    cookie_store->SetCookieableSchemes(
+        *params_->cookieable_schemes,
+        net::CookieStore::SetCookieableSchemesCallback());
+  }
+
+  builder.SetCookieStore(std::move(cookie_store));
 
   if (base::FeatureList::IsEnabled(features::kTrustTokens)) {
     trust_token_store_ = std::make_unique<PendingTrustTokenStore>();

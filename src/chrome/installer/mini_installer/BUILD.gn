@@ -6,6 +6,7 @@ import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//build/config/python.gni")
 import("//build/config/ui.gni")
+import("//cef/libcef/features/features.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//components/nacl/features.gni")
 import("//third_party/ffmpeg/ffmpeg_options.gni")
@@ -122,11 +123,13 @@ python2_action("mini_installer_archive") {
   inputs = [
     "$root_out_dir/chrome.dll",
     "$root_out_dir/chrome.exe",
-    "$root_out_dir/locales/en-US.pak",
     "$root_out_dir/setup.exe",
     "//chrome/tools/build/win/makecab.py",
     release_file,
   ]
+  if (!enable_cef) {
+    inputs += [ "$root_out_dir/locales/en-US.pak" ]
+  }
 
   outputs = [
     # See also chrome.packed.7z conditionally added below.

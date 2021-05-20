@@ -165,8 +165,11 @@ void AppSessionService::MaybeDeleteSessionOnlyData() {
   // Clear session data if the last window for a profile has been closed and
   // closing the last window would normally close Chrome, unless background mode
   // is active.  Tests don't have a background_mode_manager.
-  if (browser_defaults::kBrowserAliveWithNoWindows ||
-      g_browser_process->background_mode_manager()->IsBackgroundModeActive()) {
+  if (browser_defaults::kBrowserAliveWithNoWindows
+#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
+      || g_browser_process->background_mode_manager()->IsBackgroundModeActive()
+#endif
+      ) {
     return;
   }
 

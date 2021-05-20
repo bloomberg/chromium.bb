@@ -13,8 +13,11 @@
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/gfx/native_widget_types.h"
 
+#include "third_party/skia/include/core/SkColor.h"
+
 namespace gfx {
 class FontList;
+class Point;
 }
 
 namespace ui {
@@ -137,6 +140,27 @@ class COMPONENT_EXPORT(UI_BASE) MenuModel
   // (for the case where the activation involves a navigation).
   // |event_flags| is a bit mask of ui::EventFlags.
   virtual void ActivatedAt(int index, int event_flags);
+
+  // Called when the user moves the mouse outside the menu and over the owning
+  // window.
+  virtual void MouseOutsideMenu(const gfx::Point& screen_point) {}
+
+  // Called on unhandled open/close submenu keyboard commands. |is_rtl| will be
+  // true if the menu is displaying a right-to-left language.
+  virtual void UnhandledOpenSubmenu(bool is_rtl) {}
+  virtual void UnhandledCloseSubmenu(bool is_rtl) {}
+
+  // Override the text/background color of a given menu item dependent on the
+  // |index| and its |is_hovered| state. |is_minor| will be true for accelerator
+  // text. Returns true if it chooses to override the color.
+  virtual bool GetTextColor(int index,
+                            bool is_minor,
+                            bool is_hovered,
+                            SkColor* override_color) const { return false; }
+  virtual bool GetBackgroundColor(int index,
+                                  bool is_hovered,
+                                  SkColor* override_color) const
+                                  { return false; }
 
   // Called when the menu is about to be shown.
   virtual void MenuWillShow() {}

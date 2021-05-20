@@ -120,7 +120,8 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
 
     // If we're not incognito mode, schedule all of our file tasks to enable
     // disk on the storage context.
-    if (!context->IsOffTheRecord() && io_thread_valid) {
+    if (!context->GetPath().empty() && !context->IsOffTheRecord() &&
+        io_thread_valid) {
       file_task_runner = base::ThreadPool::CreateTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});

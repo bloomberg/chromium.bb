@@ -53,7 +53,9 @@ enum class TabDragKind {
 // This is a virtual interface that allows system specific browser frames.
 class BrowserFrame : public views::Widget, public views::ContextMenuController {
  public:
+  BrowserFrame();
   explicit BrowserFrame(BrowserView* browser_view);
+  void InitBrowserView(BrowserView* browser_view);
   ~BrowserFrame() override;
 
   // Initialize the frame (creates the underlying native window).

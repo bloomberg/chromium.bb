@@ -1,0 +1,31 @@
+diff --git chrome/browser/BUILD.gn chrome/browser/BUILD.gn
+index 2ae4ebab650f..f463b332115e 100644
+--- chrome/browser/BUILD.gn
++++ chrome/browser/BUILD.gn
+@@ -13,6 +13,7 @@ import("//build/config/features.gni")
+ import("//build/config/linux/gtk/gtk.gni")
+ import("//build/config/python.gni")
+ import("//build/config/ui.gni")
++import("//cef/libcef/features/features.gni")
+ import("//chrome/browser/buildflags.gni")
+ import("//chrome/browser/downgrade/buildflags.gni")
+ import("//chrome/common/features.gni")
+@@ -1908,6 +1909,7 @@ static_library("browser") {
+     "//build:chromeos_buildflags",
+     "//build/config/compiler:compiler_buildflags",
+     "//cc",
++    "//cef/libcef/features",
+     "//chrome:extra_resources",
+     "//chrome:resources",
+     "//chrome:strings",
+@@ -2456,6 +2458,10 @@ static_library("browser") {
+     ]
+   }
+ 
++  if (enable_cef) {
++    configs += [ "//cef/libcef/features:config" ]
++  }
++
+   if (is_android) {
+     sources += [
+       "after_startup_task_utils_android.cc",
