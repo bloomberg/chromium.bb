@@ -1378,9 +1378,8 @@ void CompositedLayerMapping::UpdateLCDBackgroundColor(
     // To make sure the squashed layer gets the correct text background, we
     // need to search for the next parent LayoutObject and use its background
     // instead.
-    inheritedBackgroundColor = Color::kTransparent;
-
     if (object == &GetLayoutObject()) {
+      inheritedBackgroundColor = Color::kTransparent;
       object = object->Parent();
 
       while (object != objectEnd) {
@@ -1392,15 +1391,16 @@ void CompositedLayerMapping::UpdateLCDBackgroundColor(
           break;
         }
 
+
         object = object->Parent();
       }
-    }
 
-    if (inheritedBackgroundColor.Alpha() != 0xFF &&
-        object == objectEnd                      &&
-        containerLayerMapping) {
-      inheritedBackgroundColor =
-        containerLayerMapping->inherited_background_color_;
+      if (inheritedBackgroundColor.Alpha() != 0xFF &&
+          object == objectEnd                      &&
+          containerLayerMapping) {
+        inheritedBackgroundColor =
+          containerLayerMapping->inherited_background_color_;
+      }
     }
 
     if (source == ELcdBackgroundColorSource::kAuto) {
