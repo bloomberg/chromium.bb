@@ -547,9 +547,6 @@
         'swarming': {
           'shards': 40,
         },
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/linux_bionic.browser_tests.filter',
-        ],
       },
       'Linux ASan Tests (sandboxed)': {
         'swarming': {
@@ -657,7 +654,7 @@
       },
       'linux-chromeos-dbg': {
         'swarming': {
-          'shards': 30,
+          'shards': 40,
         },
       },
       'linux-chromeos-ltc': {

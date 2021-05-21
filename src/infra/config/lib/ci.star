@@ -161,6 +161,7 @@ def android_builder(
         # goma_jobs=goma.jobs.MANY_JOBS_FOR_CI
         goma_jobs = builders.goma.jobs.J150,
         **kwargs):
+    kwargs.setdefault("os", os.LINUX_BIONIC_REMOVE)
     return ci_builder(
         name = name,
         builder_group = "chromium.android",
@@ -170,6 +171,7 @@ def android_builder(
     )
 
 def android_fyi_builder(*, name, **kwargs):
+    kwargs.setdefault("os", os.LINUX_BIONIC_REMOVE)
     return ci_builder(
         name = name,
         builder_group = "chromium.android.fyi",
@@ -386,6 +388,7 @@ def fyi_builder(
         execution_timeout = 10 * time.hour,
         goma_backend = builders.goma.backend.RBE_PROD,
         **kwargs):
+    kwargs.setdefault("os", os.LINUX_BIONIC_REMOVE)
     return ci.builder(
         name = name,
         builder_group = "chromium.fyi",

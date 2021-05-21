@@ -238,7 +238,7 @@
         {
           'cpu': 'x86',
           'kvm': '1',
-          'os': 'Ubuntu-16.04',
+          'os': 'Ubuntu-18.04',
           'pool': 'chromium.tests',
         }
       ],
@@ -452,6 +452,13 @@
       'linux-release-64/sizes',
     ],
   },
+  'linux-bionic': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-18.04',
+      },
+    },
+  },
   'linux-trusty': {
     'swarming': {
       'dimensions': {
@@ -463,6 +470,13 @@
     'swarming': {
       'dimensions': {
         'os': 'Ubuntu-16.04',
+      },
+    },
+  },
+  'linux-xenial-or-bionic': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Ubuntu-16.04|Ubuntu-18.04',
       },
     },
   },

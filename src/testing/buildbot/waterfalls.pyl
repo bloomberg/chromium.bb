@@ -1047,7 +1047,7 @@
           'enable_resultdb',
           'marshmallow-x86-emulator',
           'emulator-4-cores',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1060,7 +1060,7 @@
           'enable_resultdb',
           'marshmallow-x86-emulator',
           'emulator-4-cores',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1140,7 +1140,7 @@
           'enable_resultdb',
           'pie-x86-emulator',
           'emulator-4-cores',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1153,7 +1153,7 @@
           'enable_resultdb',
           'oreo-x86-emulator',
           'emulator-4-cores',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1166,7 +1166,7 @@
           'enable_resultdb',
           'pie-x86-emulator',
           'emulator-4-cores',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1207,7 +1207,7 @@
           '11-x86-emulator',
           'emulator-4-cores',
           'enable_resultdb',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1232,7 +1232,7 @@
           'enable_resultdb',
           'pie-x86-emulator',
           'emulator-4-cores',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'x86-64',
         ],
         'test_suites': {
@@ -1246,7 +1246,7 @@
           'enable_resultdb',
           '10-x86-emulator',
           'emulator-4-cores',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'x86-64',
         ],
         'os_type': 'android',
@@ -1272,7 +1272,7 @@
           'enable_resultdb',
           'pie-x86-emulator',
           'emulator-4-cores',
-          'linux-xenial',
+          'linux-xenial-or-bionic',
           'x86-64',
         ],
         'test_suites': {
@@ -1683,13 +1683,16 @@
         ],
       },
       'linux-cfm-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
         'test_suites': {
           'gtest_tests': 'linux_cfm_gtests',
         },
       },
       'linux-chromeos-dbg': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'linux_chromeos_gtests',
@@ -1698,7 +1701,7 @@
       'linux-chromeos-js-code-coverage': {
         'mixins': [
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'js_code_coverage_browser_tests_reduced'
@@ -1707,7 +1710,7 @@
       'linux-chromeos-rel': {
         'mixins': [
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'gn_all',
@@ -1717,6 +1720,9 @@
         },
       },
       'linux-lacros-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
         'additional_compile_targets': [
           'gn_all',
         ],
@@ -1725,6 +1731,9 @@
         },
       },
       'linux-lacros-tester-rel': {
+        'mixins': [
+          'linux-bionic',
+        ],
         'additional_compile_targets': [
           'chrome',
           'chrome_sandbox',
@@ -2644,7 +2653,7 @@
       },
       'Linux Viz': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'all',
@@ -3069,7 +3078,7 @@
       },
       'linux-blink-animation-use-time-delta': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'all',
@@ -3127,7 +3136,7 @@
       'linux-chromeos-code-coverage': {
         'mixins': [
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-bionic',
         ],
         'additional_compile_targets': [
           'gn_all',
@@ -3139,7 +3148,7 @@
       'linux-chromeos-js-code-coverage': {
         'mixins': [
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'js_code_coverage_browser_tests'
@@ -3155,7 +3164,7 @@
       },
       'linux-chromium-tests-staging-tests': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -3165,7 +3174,7 @@
       'linux-code-coverage': {
         'mixins': [
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -3183,7 +3192,7 @@
       },
       'linux-fieldtrial-rel': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'fieldtrial_browser_tests',
@@ -4983,7 +4992,7 @@
       'Linux Tests': {
         'mixins': [
           'isolate_profile_data',
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -4993,7 +5002,7 @@
       },
       'Linux Tests (dbg)(1)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_gtests',
@@ -5239,7 +5248,7 @@
       },
       'Linux ASan LSan Tests (1)': {
         'mixins': [
-          'linux-xenial',
+          'linux-bionic',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_linux_and_gl_gtests',

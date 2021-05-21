@@ -150,7 +150,7 @@ consoles.console_view(
 
 consoles.console_view(
     name = "chromium.chromiumos",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     ordering = {
         None: ["default"],
         "default": consoles.ordering(short_names = ["ful", "rel"]),
@@ -872,6 +872,7 @@ ci.android_builder(
     ),
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -880,6 +881,7 @@ ci.android_builder(
         category = "builder_tester|x86",
         short_name = "M_non-cq",
     ),
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -925,6 +927,7 @@ ci.android_builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = main_console_if_on_branch(),
     tree_closing = True,
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -935,6 +938,7 @@ ci.android_builder(
     ),
     triggered_by = ["android-weblayer-x86-rel"],
     notifies = ["weblayer-sheriff"],
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -945,6 +949,7 @@ ci.android_builder(
     ),
     triggered_by = ["android-weblayer-x86-rel"],
     notifies = ["weblayer-sheriff"],
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -1000,6 +1005,7 @@ ci.android_fyi_builder(
         category = "builder_tester|web-platform",
         short_name = "P",
     ),
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_fyi_builder(
@@ -1008,6 +1014,7 @@ ci.android_fyi_builder(
         category = "builder_tester|weblayer",
         short_name = "P",
     ),
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_builder(
@@ -1016,6 +1023,7 @@ ci.android_builder(
         category = "builder_tester|x86",
         short_name = "P",
     ),
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_fyi_builder(
@@ -1026,6 +1034,7 @@ ci.android_fyi_builder(
     ),
     triggered_by = ["android-weblayer-with-aosp-webview-x86-fyi-rel"],
     notifies = ["weblayer-sheriff"],
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.android_fyi_builder(
@@ -1071,6 +1080,7 @@ ci.android_fyi_builder(
         category = "emulator|11|x86",
         short_name = "rel",
     ),
+    os = os.LINUX_BIONIC_REMOVE,
 )
 
 ci.angle_linux_builder(
@@ -1685,7 +1695,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "chromeos-amd64-generic-rel",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release|x64",
         short_name = "rel",
@@ -1705,7 +1715,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "chromeos-arm-generic-rel",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "arm",
@@ -1716,7 +1726,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "chromeos-kevin-rel",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "kvn",
@@ -1782,7 +1792,7 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = "linux-chromeos-rel",
-    branch_selector = branches.ALL_BRANCHES,
+    branch_selector = branches.LTS_MILESTONE,
     console_view_entry = consoles.console_view_entry(
         category = "default",
         short_name = "rel",
@@ -1818,12 +1828,10 @@ ci.chromiumos_builder(
 # For Chromebox for meetings(CfM)
 ci.chromiumos_builder(
     name = "linux-cfm-rel",
-    branch_selector = branches.ALL_BRANCHES,
     console_view_entry = consoles.console_view_entry(
         category = "simple|release",
         short_name = "cfm",
     ),
-    cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
 )
 
@@ -3157,7 +3165,7 @@ ci.fyi_builder(
         short_name = "64rel",
     ),
     notifies = ["chrome-memory-safety"],
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3476,7 +3484,7 @@ ci.fyi_builder(
     console_view_entry = consoles.console_view_entry(
         category = "win10",
     ),
-    os = None,
+    os = os.LINUX_BIONIC_REMOVE,
     triggered_by = ["win-pixel-builder-rel"],
 )
 
@@ -3486,7 +3494,7 @@ ci.fyi_builder(
         category = "perfetto",
         short_name = "lnx",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3519,7 +3527,7 @@ ci.fyi_builder(
         category = "linux",
         short_name = "tgc",
     ),
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3541,7 +3549,7 @@ ci.fyi_builder(
     reclient_instance = "goma-rbe-chromium",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3555,7 +3563,7 @@ ci.fyi_builder(
     reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
     configure_kitchen = True,
     kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3572,7 +3580,7 @@ ci.fyi_builder(
     reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
     configure_kitchen = True,
     kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3590,7 +3598,7 @@ ci.fyi_builder(
     reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
     configure_kitchen = True,
     kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3625,7 +3633,7 @@ ci.fyi_builder(
     reclient_rewrapper_env = {"RBE_cache_silo": "Linux TSan Builder (reclient)"},
     configure_kitchen = True,
     kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3641,7 +3649,7 @@ ci.fyi_builder(
     reclient_instance = "rbe-chromium-gvisor-shadow",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3657,7 +3665,7 @@ ci.fyi_builder(
     reclient_instance = "goma-rbe-chromium",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3673,7 +3681,7 @@ ci.fyi_builder(
     reclient_instance = "goma-rbe-chromium",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_builder(
@@ -3688,7 +3696,7 @@ ci.fyi_builder(
     reclient_instance = "goma-rbe-chromium",
     configure_kitchen = True,
     kitchen_emulate_gce = True,
-    os = os.LINUX_DEFAULT,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.fyi_windows_builder(
