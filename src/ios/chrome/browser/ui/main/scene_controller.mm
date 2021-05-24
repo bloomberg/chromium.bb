@@ -909,7 +909,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   // If this is first run, show the first run UI on top of the new tab.
   // If this isn't first run, check if the sign-in promo needs to display.
-  if (firstRun && launchMode != ApplicationMode::INCOGNITO &&
+  if (firstRun &&
       !self.sceneState.appState.startupInformation.isPresentingFirstRunUI) {
     [self showFirstRunUI];
     // Do not ever show the 'restore' infobar during first run.
@@ -1133,7 +1133,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
           initWithBrowser:browser
-                presenter:self.mainInterface.bvc
+                presenter:self.currentInterface.bvc
                dispatcher:welcomeHandler];
   self.welcomeToChromeController = welcomeToChrome;
   UINavigationController* navController =
@@ -1144,9 +1144,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   CGRect appFrame = [[UIScreen mainScreen] bounds];
   [[navController view] setFrame:appFrame];
   self.sceneState.presentingFirstRunUI = YES;
-  [self.mainInterface.viewController presentViewController:navController
-                                                  animated:NO
-                                                completion:nil];
+  [self.currentInterface.viewController presentViewController:navController
+                                                     animated:NO
+                                                   completion:nil];
 }
 
 // Sets a LocalState pref marking the TOS EULA as accepted.
