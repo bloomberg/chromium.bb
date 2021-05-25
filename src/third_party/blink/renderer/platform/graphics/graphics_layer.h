@@ -143,7 +143,7 @@ class PLATFORM_EXPORT GraphicsLayer : public DisplayItemClient,
 
   // Set the color to blend LCD text with when the layer's background color
   // would otherwise be transparent.
-  void setDefaultLCDBackgroundColor(const Color&);
+  void SetDefaultLCDBackgroundColor(const Color&);
 
   // Opaque means that we know the layer contents have no alpha.
   bool ContentsOpaque() const;
