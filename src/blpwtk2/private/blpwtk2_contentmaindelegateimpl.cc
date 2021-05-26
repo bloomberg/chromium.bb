@@ -101,7 +101,7 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code)
     commandLine->GetSwitchValueASCII(switches::kProcessType);
 
     // Only enable DPI support for browser, gpu & rendererer processes
-    if (commandLine->HasSwitch(switches::kDpiAware) &&
+    if (commandLine->HasSwitch(switches::kDpiAwarenessMode) &&
         ((processType.empty() || processType == switches::kGpuProcess ||
           processType == switches::kRendererProcess))) {
         base::win::EnableHighDPISupport();

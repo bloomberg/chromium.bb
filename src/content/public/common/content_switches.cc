@@ -1028,7 +1028,7 @@ const char kRaiseTimerFrequency[] = "raise-timer-frequency";
 const char kGpu2StartupDialog[] = "gpu2-startup-dialog";
 
 // Enable DPI awareness for the process
-const char kDpiAware[] = "dpi-aware";
+const char kDpiAwarenessMode[] = "dpi-awareness-mode";
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

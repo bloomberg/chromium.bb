@@ -3432,7 +3432,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kWebglAntialiasingMode,
     switches::kWebglMSAASampleCount,
 
-    switches::kDpiAware,
+    switches::kDpiAwarenessMode,
 
     // Please keep these in alphabetical order.
     blink::switches::kAllowPreCommitInput,
