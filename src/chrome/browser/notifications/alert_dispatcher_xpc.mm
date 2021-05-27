@@ -19,6 +19,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "cef/libcef/features/runtime.h"
 #include "chrome/browser/notifications/notification_platform_bridge_mac_utils.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_delivery.h"
 #include "chrome/browser/ui/cocoa/notifications/xpc_mach_port.h"
@@ -179,6 +180,12 @@ void RecordXPCEvent(XPCConnectionEvent event) {
 // service has its exception port configured for crash reporting.
 - (id<NotificationDelivery>)serviceProxy {
   id<NotificationDelivery> proxy = [_xpcConnection remoteObjectProxy];
+
+  // Skip exception port configuration when running CEF with crash reporting disabled.
+  if (!_setExceptionPort && cef::IsChromeRuntimeEnabled() &&
+      !cef::IsCrashReportingEnabled()) {
+    _setExceptionPort = YES;
+  }
 
   if (!_setExceptionPort) {
     base::mac::ScopedMachSendRight exceptionPort(

@@ -4,6 +4,7 @@
 
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/locales.gni")
+import("//cef/libcef/features/features.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/browser/resources/pdf/ink/ink.gni")
 import("//chrome/common/features.gni")
@@ -276,6 +277,10 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources/signin/profile_picker:resources",
         "//chrome/browser/resources/welcome:resources",
       ]
+    }
+    if (enable_cef) {
+      sources += [ "$root_gen_dir/cef/cef_resources.pak" ]
+      deps += [ "//cef:cef_resources" ]
     }
     if (enable_extensions) {
       sources += [

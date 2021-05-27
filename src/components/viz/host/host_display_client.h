@@ -32,17 +32,17 @@ class VIZ_HOST_EXPORT HostDisplayClient : public mojom::DisplayClient {
   mojo::PendingRemote<mojom::DisplayClient> GetBoundRemote(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
- private:
+ protected:
   // mojom::DisplayClient implementation:
+  void UseProxyOutputDevice(UseProxyOutputDeviceCallback callback) override;
+
 #if defined(OS_APPLE)
   void OnDisplayReceivedCALayerParams(
       const gfx::CALayerParams& ca_layer_params) override;
 #endif
 
-#if defined(OS_WIN)
   void CreateLayeredWindowUpdater(
       mojo::PendingReceiver<mojom::LayeredWindowUpdater> receiver) override;
-#endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.

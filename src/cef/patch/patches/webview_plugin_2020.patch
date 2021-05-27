@@ -1,0 +1,13 @@
+diff --git chrome/app/generated_resources.grd chrome/app/generated_resources.grd
+index d891ed08d37e..2ff41f84afd9 100644
+--- chrome/app/generated_resources.grd
++++ chrome/app/generated_resources.grd
+@@ -5136,7 +5136,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
+         </message>
+       </if>
+       <message name="IDS_PLUGIN_BLOCKED_BY_POLICY" desc="The placeholder text for a plugin blocked by enterprise policy.">
+-        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is blocked by enterprise policy
++        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is not allowed
+       </message>
+       <message name="IDS_PLUGIN_BLOCKED_NO_LOADING" desc="The placeholder text for a blocked plugin that cannot be manually loaded by the user.">
+         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is blocked

@@ -1,0 +1,59 @@
+diff --git build/toolchain/win/setup_toolchain.py build/toolchain/win/setup_toolchain.py
+index f66de0aa63c9..98a510a6a244 100644
+--- build/toolchain/win/setup_toolchain.py
++++ build/toolchain/win/setup_toolchain.py
+@@ -154,13 +154,17 @@ def _LoadToolchainEnv(cpu, toolchain_root, sdk_dir, target_store):
+         del os.environ['INCLUDE']
+         del os.environ['LIB']
+         del os.environ['LIBPATH']
+-      other_path = os.path.normpath(os.path.join(
++      script_path = os.path.normpath(os.path.join(
+                                         os.environ['GYP_MSVS_OVERRIDE_PATH'],
+                                         'VC/Auxiliary/Build/vcvarsall.bat'))
+-      if not os.path.exists(other_path):
+-        raise Exception('%s is missing - make sure VC++ tools are installed.' %
+-                        script_path)
+-      script_path = other_path
++    if not os.path.exists(script_path):
++      # Compiler environment variables must already be specified.
++      variables = []
++      for k in sorted(os.environ.keys()):
++        variables.append('%s=%s' % (str(k), str(os.environ[k])))
++      variables = '\n'.join(variables)
++      return _ExtractImportantEnvironment(variables)
++
+     cpu_arg = "amd64"
+     if (cpu != 'x64'):
+       # x64 is default target CPU thus any other CPU requires a target set
+diff --git build/vs_toolchain.py build/vs_toolchain.py
+index c3b1182b75b4..04a472b149d4 100755
+--- build/vs_toolchain.py
++++ build/vs_toolchain.py
+@@ -102,9 +102,16 @@ def SetEnvironmentAndGetRuntimeDllDirs():
+     runtime_path = os.path.pathsep.join(vs_runtime_dll_dirs)
+     os.environ['PATH'] = runtime_path + os.path.pathsep + os.environ['PATH']
+   elif sys.platform == 'win32' and not depot_tools_win_toolchain:
++    has_override_path = True
+     if not 'GYP_MSVS_OVERRIDE_PATH' in os.environ:
++      has_override_path = False
+       os.environ['GYP_MSVS_OVERRIDE_PATH'] = DetectVisualStudioPath()
+ 
++    if has_override_path:
++      # Don't attempt to copy DLLs when using a custom toolchain.
++      # The DLLs should already be discoverable via the PATH env variable.
++      return None
++
+     # When using an installed toolchain these files aren't needed in the output
+     # directory in order to run binaries locally, but they are needed in order
+     # to create isolates or the mini_installer. Copying them to the output
+@@ -153,6 +160,10 @@ def _RegistryGetValue(key, value):
+ def GetVisualStudioVersion():
+   """Return best available version of Visual Studio.
+   """
++  # Return the explicitly requested version, if any.
++  if 'GYP_MSVS_VERSION' in os.environ:
++    return os.environ['GYP_MSVS_VERSION']
++
+   supported_versions = list(MSVS_VERSIONS.keys())
+ 
+   # VS installed in depot_tools for Googlers

@@ -133,6 +133,13 @@ class PRINTING_EXPORT PrintingContext {
 
   int job_id() const { return job_id_; }
 
+  void set_render_ids(int render_process_id, int render_frame_id) {
+    render_process_id_ = render_process_id;
+    render_frame_id_ = render_frame_id;
+  }
+  int render_process_id() const { return render_process_id_; }
+  int render_frame_id() const { return render_frame_id_; }
+
  protected:
   explicit PrintingContext(Delegate* delegate);
 
@@ -156,6 +163,10 @@ class PRINTING_EXPORT PrintingContext {
 
   // The job id for the current job. The value is 0 if no jobs are active.
   int job_id_;
+
+  // Routing IDs for the frame that owns this object.
+  int render_process_id_ = 0;
+  int render_frame_id_ = 0;
 };
 
 }  // namespace printing

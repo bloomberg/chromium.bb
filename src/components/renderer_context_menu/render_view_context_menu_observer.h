@@ -11,6 +11,10 @@ namespace content {
 struct ContextMenuParams;
 }
 
+namespace ui {
+class Accelerator;
+}
+
 // The interface used for implementing context-menu items. The following
 // instruction describe how to implement a context-menu item with this
 // interface.
@@ -99,6 +103,8 @@ class RenderViewContextMenuObserver {
   // item while showing, use RenderViewContextMenuProxy::UpdateMenuItem().
   virtual bool IsCommandIdChecked(int command_id);
   virtual bool IsCommandIdEnabled(int command_id);
+
+  virtual bool GetAccelerator(int command_id, ui::Accelerator* accel);
 
   // Called when a user selects the specified context-menu item. This is
   // only called when the observer returns true for IsCommandIdSupported()

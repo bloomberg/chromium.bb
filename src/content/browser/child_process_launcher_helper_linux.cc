@@ -162,7 +162,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
 base::File OpenFileToShare(const base::FilePath& path,
                            base::MemoryMappedFile::Region* region) {
   base::FilePath exe_dir;
-  bool result = base::PathService::Get(base::BasePathKey::DIR_EXE, &exe_dir);
+  bool result = base::PathService::Get(base::BasePathKey::DIR_ASSETS, &exe_dir);
   DCHECK(result);
   base::File file(exe_dir.Append(path),
                   base::File::FLAG_OPEN | base::File::FLAG_READ);

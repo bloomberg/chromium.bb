@@ -29,6 +29,7 @@ void PluginRegistryImpl::Bind(
 }
 
 void PluginRegistryImpl::GetPlugins(bool refresh,
+                                    bool is_main_frame,
                                     const url::Origin& main_frame_origin,
                                     GetPluginsCallback callback) {
   auto* plugin_service = PluginServiceImpl::GetInstance();
@@ -50,10 +51,11 @@ void PluginRegistryImpl::GetPlugins(bool refresh,
 
   plugin_service->GetPlugins(base::BindOnce(
       &PluginRegistryImpl::GetPluginsComplete, weak_factory_.GetWeakPtr(),
-      main_frame_origin, std::move(callback)));
+      is_main_frame, main_frame_origin, std::move(callback)));
 }
 
 void PluginRegistryImpl::GetPluginsComplete(
+    bool is_main_frame,
     const url::Origin& main_frame_origin,
     GetPluginsCallback callback,
     const std::vector<WebPluginInfo>& all_plugins) {
@@ -76,6 +78,7 @@ void PluginRegistryImpl::GetPluginsComplete(
     // TODO(crbug.com/621724): Pass an url::Origin instead of a GURL.
     if (!filter || filter->IsPluginAvailable(render_process_id_, routing_id,
                                              main_frame_origin.GetURL(),
+                                             is_main_frame,
                                              main_frame_origin, &plugin)) {
       auto plugin_blink = blink::mojom::PluginInfo::New();
       plugin_blink->name = plugin.name;

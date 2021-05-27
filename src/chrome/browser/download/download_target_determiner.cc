@@ -672,7 +672,7 @@ void IsHandledBySafePlugin(int render_process_id,
   content::PluginService* plugin_service =
       content::PluginService::GetInstance();
   bool plugin_found = plugin_service->GetPluginInfo(
-      render_process_id, routing_id, url, url::Origin(), mime_type, false,
+      render_process_id, routing_id, url, true, url::Origin(), mime_type, false,
       &is_stale, &plugin_info, &actual_mime_type);
   if (is_stale && stale_plugin_action == RETRY_IF_STALE_PLUGIN_LIST) {
     // The GetPlugins call causes the plugin list to be refreshed. Once that's

@@ -19,6 +19,8 @@ source_set("xkb") {
     "//ui/gfx/x/keysyms",
   ]
 
+  defines = [ "KEYCODES_X_IMPLEMENTATION" ]
+
   deps = [
     "//base",
     "//build:chromeos_buildflags",

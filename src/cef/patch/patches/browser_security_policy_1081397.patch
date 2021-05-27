@@ -1,0 +1,38 @@
+diff --git content/browser/child_process_security_policy_impl.cc content/browser/child_process_security_policy_impl.cc
+index 51b159f1ab77..df64ef6cfa7e 100644
+--- content/browser/child_process_security_policy_impl.cc
++++ content/browser/child_process_security_policy_impl.cc
+@@ -1719,6 +1719,16 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
+             // DeclarativeApiTest.PersistRules.
+             if (actual_process_lock.matches_scheme(url::kDataScheme))
+               return true;
++
++            // Allow other schemes that are non-standard, non-local and WebSafe.
++            if (lock_url.is_valid() &&
++                !lock_url.IsStandard() &&
++                !base::Contains(url::GetLocalSchemes(),
++                                lock_url.scheme_piece()) &&
++                base::Contains(schemes_okay_to_request_in_any_process_,
++                               lock_url.scheme())) {
++              return true;
++            }
+           }
+ 
+           // TODO(wjmaclean): We should update the ProcessLock comparison API
+diff --git content/browser/renderer_host/navigation_request.cc content/browser/renderer_host/navigation_request.cc
+index 6f1fe2a9f91d..d711e0f2a5b4 100644
+--- content/browser/renderer_host/navigation_request.cc
++++ content/browser/renderer_host/navigation_request.cc
+@@ -5320,6 +5320,12 @@ url::Origin NavigationRequest::GetOriginForURLLoaderFactory() {
+ 
+   // Calculate an approximation of the origin. The sandbox/csp are ignored.
+   url::Origin origin = GetOriginForURLLoaderFactoryUnchecked(this);
++  if (!origin.GetURL().IsStandard()) {
++    // Always return an opaque origin for non-standard URLs. Otherwise, the
++    // below CanAccessDataForOrigin() check may fail for unregistered custom
++    // scheme requests in CEF.
++    return origin.DeriveNewOpaqueOrigin();
++  }
+ 
+   // Apply sandbox flags.
+   // See https://html.spec.whatwg.org/#sandboxed-origin-browsing-context-flag

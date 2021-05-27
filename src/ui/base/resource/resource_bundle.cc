@@ -832,6 +832,12 @@ ResourceBundle::ResourceBundle(Delegate* delegate)
     : delegate_(delegate),
       locale_resources_data_lock_(new base::Lock),
       max_scale_factor_(SCALE_FACTOR_100P) {
+  // With CEF's multi-threaded mode the ResourceBundle may be created on the
+  // main thread and then accessed on the UI thread. Allow the SequenceChecker
+  // to re-bind on the UI thread when CalledOnValidSequence() is called for the
+  // first time.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+
   mangle_localized_strings_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kMangleLocalizedStrings);
 }
@@ -839,6 +845,11 @@ ResourceBundle::ResourceBundle(Delegate* delegate)
 ResourceBundle::~ResourceBundle() {
   FreeImages();
   UnloadLocaleResources();
+}
+
+void ResourceBundle::CleanupOnUIThread() {
+  FreeImages();
+  font_cache_.clear();
 }
 
 // static

@@ -44,7 +44,7 @@ void LayeredWindowUpdaterImpl::OnAllocatedSharedMemory(
   // |region|'s handle will close when it goes out of scope.
 }
 
-void LayeredWindowUpdaterImpl::Draw(DrawCallback draw_callback) {
+void LayeredWindowUpdaterImpl::Draw(const gfx::Rect& damage_rect, DrawCallback draw_callback) {
   TRACE_EVENT0("viz", "LayeredWindowUpdaterImpl::Draw");
 
   if (!canvas_) {

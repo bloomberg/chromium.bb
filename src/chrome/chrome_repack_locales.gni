@@ -6,6 +6,7 @@ import("//build/config/chrome_build.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//cef/libcef/features/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//tools/grit/repack.gni")
 
@@ -82,6 +83,10 @@ template("chrome_repack_locales") {
         "//ui/chromeos/strings",
       ]
       compress = true
+    }
+    if (enable_cef) {
+      source_patterns += [ "${root_gen_dir}/cef/cef_strings_" ]
+      deps += [ "//cef:cef_strings" ]
     }
     if (enable_extensions) {
       source_patterns +=

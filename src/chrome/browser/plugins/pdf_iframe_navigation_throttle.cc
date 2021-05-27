@@ -65,7 +65,7 @@ bool IsPDFPluginEnabled(content::NavigationHandle* navigation_handle,
 
   content::WebPluginInfo plugin_info;
   return content::PluginService::GetInstance()->GetPluginInfo(
-      process_id, routing_id, navigation_handle->GetURL(),
+      process_id, routing_id, navigation_handle->GetURL(), false,
       web_contents->GetMainFrame()->GetLastCommittedOrigin(), kPDFMimeType,
       false /* allow_wildcard */, is_stale, &plugin_info,
       nullptr /* actual_mime_type */);

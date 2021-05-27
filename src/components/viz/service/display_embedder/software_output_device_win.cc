@@ -191,8 +191,9 @@ void SoftwareOutputDeviceWinProxy::EndPaintDelegated(
   if (!canvas_)
     return;
 
-  layered_window_updater_->Draw(base::BindOnce(
-      &SoftwareOutputDeviceWinProxy::DrawAck, base::Unretained(this)));
+  layered_window_updater_->Draw(
+      damage_rect, base::BindOnce(&SoftwareOutputDeviceWinProxy::DrawAck,
+                                  base::Unretained(this)));
   waiting_on_draw_ack_ = true;
 
   TRACE_EVENT_ASYNC_BEGIN0("viz", "SoftwareOutputDeviceWinProxy::Draw", this);

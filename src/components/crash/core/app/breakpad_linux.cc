@@ -28,6 +28,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/linux_util.h"
@@ -720,7 +721,7 @@ bool CrashDone(const MinidumpDescriptor& minidump,
   info.process_type_length = 7;
   info.distro = base::g_linux_distro;
   info.distro_length = my_strlen(base::g_linux_distro);
-  info.upload = upload;
+  info.upload = upload && g_upload_url;
   info.process_start_time = g_process_start_time;
   info.oom_size = base::g_oom_size;
   info.pid = g_pid;
@@ -1734,10 +1735,27 @@ void HandleCrashDump(const BreakpadInfo& info) {
     GetCrashReporterClient()->GetProductNameAndVersion(&product_name, &version);
 
     writer.AddBoundary();
-    writer.AddPairString("prod", product_name);
+    writer.AddPairString("product", product_name);
     writer.AddBoundary();
-    writer.AddPairString("ver", version);
+    writer.AddPairString("version", version);
     writer.AddBoundary();
+
+#if defined(ARCH_CPU_ARM_FAMILY)
+#if defined(ARCH_CPU_32_BITS)
+    const char* platform = "linuxarm";
+#elif defined(ARCH_CPU_64_BITS)
+    const char* platform = "linuxarm64";
+#endif
+#else
+#if defined(ARCH_CPU_32_BITS)
+    const char* platform = "linux32";
+#elif defined(ARCH_CPU_64_BITS)
+    const char* platform = "linux64";
+#endif
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
+    writer.AddPairString("platform", platform);
+    writer.AddBoundary();
+
     if (info.pid > 0) {
       char pid_value_buf[kUint64StringSize];
       uint64_t pid_value_len = my_uint64_len(info.pid);
@@ -1854,6 +1872,9 @@ void HandleCrashDump(const BreakpadInfo& info) {
         crash_reporter::internal::TransitionalCrashKeyStorage;
     CrashKeyStorage::Iterator crash_key_iterator(*info.crash_keys);
     const CrashKeyStorage::Entry* entry;
+
+    crash_reporter::CrashReporterClient::ParameterMap parameters;
+
     while ((entry = crash_key_iterator.Next())) {
       size_t key_size, value_size;
       // Check for malformed messages.
@@ -1864,7 +1885,13 @@ void HandleCrashDump(const BreakpadInfo& info) {
                        ? CrashKeyStorage::value_size - 1
                        : my_strlen(entry->value);
 
-      writer.AddPairData(entry->key, key_size, entry->value, value_size);
+      parameters.insert(std::make_pair(std::string{entry->key, key_size}, std::string{entry->value, value_size}));
+    }
+    if (!parameters.empty())
+      parameters = GetCrashReporterClient()->FilterParameters(parameters);
+
+    for (const auto& param : parameters) {
+      writer.AddPairData(param.first.data(), param.first.size(), param.second.data(), param.second.size());
       writer.AddBoundary();
       writer.Flush();
     }

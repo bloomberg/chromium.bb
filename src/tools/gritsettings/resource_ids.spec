@@ -750,4 +750,13 @@
   # Please read the header and find the right section above instead.
 
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
+
+  "cef/libcef/resources/cef_resources.grd": {
+    "META": {"align": 31500},
+    "includes": [31500],
+  },
+  "cef/libcef/resources/cef_strings.grd": {
+    "META": {"align": 32000},
+    "messages": [32000],
+  },
 }
