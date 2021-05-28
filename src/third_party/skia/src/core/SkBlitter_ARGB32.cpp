@@ -368,6 +368,11 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
     }
 
     void blit_row_lcd16_over_bg(SkPMColor dst[], const uint16_t mask[], SkColor src, int width, SkPMColor, SkPMColor defaultDst) {
+
+        // blpwtk2: This function is very similar to blit_row_lcd16_opaque_over_bg.
+        // Any updates made to this function should considitionally be made
+        // to the other function as well.
+
         if (width <= 0) {
             return;
         }
@@ -384,9 +389,41 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
             SkASSERT(((size_t)dst & 0x03) == 0);
             while (((size_t)dst & 0x0F) != 0) {
                 SkPMColor currentDst = *dst;
-                if (0x00 == SkColorGetA(currentDst)) {
+                int dstA = SkColorGetA(currentDst);
+
+                if (0x00 == dstA) {
                     currentDst = defaultDst;
                 }
+                else if (0xff == dstA) {
+                    // no-op. this helps branch prediction since it's
+                    // more likely for us to encounter an opaque local
+                    // background than a semi-transparent background
+                }
+                else if (dstA < 255) {
+                    // premultiply local background
+                    int dstR = SkColorGetR(currentDst) * dstA;
+                    int dstG = SkColorGetG(currentDst) * dstA;
+                    int dstB = SkColorGetB(currentDst) * dstA;
+
+                    // premultiply global background and mix
+                    dstA = 255 - dstA;
+                    dstR += SkColorGetR(defaultDst) * dstA;
+                    dstG += SkColorGetG(defaultDst) * dstA;
+                    dstB += SkColorGetB(defaultDst) * dstA;
+
+                    // scale down and round off
+                    dstR = (dstR + 128) >> 8;
+                    dstG = (dstG + 128) >> 8;
+                    dstB = (dstB + 128) >> 8;
+
+                    // We are dividing by 256 when we should divide by 255.
+                    // This will produce an output that is 0.39% darker in the
+                    // worst case. This might be an acceptable compromise for
+                    // the performance gains.
+
+                    currentDst = SkPackARGB32(255, dstR, dstG, dstB);
+                }
+
                 *dst = blend_lcd16(srcA, srcR, srcG, srcB, currentDst, *mask);
 
                 mask++;
@@ -419,17 +456,156 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
                 if (pack_cmp != 0xFFFF) {
                     // Each pixel that has a non-opaque alpha will use defaultDst_sse:
                     //
-                    // First obtain destination alpha values:
+                    // Load four 32-bit pixels with only their alpha values
                     __m128i dst_alpha_sse = _mm_and_si128(dst_sse,
                                                    _mm_set1_epi32(0xFF000000));
 
-                    // Which pixels are opaque?
-                    __m128i dst_isOpaque_sse = _mm_cmpeq_epi32(dst_alpha_sse,
+                    // Which pixels are transparent?
+                    __m128i dst_isTransparent_sse = _mm_cmpeq_epi32(dst_alpha_sse,
                                                    _mm_set1_epi32(0x00000000));
 
-                    // Opaque pixels from from dst, non-opaque pixels from defaultDst:
-                    dst_sse = _mm_or_si128(_mm_andnot_si128(dst_isOpaque_sse, dst_sse),
-                                           _mm_and_si128(dst_isOpaque_sse, defaultDst_sse));
+                    // Which pixels are opaque?
+                    __m128i dst_isOpaque_sse = _mm_cmpeq_epi32(dst_alpha_sse,
+                                                    _mm_set1_epi32(0xFF000000));
+
+                    __m128i all_ones = _mm_cmpeq_epi32(_mm_setzero_si128(), _mm_setzero_si128());
+                    __m128i dst_isSemiTransparent_sse = _mm_andnot_si128(
+                            dst_isOpaque_sse, _mm_xor_si128(dst_isTransparent_sse, all_ones));
+
+                    // Check whether all four 32-bit values are 0, indicating that
+                    // all four pixels are either using local background or global background
+                    pack_cmp = _mm_movemask_epi8(dst_isSemiTransparent_sse);
+
+                    // Not using branchless programming here because the two
+                    // branches differ a lot in terms of their computational load
+                    if (pack_cmp == 0) {
+                        // Opaque pixels from from dst, non-opaque pixels from defaultDst:
+                        dst_sse = _mm_or_si128(_mm_and_si128(dst_isOpaque_sse, dst_sse),
+                                _mm_and_si128(dst_isTransparent_sse, defaultDst_sse));
+                    }
+                    else {
+                        // At least one of the four pixels are semi-transparent.
+                        // Since we need 16-bit RGB values, we will first run
+                        // a pass to process red and blue for 4 pixels and then
+                        // run another pass to process green for the same 4
+                        // pixels.
+
+                        // ==========
+                        // RED & BLUE
+                        // ==========
+
+                        __m128i filter = _mm_set1_epi32(0x00ff00ff);
+
+                        // Filter in red and blue
+                        __m128i dst_rgb = _mm_and_si128(dst_sse, filter);
+
+                        // The alpha channel is the first byte of every 32-bit word
+                        // We need it to be the 2nd and the 4th byte instead
+                        __m128i dst_a = _mm_srli_epi32(_mm_or_si128(dst_alpha_sse, _mm_srli_epi32(dst_alpha_sse, 16)), 8);
+
+                        // Premultiply local background
+                        //
+                        // Both dst_rgb and dst_a contain their values on the 2nd
+                        // and 4th bytes for every 32-bit word. We multiply each
+                        // 16-bit word to get four premultiplied pixels (for red and blue).
+                        //
+                        // For every 32-bit word now, the first 16-bits are used
+                        // for blue and the second 16-bits are used for red
+                        __m128i local_bg = _mm_mullo_epi16(dst_rgb, dst_a);
+
+                        // Filter in the red and blue from the global background
+                        __m128i def_rgb = _mm_and_si128(defaultDst_sse, filter);
+
+                        // Negate the alpha channel
+                        dst_a = _mm_sub_epi8(filter, dst_a);
+
+                        // Premultiply global background
+                        //
+                        // Both def_rgb and dst_a contain their values on the 2nd
+                        // and 4th bytes for every 32-bit word. We multiply each
+                        // word to get four premultiplied pixels (for red and blue).
+                        //
+                        // For every 32-bit word now, the first 16-bits are used
+                        // for blue and the second 16-bits are used for red
+                        __m128i global_bg = _mm_mullo_epi16(def_rgb, dst_a);
+
+                        // Mix the two backgrounds
+                        //
+                        // Add the eight 16-bit words and also add 128 to each
+                        // word. This is equivalent to adding 0.5 to a float
+                        // before casting it to an integer in order to round
+                        // off the value
+                        __m128i mixed_bg = _mm_add_epi16(_mm_add_epi16(local_bg, global_bg), _mm_set1_epi32(0x00800080));
+
+                        // Normalize the values
+                        //
+                        // Take the second 8-bits for every 16-bit word (effectively
+                        // dividing the number by 256) and shift the bits to where
+                        // red and blue should be
+                        __m128i normal_rb = _mm_srli_epi16(mixed_bg, 8);
+
+
+                        // =====
+                        // GREEN
+                        // =====
+
+                        filter = _mm_set1_epi32(0x0000ff00);
+
+                        // Now lets focus on the green
+                        dst_rgb = _mm_srli_epi32(_mm_and_si128(dst_sse, filter), 8);
+
+                        // The alpha channel is the fourth byte of every 32-bit word
+                        // We need it to be the 3rd byte instead
+                        dst_a = _mm_srli_epi32(dst_alpha_sse, 24);
+
+                        // Premultiply local background
+                        //
+                        // Both dst_rgb and dst_a contain their values on the
+                        // 3rd byte of every 32-bit word. We multiply each word
+                        // to get four premultiplied pixels (for green)
+                        //
+                        // For every 32-bit word now, the second 16-bits are
+                        // used for green.
+                        local_bg = _mm_mullo_epi16(dst_rgb, dst_a);
+
+                        // Filter in the green from the global background
+                        def_rgb = _mm_srli_epi32(_mm_and_si128(defaultDst_sse, filter), 8);
+
+                        // Negate the alpha channel
+                        dst_a = _mm_sub_epi8(_mm_srli_epi16(filter, 8), dst_a);
+
+                        // Premultiply global background
+                        //
+                        // Both def_rgb and dst_a contain their values on the
+                        // 4th bytes for every 32-bit word. We multiply each
+                        // word to get four premultiplied pixels (for red and blue).
+                        //
+                        // For every 32-bit word now, the second 16-bits are
+                        // used for green.
+                        global_bg = _mm_mullo_epi16(def_rgb, dst_a);
+
+                        // Mix the two backgrounds
+                        //
+                        // Add the eight 16-bit words and also add 128 to each
+                        // word. This is equivalent to adding 0.5 to a float
+                        // before casting it to an integer in order to round
+                        // off the value
+                        mixed_bg = _mm_add_epi16(_mm_add_epi16(local_bg, global_bg), _mm_set1_epi32(0x00000080));
+
+                        // Normalize the values
+                        //
+                        // Take the 3rd 8-bit word from every 32-bit word (which
+                        // effectively divides the number by 256 assuming all values
+                        // are 16-bit at most).
+                        __m128i normal_g = _mm_and_si128(mixed_bg, filter);
+
+
+                        // =================
+                        // RED, BLUE + GREEN
+                        // =================
+
+                        dst_sse = _mm_or_si128(_mm_or_si128(normal_rb, normal_g), _mm_set1_epi32(0xff000000));
+                    }
 
                     // Unpack 4 16bit mask pixels to
                     // mask_sse = (m0RGBLo, m0RGBHi, 0, 0, m1RGBLo, m1RGBHi, 0, 0,
@@ -452,9 +628,41 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
 
         while (width > 0) {
             SkPMColor currentDst = *dst;
-            if (0x00 == SkColorGetA(currentDst)) {
+            int dstA = SkColorGetA(currentDst);
+
+            if (0x00 == dstA) {
                 currentDst = defaultDst;
             }
+            else if (0xff == dstA) {
+                // no-op. this helps branch prediction since it's
+                // more likely for us to encounter an opaque local
+                // background than a semi-transparent background
+            }
+            else if (dstA < 255) {
+                // premultiply local background
+                int dstR = SkColorGetR(currentDst) * dstA;
+                int dstG = SkColorGetG(currentDst) * dstA;
+                int dstB = SkColorGetB(currentDst) * dstA;
+
+                // premultiply global background and mix
+                dstA = 255 - dstA;
+                dstR += SkColorGetR(defaultDst) * dstA;
+                dstG += SkColorGetG(defaultDst) * dstA;
+                dstB += SkColorGetB(defaultDst) * dstA;
+
+                // scale down and round off
+                dstR = (dstR + 128) >> 8;
+                dstG = (dstG + 128) >> 8;
+                dstB = (dstB + 128) >> 8;
+
+                // We are dividing by 256 when we should divide by 255.
+                // This will produce an output that is 0.39% darker in the
+                // worst case. This might be an acceptable compromise for
+                // the performance gains.
+
+                currentDst = SkPackARGB32(255, dstR, dstG, dstB);
+            }
+
             *dst = blend_lcd16(srcA, srcR, srcG, srcB, currentDst, *mask);
             mask++;
             dst++;
@@ -531,6 +739,11 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
 
     void blit_row_lcd16_opaque_over_bg(SkPMColor dst[], const uint16_t mask[],
                                            SkColor src, int width, SkPMColor opaqueDst, SkPMColor defaultDst) {
+
+        // blpwtk2: This function is very similar to blit_row_lcd16_over_bg.
+        // Any updates made to this function should considitionally be made
+        // to the other function as well.
+
         if (width <= 0) {
             return;
         }
@@ -545,9 +758,41 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
             SkASSERT(((size_t)dst & 0x03) == 0);
             while (((size_t)dst & 0x0F) != 0) {
                 SkPMColor currentDst = *dst;
-                if (0x00 == SkColorGetA(currentDst)) {
+                int dstA = SkColorGetA(currentDst);
+
+                if (0x00 == dstA) {
                     currentDst = defaultDst;
                 }
+                else if (0xff == dstA) {
+                    // no-op. this helps branch prediction since it's
+                    // more likely for us to encounter an opaque local
+                    // background than a semi-transparent background
+                }
+                else if (dstA < 255) {
+                    // premultiply local background
+                    int dstR = SkColorGetR(currentDst) * dstA;
+                    int dstG = SkColorGetG(currentDst) * dstA;
+                    int dstB = SkColorGetB(currentDst) * dstA;
+
+                    // premultiply global background and mix
+                    dstA = 255 - dstA;
+                    dstR += SkColorGetR(defaultDst) * dstA;
+                    dstG += SkColorGetG(defaultDst) * dstA;
+                    dstB += SkColorGetB(defaultDst) * dstA;
+
+                    // scale down and round off
+                    dstR = (dstR + 128) >> 8;
+                    dstG = (dstG + 128) >> 8;
+                    dstB = (dstB + 128) >> 8;
+
+                    // We are dividing by 256 when we should divide by 255.
+                    // This will produce an output that is 0.39% darker in the
+                    // worst case. This might be an acceptable compromise for
+                    // the performance gains.
+
+                    currentDst = SkPackARGB32(255, dstR, dstG, dstB);
+                }
+
                 *dst = blend_lcd16_opaque(srcR, srcG, srcB, currentDst, *mask, opaqueDst);
                 mask++;
                 dst++;
@@ -581,13 +826,152 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
                     __m128i dst_alpha_sse = _mm_and_si128(dst_sse,
                                                    _mm_set1_epi32(0xFF000000));
 
-                    // Which pixels are opaque?
-                    __m128i dst_isOpaque_sse = _mm_cmpeq_epi32(dst_alpha_sse,
+                    // Which pixels are transparent?
+                    __m128i dst_isTransparent_sse = _mm_cmpeq_epi32(dst_alpha_sse,
                                                    _mm_set1_epi32(0x00000000));
 
-                    // Opaque pixels from from dst, non-opaque pixels from defaultDst:
-                    dst_sse = _mm_or_si128(_mm_andnot_si128(dst_isOpaque_sse, dst_sse),
-                                           _mm_and_si128(dst_isOpaque_sse, defaultDst_sse));
+                    // Which pixels are opaque?
+                    __m128i dst_isOpaque_sse = _mm_cmpeq_epi32(dst_alpha_sse,
+                                                    _mm_set1_epi32(0xFF000000));
+
+                    __m128i all_ones = _mm_cmpeq_epi32(_mm_setzero_si128(), _mm_setzero_si128());
+                    __m128i dst_isSemiTransparent_sse = _mm_andnot_si128(
+                            dst_isOpaque_sse, _mm_xor_si128(dst_isTransparent_sse, all_ones));
+
+                    // Check whether all four 32-bit values are 0, indicating that
+                    // all four pixels are either using local background or global background
+                    pack_cmp = _mm_movemask_epi8(dst_isSemiTransparent_sse);
+
+                    // Not using branchless programming here because the two
+                    // branches differ a lot in terms of their computational load
+                    if (pack_cmp == 0) {
+                        // Opaque pixels from from dst, non-opaque pixels from defaultDst:
+                        dst_sse = _mm_or_si128(_mm_and_si128(dst_isOpaque_sse, dst_sse),
+                                _mm_and_si128(dst_isTransparent_sse, defaultDst_sse));
+                    }
+                    else {
+                        // At least one of the four pixels are semi-transparent.
+                        // Since we need 16-bit RGB values, we will first run
+                        // a pass to process red and blue for 4 pixels and then
+                        // run another pass to process green for the same 4
+                        // pixels.
+
+                        // ==========
+                        // RED & BLUE
+                        // ==========
+
+                        __m128i filter = _mm_set1_epi32(0x00ff00ff);
+
+                        // Filter in red and blue
+                        __m128i dst_rgb = _mm_and_si128(dst_sse, filter);
+
+                        // The alpha channel is the first byte of every 32-bit word
+                        // We need it to be the 2nd and the 4th byte instead
+                        __m128i dst_a = _mm_srli_epi32(_mm_or_si128(dst_alpha_sse, _mm_srli_epi32(dst_alpha_sse, 16)), 8);
+
+                        // Premultiply local background
+                        //
+                        // Both dst_rgb and dst_a contain their values on the 2nd
+                        // and 4th bytes for every 32-bit word. We multiply each
+                        // 16-bit word to get four premultiplied pixels (for red and blue).
+                        //
+                        // For every 32-bit word now, the first 16-bits are used
+                        // for blue and the second 16-bits are used for red
+                        __m128i local_bg = _mm_mullo_epi16(dst_rgb, dst_a);
+
+                        // Filter in the red and blue from the global background
+                        __m128i def_rgb = _mm_and_si128(defaultDst_sse, filter);
+
+                        // Negate the alpha channel
+                        dst_a = _mm_sub_epi8(filter, dst_a);
+
+                        // Premultiply global background
+                        //
+                        // Both def_rgb and dst_a contain their values on the 2nd
+                        // and 4th bytes for every 32-bit word. We multiply each
+                        // word to get four premultiplied pixels (for red and blue).
+                        //
+                        // For every 32-bit word now, the first 16-bits are used
+                        // for blue and the second 16-bits are used for red
+                        __m128i global_bg = _mm_mullo_epi16(def_rgb, dst_a);
+
+                        // Mix the two backgrounds
+                        //
+                        // Add the eight 16-bit words and also add 128 to each
+                        // word. This is equivalent to adding 0.5 to a float
+                        // before casting it to an integer in order to round
+                        // off the value
+                        __m128i mixed_bg = _mm_add_epi16(_mm_add_epi16(local_bg, global_bg), _mm_set1_epi32(0x00800080));
+
+                        // Normalize the values
+                        //
+                        // Take the second 8-bits for every 16-bit word (effectively
+                        // dividing the number by 256) and shift the bits to where
+                        // red and blue should be
+                        __m128i normal_rb = _mm_srli_epi16(mixed_bg, 8);
+
+
+                        // =====
+                        // GREEN
+                        // =====
+
+                        filter = _mm_set1_epi32(0x0000ff00);
+
+                        // Now lets focus on the green
+                        dst_rgb = _mm_srli_epi32(_mm_and_si128(dst_sse, filter), 8);
+
+                        // The alpha channel is the fourth byte of every 32-bit word
+                        // We need it to be the 3rd byte instead
+                        dst_a = _mm_srli_epi32(dst_alpha_sse, 24);
+
+                        // Premultiply local background
+                        //
+                        // Both dst_rgb and dst_a contain their values on the
+                        // 3rd byte of every 32-bit word. We multiply each word
+                        // to get four premultiplied pixels (for green)
+                        //
+                        // For every 32-bit word now, the second 16-bits are
+                        // used for green.
+                        local_bg = _mm_mullo_epi16(dst_rgb, dst_a);
+
+                        // Filter in the green from the global background
+                        def_rgb = _mm_srli_epi32(_mm_and_si128(defaultDst_sse, filter), 8);
+
+                        // Negate the alpha channel
+                        dst_a = _mm_sub_epi8(_mm_srli_epi16(filter, 8), dst_a);
+
+                        // Premultiply global background
+                        //
+                        // Both def_rgb and dst_a contain their values on the
+                        // 4th bytes for every 32-bit word. We multiply each
+                        // word to get four premultiplied pixels (for red and blue).
+                        //
+                        // For every 32-bit word now, the second 16-bits are
+                        // used for green.
+                        global_bg = _mm_mullo_epi16(def_rgb, dst_a);
+
+                        // Mix the two backgrounds
+                        //
+                        // Add the eight 16-bit words and also add 128 to each
+                        // word. This is equivalent to adding 0.5 to a float
+                        // before casting it to an integer in order to round
+                        // off the value
+                        mixed_bg = _mm_add_epi16(_mm_add_epi16(local_bg, global_bg), _mm_set1_epi32(0x00000080));
+
+                        // Normalize the values
+                        //
+                        // Take the 3rd 8-bit word from every 32-bit word (which
+                        // effectively divides the number by 256 assuming all values
+                        // are 16-bit at most).
+                        __m128i normal_g = _mm_and_si128(mixed_bg, filter);
+
+
+                        // =================
+                        // RED, BLUE + GREEN
+                        // =================
+
+                        dst_sse = _mm_or_si128(_mm_or_si128(normal_rb, normal_g), _mm_set1_epi32(0xff000000));
+                    }
 
                     // Unpack 4 16bit mask pixels to
                     // mask_sse = (m0RGBLo, m0RGBHi, 0, 0, m1RGBLo, m1RGBHi, 0, 0,
@@ -610,17 +994,47 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
 
         while (width > 0) {
             SkPMColor currentDst = *dst;
-            if (0x00 == SkColorGetA(currentDst)) {
+            int dstA = SkColorGetA(currentDst);
+
+            if (0x00 == dstA) {
                 currentDst = defaultDst;
             }
+            else if (0xff == dstA) {
+                // no-op. this helps branch prediction since it's
+                // more likely for us to encounter an opaque local
+                // background than a semi-transparent background
+            }
+            else if (dstA < 255) {
+                // premultiply local background
+                int dstR = SkColorGetR(currentDst) * dstA;
+                int dstG = SkColorGetG(currentDst) * dstA;
+                int dstB = SkColorGetB(currentDst) * dstA;
+
+                // premultiply global background and mix
+                dstA = 255 - dstA;
+                dstR += SkColorGetR(defaultDst) * dstA;
+                dstG += SkColorGetG(defaultDst) * dstA;
+                dstB += SkColorGetB(defaultDst) * dstA;
+
+                // scale down and round off
+                dstR = (dstR + 128) >> 8;
+                dstG = (dstG + 128) >> 8;
+                dstB = (dstB + 128) >> 8;
+
+                // We are dividing by 256 when we should divide by 255.
+                // This will produce an output that is 0.39% darker in the
+                // worst case. This might be an acceptable compromise for
+                // the performance gains.
+
+                currentDst = SkPackARGB32(255, dstR, dstG, dstB);
+            }
+
             *dst = blend_lcd16_opaque(srcR, srcG, srcB, currentDst, *mask, opaqueDst);
             mask++;
             dst++;
             width--;
         }
     }
-
-
 
 #elif defined(SK_ARM_HAS_NEON)
     #include <arm_neon.h>
@@ -800,8 +1214,39 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
 
         for (int i = 0; i < width; i++) {
             SkPMColor currentDst = dst[i];
-            if (0x00 == SkColorGetA(currentDst)) {
+            int dstA = SkColorGetA(currentDst);
+
+            if (0x00 == dstA) {
                 currentDst = defaultDst;
+            }
+            else if (0xff == dstA) {
+                // no-op. this helps branch prediction since it's
+                // more likely for us to encounter an opaque local
+                // background than a semi-transparent background
+            }
+            else if (dstA < 255) {
+                // premultiply local background
+                int dstR = SkColorGetR(currentDst) * dstA;
+                int dstG = SkColorGetG(currentDst) * dstA;
+                int dstB = SkColorGetB(currentDst) * dstA;
+
+                // premultiply global background and mix
+                dstA = 255 - dstA;
+                dstR += SkColorGetR(defaultDst) * dstA;
+                dstG += SkColorGetG(defaultDst) * dstA;
+                dstB += SkColorGetB(defaultDst) * dstA;
+
+                // scale down and round off
+                dstR = (dstR + 128) >> 8;
+                dstG = (dstG + 128) >> 8;
+                dstB = (dstB + 128) >> 8;
+
+                // We are dividing by 256 when we should divide by 255.
+                // This will produce an output that is 0.39% darker in the
+                // worst case. This might be an acceptable compromise for
+                // the performance gains.
+
+                currentDst = SkPackARGB32(255, dstR, dstG, dstB);
             }
             dst[i] = blend_lcd16(srcA, srcR, srcG, srcB, currentDst, mask[i]);
         }
@@ -831,6 +1276,36 @@ static inline SkPMColor blend_lcd16_opaque(int srcR, int srcG, int srcB,
             if (0x00 == SkColorGetA(currentDst)) {
                 currentDst = defaultDst;
             }
+            else if (0xff == dstA) {
+                // no-op. this helps branch prediction since it's
+                // more likely for us to encounter an opaque local
+                // background than a semi-transparent background
+            }
+            else if (dstA < 255) {
+                // premultiply local background
+                int dstR = SkColorGetR(currentDst) * dstA;
+                int dstG = SkColorGetG(currentDst) * dstA;
+                int dstB = SkColorGetB(currentDst) * dstA;
+
+                // premultiply global background and mix
+                dstA = 255 - dstA;
+                dstR += SkColorGetR(defaultDst) * dstA;
+                dstG += SkColorGetG(defaultDst) * dstA;
+                dstB += SkColorGetB(defaultDst) * dstA;
+
+                // scale down and round off
+                dstR = (dstR + 128) >> 8;
+                dstG = (dstG + 128) >> 8;
+                dstB = (dstB + 128) >> 8;
+
+                // We are dividing by 256 when we should divide by 255.
+                // This will produce an output that is 0.39% darker in the
+                // worst case. This might be an acceptable compromise for
+                // the performance gains.
+
+                currentDst = SkPackARGB32(255, dstR, dstG, dstB);
+            }
+
             dst[i] = blend_lcd16_opaque(srcR, srcG, srcB, currentDst, mask[i], opaqueDst);
         }
     }
