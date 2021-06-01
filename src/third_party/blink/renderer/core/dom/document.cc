@@ -3446,8 +3446,9 @@ void Document::open(LocalDOMWindow* entered_window,
   if (!AllowedToUseDynamicMarkUpInsertion("open", exception_state))
     return;
 
-  if (entered_window && !entered_window->GetFrame())
-    return;
+  // blpwtk2: allow opening frame-less document/window
+  // if (entered_window && !entered_window->GetFrame())
+  //   return;
 
   // If |document|'s origin is not same origin to the origin of the responsible
   // document specified by the entry settings object, then throw a
@@ -4300,8 +4301,9 @@ void Document::write(const String& text,
     return;
   }
 
-  if (entered_window && !entered_window->GetFrame())
-    return;
+  // blpwtk2: allow writing frame-less document/window
+  // if (entered_window && !entered_window->GetFrame())
+  //   return;
 
   if (entered_window && GetExecutionContext() &&
       !GetExecutionContext()->GetSecurityOrigin()->IsSameOriginWith(
