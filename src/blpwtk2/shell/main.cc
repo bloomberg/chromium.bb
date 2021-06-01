@@ -59,7 +59,6 @@ bool g_isInsideEventLoop;
 
 
 // patch section: dpi awareness
-bool g_dpi_aware = false;
 
 
 
@@ -691,9 +690,6 @@ HANDLE spawnProcess()
 
 
     // patch section: dpi awareness
-    if (g_dpi_aware) {
-        cmdline.append(" --dpi-aware");
-    }
 
 
 
@@ -859,9 +855,6 @@ int main(int, const char**)
 
 
             //patch section: dpi awareness
-            else if (0 == wcsncmp(L"--dpi-aware", argv[i], 11)) {
-                g_dpi_aware = true;
-            }
 
 
 
@@ -906,9 +899,6 @@ int main(int, const char**)
 
 
     // patch section: dpi awareness
-    if (g_dpi_aware) {
-        toolkitParams.appendCommandLineSwitch("dpi-aware");
-    }
 
 
 
