@@ -28,13 +28,6 @@
 
 namespace blpwtk2 {
 
-namespace {
-
-static base::LazyInstance<RenderMessageDelegate>::DestructorAtExit
-    s_instance = LAZY_INSTANCE_INITIALIZER;
-
-} // close namespace
-
 RenderMessageDelegate::RenderMessageDelegate()
 {
     mojo::MessagePipe pipe;
@@ -52,11 +45,6 @@ RenderMessageDelegate::RenderMessageDelegate()
 
 RenderMessageDelegate::~RenderMessageDelegate()
 {
-}
-
-RenderMessageDelegate* RenderMessageDelegate::GetInstance()
-{
-    return s_instance.Pointer();
 }
 
 // IPC::MessageRouter overrides:

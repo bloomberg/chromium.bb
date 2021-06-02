@@ -165,12 +165,6 @@ void ContentRendererClientImpl::ExposeInterfacesToBrowser(mojo::BinderMap* binde
 
 bool ContentRendererClientImpl::Dispatch(IPC::Message *msg)
 {
-    if (Statics::rendererUIEnabled &&
-        RenderMessageDelegate::GetInstance()->OnMessageReceived(*msg)) {
-        delete msg;
-        return true;
-    }
-
     return false;
 }
 
