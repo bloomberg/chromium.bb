@@ -27,6 +27,7 @@
 #include <blpwtk2_config.h>
 
 #include <blpwtk2_dragdrop.h>
+#include <blpwtk2_rendermessagedelegate.h>
 #include <blpwtk2_scopedhwnd.h>
 #include <blpwtk2_webview.h>
 #include <blpwtk2_webviewdelegate.h>
@@ -199,6 +200,8 @@ class RenderWebView final : public WebView
 
     // Observe Windows 'session changes':
     std::unique_ptr<ui::SessionChangeObserver> d_windowsSessionChangeObserver;
+
+    RenderMessageDelegate msg_delegate_;
 
     // One side of a pipe that is held open while the pointer is locked.
     // The other side is held be the renderer.
@@ -582,6 +585,8 @@ class RenderWebView final : public WebView
                            ProfileImpl              *profile,
                            const WebViewProperties&  properties);
     ~RenderWebView() final;
+
+    RenderMessageDelegate& GetMessageDelegate();
 };
 
 }  // close namespace blpwtk2

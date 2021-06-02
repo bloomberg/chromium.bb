@@ -23,7 +23,6 @@
 #ifndef INCLUDED_BLPWTK2_RENDERMESSAGEDELEGATE_H
 #define INCLUDED_BLPWTK2_RENDERMESSAGEDELEGATE_H
 
-#include <base/lazy_instance.h>
 #include <base/memory/ref_counted.h>
 #include <ipc/message_router.h>
 #include <mojo/public/cpp/bindings/associated_receiver.h>
@@ -42,7 +41,8 @@ class RenderMessageDelegate : public IPC::MessageRouter {
 
     static RenderMessageDelegate* GetInstance();
 
-    IPC::MessageRouter* GetRouter() { return &d_router; }
+    RenderMessageDelegate();
+    ~RenderMessageDelegate() final;
 
     // IPC::MessageRouter overrides:
     bool OnControlMessageReceived(const IPC::Message& msg) override;
@@ -60,11 +60,6 @@ class RenderMessageDelegate : public IPC::MessageRouter {
     BindNewAssociatedEndpointAndPassReceiver(mojo::AssociatedRemote<Interface>& remote);
 
   private:
-
-    friend struct base::LazyInstanceTraitsBase<RenderMessageDelegate>;
-
-    RenderMessageDelegate();
-    ~RenderMessageDelegate() final;
 
     IPC::MessageRouter d_router;
 

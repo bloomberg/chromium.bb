@@ -108,8 +108,8 @@ public:
 
     mojo::PendingAssociatedRemote<blink::mojom::LocalFrameHostPartialOverride>
     BindNewEndpointAndPassRemote() {
-        return RenderMessageDelegate::GetInstance()
-            ->BindNewAssociatedEndpointAndPassRemote(receiver_);
+        return renderWebView_->GetMessageDelegate()
+            .BindNewAssociatedEndpointAndPassRemote(receiver_);
     }
 
 
@@ -128,7 +128,7 @@ public:
 
     mojo::PendingAssociatedRemote<blink::mojom::FrameWidgetHost>
     BindNewEndpointAndPassRemote() {
-        return RenderMessageDelegate::GetInstance()->BindNewAssociatedEndpointAndPassRemote(
+        return renderWebView_->GetMessageDelegate().BindNewAssociatedEndpointAndPassRemote(
             d_blink_frame_widget_host_receiver);
     }
 
@@ -162,7 +162,7 @@ public:
 
     mojo::PendingAssociatedRemote<blink::mojom::PopupWidgetHost>
     BindNewEndpointAndPassRemote() {
-        return RenderMessageDelegate::GetInstance()->BindNewAssociatedEndpointAndPassRemote(
+        return renderWebView_->GetMessageDelegate().BindNewAssociatedEndpointAndPassRemote(
             d_receiver);
     }
 
@@ -284,6 +284,12 @@ RenderWebView::~RenderWebView()
         delete d_renderViewObserver;
     }
 }
+
+RenderMessageDelegate& RenderWebView::GetMessageDelegate()
+{
+    return msg_delegate_;
+}
+
 
 LPCTSTR RenderWebView::GetWindowClass()
 {
@@ -852,7 +858,7 @@ void RenderWebView::initializeRendererForWebView()
 
     // RenderView:
     content::RenderViewImpl *rv = content::RenderViewImpl::FromRoutingID(*d_renderViewRoutingId);
-    RenderMessageDelegate::GetInstance()->AddRoute(*d_renderViewRoutingId, this);
+    GetMessageDelegate().AddRoute(*d_renderViewRoutingId, this);
 
     // Obtain a reference to the `blink::WebFrameWidget` created by the `RenderView`:
     d_frame_widget = rv->GetWebView()->MainFrameWidget();
@@ -866,7 +872,7 @@ void RenderWebView::initializeRendererForWebView()
     d_mainFrameRoutingId = rv->GetMainRenderFrame()->GetRoutingID();
 
     // RenderFrame:
-    RenderMessageDelegate::GetInstance()->AddRoute(*d_mainFrameRoutingId, this);
+    GetMessageDelegate().AddRoute(*d_mainFrameRoutingId, this);
 
 
     initializeRenderer();
@@ -891,13 +897,13 @@ void RenderWebView::initializeRenderer()
 
     // Override override the `blink::WebWidget`'s interface to a `WidgetHost`:
     mojo::PendingAssociatedRemote<blink::mojom::WidgetHost> blink_widget_host =
-        RenderMessageDelegate::GetInstance()->BindNewAssociatedEndpointAndPassRemote(
+        GetMessageDelegate().BindNewAssociatedEndpointAndPassRemote(
             d_blink_widget_host_receiver);
     mojo::PendingAssociatedReceiver<blink::mojom::Widget> blink_widget =
-        RenderMessageDelegate::GetInstance()->BindNewAssociatedEndpointAndPassReceiver(
+        GetMessageDelegate().BindNewAssociatedEndpointAndPassReceiver(
             blink_widget_);
     mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget> blink_frame_widget =
-        RenderMessageDelegate::GetInstance()->BindNewAssociatedEndpointAndPassReceiver(
+        GetMessageDelegate().BindNewAssociatedEndpointAndPassReceiver(
             blink_frame_widget_);
 
     rw->GetWebWidget()->ResetWidgetInterfaces(std::move(blink_widget_host),
@@ -1021,12 +1027,12 @@ void RenderWebView::detachFromRoutingId()
 
 
     if (d_mainFrameRoutingId) {
-        RenderMessageDelegate::GetInstance()->RemoveRoute(*d_mainFrameRoutingId);
+       GetMessageDelegate().RemoveRoute(*d_mainFrameRoutingId);
         d_mainFrameRoutingId.reset();
     }
 
     if (d_renderViewRoutingId) {
-        RenderMessageDelegate::GetInstance()->RemoveRoute(*d_renderViewRoutingId);
+        GetMessageDelegate().RemoveRoute(*d_renderViewRoutingId);
         d_renderViewRoutingId.reset();
     }
 }
