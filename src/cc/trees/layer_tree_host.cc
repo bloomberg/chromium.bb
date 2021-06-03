@@ -143,6 +143,7 @@ LayerTreeHost::LayerTreeHost(InitParams params, CompositorMode mode)
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       task_graph_runner_(params.task_graph_runner),
       event_listener_properties_(),
+      routing_id_(params.routing_id),
       mutator_host_(params.mutator_host),
       dark_mode_filter_(params.dark_mode_filter) {
   DCHECK(task_graph_runner_);
@@ -1137,6 +1138,10 @@ void LayerTreeHost::RequestScrollAnimationEndNotification(
     scroll_animation_.end_notification = std::move(callback);
   else
     std::move(callback).Run();
+}
+
+int LayerTreeHost::GetRoutingId() const {
+  return routing_id_;
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {

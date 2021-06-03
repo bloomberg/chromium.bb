@@ -171,6 +171,7 @@ void WidgetBase::InitializeCompositing(
     bool for_child_local_root_frame,
     const ScreenInfo& screen_info,
     std::unique_ptr<cc::UkmRecorderFactory> ukm_recorder_factory,
+    int view_id,
     const cc::LayerTreeSettings* settings) {
   main_thread_compositor_task_runner_ =
       main_thread_scheduler->CompositorTaskRunner();
@@ -193,7 +194,7 @@ void WidgetBase::InitializeCompositing(
       compositing_thread_scheduler
           ? compositing_thread_scheduler->DefaultTaskRunner()
           : nullptr,
-      task_graph_runner, std::move(ukm_recorder_factory));
+      task_graph_runner, std::move(ukm_recorder_factory), view_id);
 
   FrameWidget* frame_widget = client_->FrameWidget();
 
