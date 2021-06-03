@@ -949,6 +949,19 @@ void WebViewImpl::DidFailLoad(content::RenderFrameHost *render_frame_host,
 
 
 // patch section: memory diagnostics
+std::size_t WebViewImpl::getDefaultTileMemoryLimit() const {
+    return 0;
+}
+
+std::size_t WebViewImpl::getTileMemoryBytes() const {
+    return 0;
+}
+
+void WebViewImpl::overrideTileMemoryLimit(std::size_t limit) {
+}
+
+void WebViewImpl::setTag(const char* pTag) {
+}
 
 
 

@@ -8662,6 +8662,25 @@ class V8_EXPORT Isolate {
   typedef void (*UseCounterCallback)(Isolate* isolate,
                                      UseCounterFeature feature);
 
+
+
+  /**
+   * blpwtk2: Force garbage collection types
+   * kCollectAllGarbage -> Heap::CollectAllGarbage
+   * kCollectAllAvailableGarbage -> Heap::CollectAllAvailableGarbage
+   * kPreciseCollectAllGarbage -> Heap::PreciseCollectAllGarbage
+   */
+  enum GCForcedType {
+    kCollectAllGarbage = 0,
+    kCollectAllAvailableGarbage,
+    kPreciseCollectAllGarbage
+  };
+
+  /**
+   * blpwtk2: Force garbage collection
+   */
+  void ForceGC(GCForcedType forcedType = kCollectAllAvailableGarbage);
+
   /**
    * Allocates a new isolate but does not initialize it. Does not change the
    * currently entered isolate.

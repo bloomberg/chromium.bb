@@ -4872,4 +4872,18 @@ base::WeakPtr<LayerTreeHostImpl> LayerTreeHostImpl::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void LayerTreeHostImpl::onTileMemoryError() {
+  constexpr int bufSize = 256;
+  char buf[bufSize];
+  gfx::Rect activeVP = active_tree_->GetDeviceViewport();
+  int charCount = sprintf(buf, "onTileMemoryError active viewport x:%d, y:%d, width:%d, height:%d, scale factor:%f",
+    activeVP.x(), activeVP.y(), activeVP.width(), activeVP.height(), active_tree_->device_scale_factor());
+  if (pending_tree_) {
+    gfx::Rect pendingVP = pending_tree_->GetDeviceViewport();
+    sprintf(buf + charCount, "; pending viewport x:%d, y:%d, width:%d, height:%d, scale factor:%f",
+    pendingVP.x(), pendingVP.y(), pendingVP.width(), pendingVP.height(), pending_tree_->device_scale_factor());
+  }
+  LOG(ERROR) << buf;
+}
+
 }  // namespace cc
