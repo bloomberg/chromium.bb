@@ -293,6 +293,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // True if the window should have the frame removed.
   bool remove_standard_frame_;
 
+  // Bloomberg: True if we route mouse wheel events to any Chromium window
+  bool reroute_mouse_wheel_to_any_related_window_;
+
   // Owned by TooltipController, but we need to forward events to it so we keep
   // a reference.
   corewm::TooltipWin* tooltip_;
