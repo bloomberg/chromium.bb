@@ -105,6 +105,12 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebElement GetElementById(const WebString&) const;
   BLINK_EXPORT WebElement FocusedElement() const;
 
+  // Bloomberg-specific extensions
+#define BB_HAS_WEB_DOCUMENT_EXTENSIONS
+  BLINK_EXPORT WebString bbHeaderText() const;
+  BLINK_EXPORT WebString bbFooterText() const;
+  BLINK_EXPORT bool bbPrintPageNumbers() const;
+
   // Inserts the given CSS source code as a style sheet in the document.
   BLINK_EXPORT WebStyleSheetKey InsertStyleSheet(
       const WebString& source_code,
