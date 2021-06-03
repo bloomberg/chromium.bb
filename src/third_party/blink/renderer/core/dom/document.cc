@@ -3446,8 +3446,9 @@ void Document::open(LocalDOMWindow* entered_window,
   if (!AllowedToUseDynamicMarkUpInsertion("open", exception_state))
     return;
 
-  if (entered_window && !entered_window->GetFrame())
-    return;
+  // blpwtk2: allow opening frame-less document/window
+  // if (entered_window && !entered_window->GetFrame())
+  //   return;
 
   // If |document|'s origin is not same origin to the origin of the responsible
   // document specified by the entry settings object, then throw a
@@ -4019,7 +4020,12 @@ void RecordBeforeUnloadUse(BeforeUnloadUse metric) {
 bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
                                          bool is_reload,
                                          bool& did_allow_navigation) {
-  if (!dom_window_)
+  // Normally dom_window_ is nullptr if frame_ is nullptr, but
+  // for document created using LocalDOMWindow::InstallNewUnintializedDocument
+  // frame_ is nullptr. We set dom_window_ to the caller of
+  // InstallNewUnintializedDocument, so that document->GetExecutionContext()
+  // could return a valid dom_window.
+  if (!GetFrame())
     return true;
 
   if (!body())
@@ -4295,8 +4301,9 @@ void Document::write(const String& text,
     return;
   }
 
-  if (entered_window && !entered_window->GetFrame())
-    return;
+  // blpwtk2: allow writing frame-less document/window
+  // if (entered_window && !entered_window->GetFrame())
+  //   return;
 
   if (entered_window && GetExecutionContext() &&
       !GetExecutionContext()->GetSecurityOrigin()->IsSameOriginWith(
