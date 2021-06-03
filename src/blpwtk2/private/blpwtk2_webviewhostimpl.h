@@ -112,6 +112,9 @@ class WebViewHostImpl final : private WebViewImplClient
                    int      activeMatchOrdinal,
                    bool     finalUpdate) override;
 
+    void devToolsAgentHostAttached(WebView *source) override;
+    void devToolsAgentHostDetached(WebView *source) override;
+
     // Mojo callbacks
     void onNCDragAck();
 
