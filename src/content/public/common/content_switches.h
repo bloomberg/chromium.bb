@@ -288,6 +288,9 @@ CONTENT_EXPORT extern const char kPpapiAntialiasedTextEnabled[];
 CONTENT_EXPORT extern const char kPpapiSubpixelRenderingSetting[];
 CONTENT_EXPORT extern const char kRaiseTimerFrequency[];
 CONTENT_EXPORT extern const char kGpu2StartupDialog[];
+
+// Enable DPI awareness for the process
+CONTENT_EXPORT extern const char kDpiAwarenessMode[];
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

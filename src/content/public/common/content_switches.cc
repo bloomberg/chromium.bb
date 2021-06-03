@@ -1026,6 +1026,9 @@ const char kRaiseTimerFrequency[] = "raise-timer-frequency";
 // Causes the second GPU process used for gpu info collection to display a
 // dialog on launch.
 const char kGpu2StartupDialog[] = "gpu2-startup-dialog";
+
+// Enable DPI awareness for the process
+const char kDpiAwarenessMode[] = "dpi-awareness-mode";
 #endif
 
 #if defined(ENABLE_IPC_FUZZER)

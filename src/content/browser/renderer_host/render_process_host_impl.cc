@@ -3431,6 +3431,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kWebViewDrawFunctorUsesVulkan,
     switches::kWebglAntialiasingMode,
     switches::kWebglMSAASampleCount,
+
+    switches::kDpiAwarenessMode,
+
     // Please keep these in alphabetical order.
     blink::switches::kAllowPreCommitInput,
     blink::switches::kBlinkSettings,
