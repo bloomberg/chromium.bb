@@ -94,6 +94,7 @@ class StringRef;
 class WebView;
 class WebViewDelegate;
 class WebViewHostObserver;
+class ProcessHostDelegate;
 
                         // =============
                         // class Toolkit
@@ -194,6 +195,9 @@ class Toolkit {
 
 
     // patch section: embedder ipc
+    virtual void opaqueMessageToRendererAsync(int pid, const StringRef &message) = 0;
+
+    virtual void setIPCDelegate(ProcessHostDelegate *delegate) = 0;
 
 
     // patch section: expose v8 platform
